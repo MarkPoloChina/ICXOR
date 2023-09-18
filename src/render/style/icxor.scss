@@ -1,0 +1,51 @@
+:root {
+  --color-stdblue-1: #2e89c0;
+  --color-stdblue-2: #5dabdc;
+  --color-stdblue-3: #8fd0f0;
+
+  --color-greengray-1: #161e21;
+  --color-greengray-2: #2c3c49;
+  --color-greengray-3: #607b84;
+  --color-greengray-4: #b2c5cb;
+  --color-bg: white;
+  --color-bg-alpha: #ffffffcc;
+  --color-front: black;
+}
+html.dark {
+  --color-stdblue-1: #2e89c0;
+  --color-stdblue-2: #5dabdc;
+  --color-stdblue-3: #8fd0f0;
+
+  --color-greengray-1: #b2c5cb;
+  --color-greengray-2: #607b84;
+  --color-greengray-3: #2c3c49;
+  --color-greengray-4: #161e21;
+  // --color-bg: #242526;
+  --color-bg: #161616;
+  --color-bg-alpha: #171717cc;
+  --color-front: white;
+}
+$color-stdblue-1: var(--color-stdblue-1);
+$color-stdblue-2: var(--color-stdblue-2);
+$color-stdblue-3: var(--color-stdblue-3);
+
+$color-greengray-1: var(--color-greengray-1);
+$color-greengray-2: var(--color-greengray-2);
+$color-greengray-3: var(--color-greengray-3);
+$color-greengray-4: var(--color-greengray-4);
+
+@mixin Uni-Main-Container {
+  position: relative;
+  width: calc(100% - 20px);
+  height: calc(100% - 15px);
+  padding: 10px 10px 5px 10px;
+  overflow: hidden;
+  @include Flex-C;
+}
+
+@mixin Uni-Main-Title {
+  padding: 5px 10px 10px 10px;
+  font-size: 26px;
+  font-weight: bold;
+  color: $color-greengray-1;
+}

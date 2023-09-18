@@ -1,39 +1,61 @@
 {
-  "name": "fast-vite-nestjs-electron",
-  "version": "0.0.1",
-  "packageManager": "pnpm@8.7.6",
-  "description": "Vite + Electron with Doubleshot, so fast! ⚡",
+  "name": "icxor",
+  "version": "0.5.0",
+  "private": true,
+  "packageManager": "yarn@1.22.19",
+  "description": "ICXOR (Illust Complexor) is a tool built by electron to manage illusts at both local and remote.",
+  "author": {
+    "name": "MarkPolo",
+    "email": "1228479724@qq.com"
+  },
+  "license": "GPL v3.0",
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "rimraf dist && vite",
     "build": "rimraf dist && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "build-icon": "electron-icon-builder --input=./build/basic/icon_basic.png --output=build/basic --flatten",
+    "build-icon-mac": "electron-icon-builder --input=./build/basic/icon_mac.png --output=build/mac --flatten"
   },
   "dependencies": {
     "@doubleshot/nest-electron": "^0.2.3",
+    "@element-plus/icons-vue": "^2.1.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/microservices": "^10.0.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "axios": "^1.5.0",
+    "element-plus": "^2.3.12",
+    "fs-extra": "^11.1.1",
+    "path-browserify": "^1.0.1",
+    "pixiv.ts": "^0.5.9",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "vue": "^3.2.47"
+    "sqlite3": "^5.1.6",
+    "typeorm": "^0.3.17",
+    "vue": "^3.2.47",
+    "vue-router": "^4.2.4",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@lightwing/eslint-config": "^0.0.23",
+    "@lightwing/eslint-config": "^0.0.21",
     "@vitejs/plugin-vue": "4.3.4",
+    "@vitejs/plugin-vue-jsx": "^3.0.2",
     "@vue/compiler-sfc": "3.3.4",
-    "electron": "26.2.1",
+    "electron": "26.2.0",
     "electron-builder": "24.6.4",
+    "electron-icon-builder": "^2.0.1",
     "eslint": "8.49.0",
     "lint-staged": "14.0.1",
     "rimraf": "5.0.1",
+    "sass": "^1.66.1",
     "simple-git-hooks": "2.9.0",
     "typescript": "5.2.2",
     "vite": "4.4.9",
     "vite-plugin-doubleshot": "0.0.12",
-    "vue-tsc": "1.8.11"
+    "vue-tsc": "1.8.10"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

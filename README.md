@@ -1,60 +1,43 @@
 <p align="center">
-    <img width="400" src="./logo.png" alt="logo">
+ <img src="./src/render/assets/img/logo.png" width="200" alt="icxor Logo" />
 </p>
 
-# ⚡Vite + Electron + Nestjs Template
+## What it is ?
 
-This template is used to build [vite](https://vitejs.dev/) + [electron](https://www.electronjs.org/) + [nestjs](https://nestjs.com/) projects. Build with [Doubleshot](https://github.com/Doubleshotjs/doubleshot), crazy fast!
+> Under Development!! It is just a simple self-use tool software and cannot be used universally so far.
 
-🎉 [Doubleshot](https://github.com/Doubleshotjs/doubleshot) is a whole new set of tools to help you quickly build and start a node backend or electron main process.
+ICXOR (Illust Complexor) is a tool built by electron to manage illusts at both local and remote.
 
-## Introduce
-This is a template based on my repo: [fast-vite-electron](https://github.com/ArcherGu/fast-vite-electron). In the main process, I integrated nestjs. In the main process, you can build your code just as you would write a nestjs backend. Desktop clients built from this template can quickly split the electron when you need to switch to B/S.
+## What it can do ?
 
-## Features
+You can keep your images scattered on a file server or local hard drive and have them managed by it. Ability to freely aggregate, filter, batch process, etc. Remote API support is also available for images such as Pixiv.
 
-- 🔨 [vite-plugin-doubleshot](https://github.com/archergu/doubleshot/tree/main/packages/plugin-vite#readme) to run/build electron main process or node backend.
-<br>
+Since v0.5, it has been refactored into a purely native version that does not require api support.
 
-- 🛻 An electron ipc transport for [nestjs](https://nestjs.com/) that provides simple ipc communication.
-<br>
+## How to install ?
 
-- 🪟 An electron module for [nestjs](https://nestjs.com/) to launch electron windows.
-<br>
+Currently, the development version installation package for MacOS and Windows is provided, but automatic updates are not supported yet. You can choose to download it in RELEASES.
 
-- ⏩ Quick start and build, powered by [tsup](https://tsup.egoist.sh/) and [electron-builder](https://www.electron.build/) integrated in [@doubleshot/builder](https://github.com/Doubleshotjs/doubleshot/tree/main/packages/builder)
+## How to build ?
 
-## How to use
+Install Nodejs and yarn first.
 
-- Click the [Use this template](https://github.com/ArcherGu/fast-vite-electron/generate) button (you must be logged in) or just clone this repo.
-- In the project folder: 
-  ```bash
-  # install dependencies
-  yarn # npm install
-
-  # run in developer mode
-  yarn dev # npm run dev
-
-  # build
-  yarn build # npm run build
-  ```
-
-## Note for PNPM
-
-In order to use with `pnpm`, you'll need to adjust your `.npmrc` to use any one the following approaches in order for your dependencies to be bundled correctly (ref: [#6389](https://github.com/electron-userland/electron-builder/issues/6289#issuecomment-1042620422)):
-```
-node-linker=hoisted
-```
-```
-public-hoist-pattern=*
-```
-```
-shamefully-hoist=true
+```bash
+# to install
+cd ./ICXOR
+yarn
 ```
 
-## Relative
+```bash
+# to start hot-reload
+yarn dev
+```
 
-My blog post:
+```bash
+# to build
+yarn build
+```
 
-- [极速 DX Vite + Electron + esbuild](https://archergu.me/posts/vite-electron-esbuild)
-- [用装饰器给 Electron 提供一个基础 API 框架](https://archergu.me/posts/electron-decorators)
+---
+
+© Copyright 2020-2023 MarkPolo Studio, all rights reserved.
