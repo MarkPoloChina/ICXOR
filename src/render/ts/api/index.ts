@@ -1,4 +1,4 @@
-import { toRaw } from 'vue'
+import { isReactive, toRaw } from 'vue'
 
 const { apiAdapter } = window.electron
 const ax = {
@@ -34,6 +34,26 @@ const ax = {
   },
 }
 
+function recursivelyConvertToRaw(obj: any) {
+  if (isReactive(obj)) {
+    return toRaw(obj)
+  }
+  else if (Array.isArray(obj)) {
+    return obj.map(item => recursivelyConvertToRaw(item))
+  }
+  else if (typeof obj === 'object') {
+    const result = {}
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key))
+        result[key] = recursivelyConvertToRaw(obj[key])
+    }
+    return result
+  }
+  else {
+    return obj
+  }
+}
+
 async function axiosAdapter(
   url: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
@@ -41,7 +61,7 @@ async function axiosAdapter(
   body?: any,
 ) {
   try {
-    const ipcBack = await apiAdapter(url, method, params, toRaw(body))
+    const ipcBack = await apiAdapter(url, method, recursivelyConvertToRaw(params), recursivelyConvertToRaw(body))
     return {
       code: 200,
       message: 'OK',
@@ -49,10 +69,8 @@ async function axiosAdapter(
     }
   }
   catch (err) {
-    return {
-      code: 500,
-      message: 'IPC ERR',
-    }
+    const es = String(err)
+    throw es.slice(es.lastIndexOf('Error'))
   }
 }
 /**
@@ -85,13 +103,13 @@ export class API {
     return resp.data
   }
 
-  static async getIllusts(conditionJson, limit, offset, orderJson) {
+  static async getIllusts(conditionJson, limit, offset, orderAsJson) {
     const resp = await ax.get('/illust/base/list', {
       params: {
-        orderAsJson: toRaw(orderJson),
+        orderAsJson,
         offset,
         limit,
-        conditionJson: toRaw(conditionJson),
+        conditionJson,
       },
     })
     return resp.data
@@ -100,7 +118,7 @@ export class API {
   static async getIllustsCount(conditionJson) {
     const resp = await ax.get('/illust/base/count', {
       params: {
-        conditionJson: toRaw(conditionJson),
+        conditionJson,
       },
     })
     return resp.data
@@ -128,7 +146,7 @@ export class API {
   static async deleteIllusts(illustIds) {
     const resp = await ax.delete('/illust/bases', {
       params: {
-        illustIds: toRaw(illustIds),
+        illustIds,
       },
     })
     return resp
@@ -163,7 +181,7 @@ export class API {
     const resp = await ax.delete('/illust/poly/bases', {
       params: {
         polyId,
-        illustList: toRaw(illustList),
+        illustList,
       },
     })
     return resp.data
@@ -233,11 +251,6 @@ export class API {
         pid,
       },
     })
-    return resp.data
-  }
-
-  static async checkPixivOk() {
-    const resp = await ax.get('/pixiv-api/ok')
     return resp.data
   }
 }

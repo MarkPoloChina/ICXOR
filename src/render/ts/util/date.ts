@@ -1,5 +1,8 @@
 export class UtilDate {
-  // Get ISO from Date CST shaped as YYYY-MM-DD or YYYYMMDD or YYYY/MM/DD (for CST)
+  /**
+   * Get ISO from Date CST shaped as YYYY-MM-DD or YYYYMMDD or YYYY/MM/DD (for CST)
+   * @function
+   */
   static getISOFromDateCST(string: string) {
     if (/^(\d\d\d\d)-(\d\d)-(\d\d)$/.test(string)) {
       const date = new Date(`${string}T00:00:00+08:00`)
@@ -21,14 +24,20 @@ export class UtilDate {
     else { return null }
   }
 
-  // Get Date CST shaped as YYYY${desp}MM${desp}DD from a Date Object
+  /**
+   * Get Date CST shaped as YYYY${desp}MM${desp}DD from a Date Object
+   * @function
+   */
   static getDateCST(date: Date, desp: string) {
     const str = date.toISOString()
     const _date = new Date(str.replace('Z', '-08:00'))
     return _date.toISOString().slice(0, 10).replace(/[-]/g, desp)
   }
 
-  // Get Date JST shaped as YYYY${desp1}MM${desp1}DD${desp2}hh${desp3}mm${desp3}dd from a Date Object
+  /**
+   * Get Date JST shaped as YYYY${desp1}MM${desp1}DD${desp2}hh${desp3}mm${desp3}dd from a Date Object
+   * @function
+   */
   static getDateTimeJST(date: Date, desp1: string, desp2: string, desp3: string) {
     const str = date.toISOString()
     const _date = new Date(str.replace('Z', '-09:00'))

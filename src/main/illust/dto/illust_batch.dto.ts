@@ -27,6 +27,8 @@ export interface IllustBatchDto {
         pid: number
         page: number
         title: string | null
+        original_url: string | null
+        thumb_url: string | null
       }
       remote_base: {
         name: string | null

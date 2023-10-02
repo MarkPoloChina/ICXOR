@@ -23,13 +23,9 @@ export class PixivApiService {
   @InjectRepository(Illust)
   private readonly illustRepository: Repository<Illust>
 
-  checkIfAvailable() {
-    return !!pixivApi
-  }
-
   async getPixivUrl(pid: number, page: number, type: string) {
     if (!pixivApi)
-      return
+      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
     if (!['square_medium', 'medium', 'original'].includes(type))
       throw new HttpException('illegal type.', HttpStatus.BAD_REQUEST)
     const illust
@@ -47,7 +43,7 @@ export class PixivApiService {
 
   async getLatestIllusts(_isPrivate: boolean) {
     if (!pixivApi)
-      return
+      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
     const list = []
     const queryAsync = (pid: number, index: number) => {
       return new Promise((resolve, reject) => {
@@ -90,7 +86,7 @@ export class PixivApiService {
 
   async updateMetas(illusts: IllustBatchDto) {
     if (!pixivApi)
-      return
+      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
     const limitMap = {
       0: 'normal',
       1: 'R-18',
@@ -150,7 +146,7 @@ export class PixivApiService {
 
   async getPixivJson(pid: number) {
     if (!pixivApi)
-      return
+      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
     const illust
       = await pixivApi.illust.get(pid)
     if (!illust || !illust.visible)

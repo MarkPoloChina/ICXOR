@@ -143,7 +143,10 @@ export class FilenameResolver {
  * @class
  */
 export class FilenameAdapter {
-  // 将文件名批量转化成dto
+  /**
+   * 将文件名批量转化成dto
+   * @function
+   */
   static getDtoList = async (paths: string[], autokeys: any, acceptNormal: boolean) => {
     const logs = []
     let index = 0

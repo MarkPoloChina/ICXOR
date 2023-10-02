@@ -14,6 +14,8 @@ export interface IllustDto {
     page: number
     title: string | null
     limit: string | null
+    original_url: string | null
+    thumb_url: string | null
   }
   remote_base: {
     id: number | null

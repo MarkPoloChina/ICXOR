@@ -24,18 +24,14 @@ function initTab() {
   resultTable.value.length = 0
   selectedList.value.length = 0
 }
-async function startAction() {
-  if (!await API.checkPixivOk()) {
-    ElMessage.error('PixivAPI尚未准备好, 请检查网络')
-    return
-  }
+function startAction() {
   loading.value = true
   API.getBookmark(importOption.type === 'private')
     .then((data) => {
       resultTable.value = data
     })
-    .catch(() => {
-      ElMessage.error('抓取出错')
+    .catch((err) => {
+      ElMessage.error(`抓取出错:${err}`)
     })
     .finally(() => {
       loading.value = false
@@ -71,6 +67,8 @@ function handleUpload() {
                 pid: ele.id,
                 page: i,
                 title: ele.title,
+                original_url: ele.meta_single_page.original_image_url || ele.meta_pages[i].image_urls.original,
+                thumb_url: ele.page_count === 1 ? ele.image_urls.large : ele.meta_pages[i].image_urls.large,
               },
             },
           })

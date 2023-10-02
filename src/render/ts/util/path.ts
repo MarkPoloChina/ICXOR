@@ -46,9 +46,9 @@ export class UrlGenerator {
     }
     else if (obj.remote_base.type === 'pixiv') {
       if (type === 'original' && obj.meta.original_url)
-        return obj.meta.original_url
+        return this.getPixivUrlProxy(obj.meta.original_url)
       else if (obj.meta.thumb_url)
-        return obj.meta.thumb_url
+        return this.getPixivUrlProxy(obj.meta.thumb_url)
     }
     return ''
   }

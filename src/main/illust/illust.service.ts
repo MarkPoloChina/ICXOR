@@ -190,6 +190,10 @@ export class IllustService {
         newIllust.meta.pid = illust.dto.meta.pid
         newIllust.meta.page = illust.dto.meta.page
         newIllust.meta.title = illust.dto.meta.title
+        if (illust.dto.meta.original_url)
+          newIllust.meta.original_url = illust.dto.meta.original_url
+        if (illust.dto.meta.thumb_url)
+          newIllust.meta.thumb_url = illust.dto.meta.thumb_url
         if (illusts.addition.meta)
           newIllust.meta.limit = illusts.addition.meta.limit ?? null
       }
