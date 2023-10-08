@@ -5,8 +5,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref } from 'vue'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
-import PolyForm from '../reusable/polyForm.vue'
-import FilterTable from './reusable/filterTable.vue'
+import PolyForm from '@render/components/share/form/polyForm.vue'
+import FilterTable from '@render/components/share/table/filterTable.vue'
 
 const { ipcInvoke } = window.electron
 const log = reactive({ message: '', list: [] })
@@ -15,60 +15,52 @@ const polyForm = ref()
 const showDialog = ref(false)
 const loading = ref(false)
 const importOption = reactive({
-  paths: [''],
-  pathDir: '',
   importType: 'directory',
-  isTryAny: false,
-  poly: { name: null },
+  polyOption: {
+    id: 0,
+    type: 'picolt',
+    parent: '',
+    name: '',
+  },
 })
 function initTab() {
   importOption.importType = 'directory'
-  importOption.paths = []
-  importOption.pathDir = ''
-  importOption.isTryAny = false
+  importOption.polyOption.id = 0
+  importOption.polyOption.type = 'picolt'
+  importOption.polyOption.parent = ''
+  importOption.polyOption.name = ''
   log.list.length = 0
   log.message = ''
-  polyForm.value.initForm()
-}
-async function getDirectory() {
-  let _path = ''
-  _path = await ipcInvoke('dialog:openDirectory')
-  if (_path)
-    importOption.pathDir = _path
-}
-async function getFile() {
-  let _path = []
-  _path = await ipcInvoke('dialog:openFile')
-  if (_path)
-    importOption.paths = _path
+  polyForm.value.clearForm()
 }
 async function startAction() {
-  if (
-    (importOption.importType === 'directory' && !importOption.pathDir)
-    || (importOption.importType === 'files' && importOption.paths.length === 0)
-  ) {
-    ElMessage.error('路径非法')
-    return
+  const paths = []
+  if (importOption.importType === 'directory') {
+    const dir = await ipcInvoke('dialog:openDirectory')
+    if (!dir)
+      return
+    ElMessage.info('开始收集信息')
+    loading.value = true
+    paths.push(...(await ipcInvoke(
+      'fs:getFilenames',
+      dir,
+    )))
   }
-  ElMessage.info('开始收集信息')
-  loading.value = true
-  const paths
-    = importOption.importType === 'directory'
-      ? await ipcInvoke('fs:getFilenames',
-        importOption.pathDir,
-      )
-      : importOption.paths
-  const resp = await FilenameAdapter.getDtoList(
-    paths,
-    [],
-    importOption.isTryAny,
-  )
+  else {
+    const files: string[] = await ipcInvoke('dialog:openFile')
+    if (!files)
+      return
+    ElMessage.info('开始收集信息')
+    loading.value = true
+    paths.push(...files)
+  }
+  const resp = await FilenameAdapter.getDtoRecoList(paths)
   ElMessage.info(`信息收集完成，共${resp.length}条数据`)
   loading.value = false
   log.list = resp
 }
 function handleUpload() {
-  if (!importOption.poly.name) {
+  if (!importOption.polyOption.name) {
     ElMessage.error('至少应当填写聚合名')
     return
   }
@@ -101,7 +93,7 @@ function handleUpload() {
           },
         })
       })
-      dto.polyBase = { ...importOption.poly }
+      dto.polyBase = { ...importOption.polyOption }
       API.addPoly(dto)
         .then((data) => {
           ElMessage.info('处理完成')
@@ -122,9 +114,6 @@ function handleUpload() {
         })
     })
     .catch(() => {})
-}
-function updateInfo({ data }) {
-  importOption.poly = { ...importOption.poly, ...data }
 }
 </script>
 
@@ -152,51 +141,10 @@ function updateInfo({ data }) {
               </el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item
-            v-if="importOption.importType === 'directory'"
-            label="路径"
-          >
-            <el-row :gutter="20" style="width: 100%">
-              <el-col :span="6">
-                <el-button @click="getDirectory">
-                  选择文件夹
-                </el-button>
-              </el-col>
-              <el-col :span="18">
-                <el-input :model-value="importOption.pathDir" disabled />
-              </el-col>
-            </el-row>
-          </el-form-item>
-          <el-form-item v-else label="路径">
-            <el-row :gutter="20" style="width: 100%">
-              <el-col :span="6">
-                <el-button @click="getFile">
-                  选择文件
-                </el-button>
-              </el-col>
-              <el-col :span="18">
-                <el-input
-                  :model-value="importOption.paths.toString()"
-                  disabled
-                />
-              </el-col>
-            </el-row>
-          </el-form-item>
           <el-form-item>
-            <el-row :gutter="20" style="width: 100%">
-              <el-col :span="6">
-                <el-button @click="showDialog = true">
-                  聚合设置
-                </el-button>
-              </el-col>
-              <el-col :span="12">
-                <el-switch
-                  v-model="importOption.isTryAny"
-                  active-text="全部图片"
-                  inactive-text="仅可识别"
-                />
-              </el-col>
-            </el-row>
+            <el-button @click="showDialog = true">
+              聚合设置
+            </el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -213,30 +161,14 @@ function updateInfo({ data }) {
       />
     </div>
     <div class="btn-block">
-      <el-button
-        type="primary"
-        :icon="Download"
-        circle
-        @click="startAction"
-      />
-      <el-button
-        type="success"
-        :icon="Check"
-        circle
-        @click="handleUpload"
-      />
-      <el-button
-        type="danger"
-        :icon="Remove"
-        circle
-        @click="initTab"
-      />
+      <el-button type="primary" :icon="Download" circle @click="startAction" />
+      <el-button type="success" :icon="Check" circle @click="handleUpload" />
+      <el-button type="danger" :icon="Remove" circle @click="initTab" />
     </div>
     <PolyForm
       ref="polyForm"
       v-model="showDialog"
-      type="pixiv"
-      @confirm="updateInfo"
+      @update:poly-option="importOption.polyOption = { ...importOption.polyOption, ...$event }"
     />
   </div>
 </template>

@@ -70,9 +70,6 @@ onMounted(() => {
         <div style="flex-grow: 1" />
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
-          <template #title>
-            设置
-          </template>
         </el-menu-item>
       </el-menu>
     </div>

@@ -1,3 +1,5 @@
+import { PixivIllust } from "@markpolochina/pixiv.ts";
+
 declare global {
   interface Window {
     electron: {
@@ -16,6 +18,7 @@ declare global {
         body: any
       ): Promise<any>;
       downloadTo(url: string, rename: string, dir: string): Promise<void>;
+      downloadPixivTo(illustObj: PixivIllust, dir: string, page?: number): Promise<void>;
     };
   }
 }

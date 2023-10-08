@@ -4,8 +4,6 @@ import { computed, reactive } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
-  disableChangeAuto: Boolean,
-  type: String,
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -29,10 +27,7 @@ function handleConfirm() {
     return
   }
   dialogVisible.value = false
-  emit('confirm', {
-    data: { ...baseInfo },
-    controller: null,
-  })
+  emit('confirm', baseInfo)
 }
 
 defineExpose({ initForm })

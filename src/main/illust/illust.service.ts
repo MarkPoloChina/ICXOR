@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 import { IllustDto } from './dto/illust.dto'
@@ -10,6 +10,9 @@ import { Meta } from './entities/meta.entities'
 import { Poly } from './entities/poly.entities'
 import { RemoteBase } from './entities/remote_base.entities'
 import { Tag } from './entities/tag.entities'
+import { RespListObjDto } from './dto/resp_list_obj.dto'
+import { FilterConditionObj } from './dto/filter_condition_obj.dto'
+import { FilterPolySortObj, FilterSortObj } from './dto/filter_sort_obj.dto'
 
 @Injectable()
 export class IllustService {
@@ -70,16 +73,19 @@ export class IllustService {
     return results
   }
 
-  async getIllustListByQuery(
-    conditionObj: object,
-    limit = 100,
-    offset = 0,
-    orderAs: object = {
-      'meta.pid': 'DESC',
-      'meta.page': 'ASC',
-      'Illust.remote_endpoint': 'ASC',
-      'Illust.id': 'DESC',
-    },
+  /**
+   * Illust类经过queryBuilder的标准查询
+   * @param conditionObj 形如"类.字段:[值1,值2]"的对象
+   * @param limit 分页大小, 不分页则输入-1, 默认为100
+   * @param offset 页偏移, 仅当limit不为-1时有效, 默认为0
+   * @param orderAs 形如"类.字段:正逆序"的对象
+   * @returns Illust标准查询结果
+   */
+  async getIllusts(
+    conditionObj: FilterConditionObj = {},
+    limit: number = 100,
+    offset: number = 0,
+    orderAs: FilterSortObj = {},
   ) {
     let querybuilder: SelectQueryBuilder<Illust> = this.illustRepository
       .createQueryBuilder()
@@ -88,26 +94,41 @@ export class IllustService {
       .leftJoinAndSelect('Illust.tag', 'tag')
       .leftJoinAndSelect('Illust.remote_base', 'remote_base')
     let firstCause = true
-    Object.keys(conditionObj).forEach((colName, index) => {
-      if (conditionObj[colName].length) {
-        const param1 = `(${colName} IN (:...row${index}))`
-        const param2 = {
-          [`row${index}`]: conditionObj[colName],
+    if (conditionObj.AR && conditionObj.AR !== 'all') {
+      const param = `meta.width ${
+        conditionObj.AR === 'horizontal' ? '>' : '<'
+      }= meta.height`
+      querybuilder = querybuilder.where(param)
+      firstCause = false
+    }
+    Object.keys(conditionObj)
+      .filter(value => value !== 'AR')
+      .forEach((colName, index) => {
+        if (conditionObj[colName].length) {
+          const param1 = `(${colName} IN (:...row${index}))`
+          const param2 = {
+            [`row${index}`]: conditionObj[colName],
+          }
+          if (firstCause) {
+            querybuilder = querybuilder.where(param1, param2)
+            firstCause = false
+          }
+          else {
+            querybuilder = querybuilder.andWhere(param1, param2)
+          }
         }
-        if (firstCause) {
-          querybuilder = querybuilder.where(param1, param2)
-          firstCause = false
-        }
-        else { querybuilder = querybuilder.andWhere(param1, param2) }
-      }
-    })
+      })
     firstCause = true
     Object.keys(orderAs).forEach((colName) => {
       if (firstCause) {
         querybuilder = querybuilder.orderBy(colName, orderAs[colName])
         firstCause = false
       }
-      else { querybuilder = querybuilder.addOrderBy(colName, orderAs[colName]) }
+      else {
+        querybuilder = querybuilder.addOrderBy(colName, orderAs[colName])
+      }
+      if (colName === 'meta.pid')
+        querybuilder = querybuilder.addOrderBy('meta.page', 'ASC')
     })
     const results
       = limit === -1
@@ -116,37 +137,60 @@ export class IllustService {
     return results
   }
 
-  async getIllustListCountByQuery(conditionObj: object) {
+  /**
+   * Illust类经过queryBuilder的标准DISTINCT计数
+   * @param conditionObj 形如"类.字段:[值1,值2]"的对象
+   * @returns Illust标准计数结果, 可从count中解构
+   */
+  async getIllustsCount(conditionObj: FilterConditionObj = {}) {
     let querybuilder: SelectQueryBuilder<Illust> = this.illustRepository
       .createQueryBuilder()
-      .select('COUNT(Illust.id)', 'count')
+      .select('COUNT(DISTINCT Illust.id)', 'count')
       .leftJoin('Illust.meta', 'meta')
       .leftJoin('Illust.poly', 'poly')
       .leftJoin('Illust.tag', 'tag')
       .leftJoin('Illust.remote_base', 'remote_base')
     let firstCause = true
-    Object.keys(conditionObj).forEach((colName, index) => {
-      if (conditionObj[colName].length) {
-        const param1 = `(${colName} IN (:...row${index}))`
-        const param2 = {
-          [`row${index}`]: conditionObj[colName],
+    if (conditionObj.AR && conditionObj.AR !== 'all') {
+      const param = `meta.width ${
+        conditionObj.AR === 'horizontal' ? '>' : '<'
+      }= meta.height`
+      querybuilder = querybuilder.where(param)
+      firstCause = false
+    }
+    Object.keys(conditionObj)
+      .filter(value => value !== 'AR')
+      .forEach((colName, index) => {
+        if (conditionObj[colName].length) {
+          const param1 = `(${colName} IN (:...row${index}))`
+          const param2 = {
+            [`row${index}`]: conditionObj[colName],
+          }
+          if (firstCause) {
+            querybuilder = querybuilder.where(param1, param2)
+            firstCause = false
+          }
+          else {
+            querybuilder = querybuilder.andWhere(param1, param2)
+          }
         }
-        if (firstCause) {
-          querybuilder = querybuilder.where(param1, param2)
-          firstCause = false
-        }
-        else { querybuilder = querybuilder.andWhere(param1, param2) }
-      }
-    })
-    const results = await querybuilder.getRawOne()
+      })
+    const results: { count: number } = await querybuilder.getRawOne()
     // dont use getCount()!! That will query and transfer all data that is too large.
     return results
   }
 
-  async getPolyList(
+  /**
+   * Poly的简单查询
+   * @param withIllust 是否返回Illust列表
+   * @param type 指定where的type
+   * @param orderAs 形如"字段或对象:正逆序"的嵌套对象
+   * @returns Poly的简单查询结果
+   */
+  async getPolys(
     withIllust: boolean,
     type: string,
-    orderAs: object = {
+    orderAs: FilterPolySortObj = {
       type: 'ASC',
       parent: 'ASC',
       name: 'ASC',
@@ -161,11 +205,7 @@ export class IllustService {
     },
   ) {
     const result = await this.polyRepository.find({
-      where: type
-        ? {
-            type,
-          }
-        : {},
+      where: type ? { type } : {},
       relations: withIllust
         ? {
             illusts: {
@@ -179,76 +219,65 @@ export class IllustService {
     return result
   }
 
-  async newIllusts(illusts: IllustBatchDto) {
-    const resp_list = []
-    for (const illust of illusts.dtos) {
-      const newIllust = new Illust()
-      newIllust.star = illusts.addition.star
-      newIllust.date = illusts.addition.date || null
-      if (illust.dto.meta) {
-        newIllust.meta = new Meta()
-        newIllust.meta.pid = illust.dto.meta.pid
-        newIllust.meta.page = illust.dto.meta.page
-        newIllust.meta.title = illust.dto.meta.title
-        if (illust.dto.meta.original_url)
-          newIllust.meta.original_url = illust.dto.meta.original_url
-        if (illust.dto.meta.thumb_url)
-          newIllust.meta.thumb_url = illust.dto.meta.thumb_url
-        if (illusts.addition.meta)
-          newIllust.meta.limit = illusts.addition.meta.limit ?? null
-      }
-      newIllust.remote_endpoint = illust.dto.remote_endpoint || null
-      newIllust.thumb_endpoint = illust.dto.thumb_endpoint || null
-      if (illust.dto.remote_base) {
-        newIllust.remote_base = await this.remoteBaseRepository.findOneBy({
-          name: illust.dto.remote_base.name,
-        })
-      }
-      else if (
-        illusts.addition.remote_base
-        && illusts.addition.remote_base.id
-      ) {
-        newIllust.remote_base = await this.remoteBaseRepository.findOneBy({
-          id: illusts.addition.remote_base.id,
-        })
-      }
-      try {
-        await this.illustRepository.save(newIllust)
-        resp_list.push({
-          bid: illust.bid,
-          status: 'success',
-          message: 'OK',
-        })
-      }
-      catch (err) {
-        resp_list.push({
-          bid: illust.bid,
-          status: `${err}`.startsWith('QueryFailedError: Duplicate entry')
-            ? 'conflict'
-            : 'fault',
-          message: `${err}`,
-        })
+  /**
+   * Support update but not includes add illust.
+   * @function
+   */
+  async updateIllust(illust: IllustDto) {
+    const targetIllust = await this.illustRepository.findOneOrFail({
+      where: {
+        id: illust.id,
+      },
+      relations: {
+        meta: true,
+        tag: true,
+      },
+    })
+    if (illust.star !== undefined)
+      targetIllust.star = illust.star
+    if (illust.date !== undefined)
+      targetIllust.date = illust.date
+    if (illust.remote_endpoint !== undefined)
+      targetIllust.remote_endpoint = illust.remote_endpoint
+    if (illust.thumb_endpoint !== undefined)
+      targetIllust.remote_endpoint = illust.remote_endpoint
+    if (illust.tag) {
+      targetIllust.tag.length = 0
+      for (const tag of illust.tag) {
+        if (tag.id) {
+          targetIllust.tag.push(
+            await this.tagRepository.findOneByOrFail({ id: tag.id }),
+          )
+        }
+        else {
+          let targetTag: Tag
+          targetTag = await this.tagRepository.findOneBy({ name: tag.name })
+          if (!targetTag) {
+            targetTag = new Tag()
+            targetTag.name = tag.name
+            targetTag.type = 'simple'
+            await this.tagRepository.save(targetTag)
+          }
+          targetIllust.tag.push(targetTag)
+        }
       }
     }
-    return resp_list
-  }
-
-  async updateIllusts(illusts: IllustBatchDto) {
-    let dtos: any[]
-    if (illusts.conditionObject) {
-      const list = await this.getIllustListByQuery(
-        illusts.conditionObject,
-        -1,
-        0,
-        {},
-      )
-      dtos = list.map((value) => {
-        return { bid: null, dto: value }
+    if (illust.meta && targetIllust.meta) {
+      Object.keys(illust.meta).forEach((key) => {
+        if (key !== 'pid' && key !== 'page' && illust.meta[key])
+          targetIllust.meta[key] = illust.meta[key]
       })
     }
-    else { dtos = illusts.dtos }
-    const resp_list = []
-    for (const illust of dtos) {
+    return await this.illustRepository.save(targetIllust)
+  }
+
+  /**
+   * Add, cover, or modify illusts by batch.
+   * @function
+   */
+  async updateIllusts(illusts: IllustBatchDto) {
+    const resp_list: RespListObjDto[] = []
+    for (const illust of illusts.dtos) {
       let whereObj: object
       if (illust.dto.id) {
         whereObj = {
@@ -292,48 +321,53 @@ export class IllustService {
           targetIllust.meta.pid = illust.dto.meta.pid
           targetIllust.meta.page = illust.dto.meta.page
         }
-        if (illust.dto.remote_base) {
+        if (illust.dto.remote_base && illust.dto.remote_base.id) {
+          targetIllust.remote_base = await this.remoteBaseRepository.findOneBy({
+            id: illust.dto.remote_base.id,
+          })
+        }
+        if (illust.dto.remote_base && illust.dto.remote_base.name) {
           targetIllust.remote_base = await this.remoteBaseRepository.findOneBy({
             name: illust.dto.remote_base.name,
           })
         }
-        else if (
-          illusts.addition.remote_base
-          && illusts.addition.remote_base.id
-        ) {
-          targetIllust.remote_base = await this.remoteBaseRepository.findOneBy({
-            id: illusts.addition.remote_base.id,
-          })
-        }
       }
-      targetIllust.remote_endpoint = illust.dto.remote_endpoint || null
-      targetIllust.thumb_endpoint = illust.dto.thumb_endpoint || null
-      if (illusts.addition.star || illusts.addition.star === 0)
-        targetIllust.star = illusts.addition.star
-      if (illusts.addition.date)
-        targetIllust.date = illusts.addition.date
-      if (illust.dto.meta && illust.dto.meta.title)
-        targetIllust.meta.title = illust.dto.meta.title
-      if (illusts.addition.meta && illusts.addition.meta.limit)
-        targetIllust.meta.limit = illusts.addition.meta.limit
-      if (illusts.addition.tag) {
-        for (const ele of illusts.addition.tag) {
-          if (
-            targetIllust.tag.findIndex((value) => {
-              return value.name === ele.name
-            }) === -1
-          ) {
+      if (illust.dto.star !== undefined)
+        targetIllust.star = illust.dto.star
+      if (illust.dto.date !== undefined)
+        targetIllust.date = illust.dto.date
+      if (illust.dto.remote_endpoint !== undefined)
+        targetIllust.remote_endpoint = illust.dto.remote_endpoint
+      if (illust.dto.thumb_endpoint !== undefined)
+        targetIllust.remote_endpoint = illust.dto.remote_endpoint
+      if (illust.dto.tag) {
+        targetIllust.tag.length = 0
+        for (const tag of illust.dto.tag) {
+          if (tag.id) {
+            const targetTag = await this.tagRepository.findOneBy({
+              id: tag.id,
+            })
+            if (targetTag)
+              targetIllust.tag.push(targetTag)
+          }
+          else {
             let targetTag: Tag
-            targetTag = await this.tagRepository.findOneBy({ name: ele.name })
+            targetTag = await this.tagRepository.findOneBy({ name: tag.name })
             if (!targetTag) {
               targetTag = new Tag()
-              targetTag.name = ele.name
+              targetTag.name = tag.name
               targetTag.type = 'simple'
               await this.tagRepository.save(targetTag)
             }
             targetIllust.tag.push(targetTag)
           }
         }
+      }
+      if (illust.dto.meta && targetIllust.meta) {
+        Object.keys(illust.dto.meta).forEach((key) => {
+          if (key !== 'pid' && key !== 'page' && illust.dto.meta[key])
+            targetIllust.meta[key] = illust.dto.meta[key]
+        })
       }
       try {
         const msg = targetIllust.id ? 'Modified.' : 'Added.'
@@ -359,144 +393,69 @@ export class IllustService {
     return resp_list
   }
 
-  async updateIllust(illust: IllustDto, addIfNotFound: boolean) {
-    let whereObj: object
-    if (illust.id) {
-      whereObj = {
-        id: illust.id,
-      }
-    }
-    else if (illust.meta) {
-      whereObj = {
-        meta: {
-          pid: illust.meta.pid,
-          page: illust.meta.page,
-        },
-      }
-    }
-    else if (illust.remote_endpoint) {
-      whereObj = {
-        remote_endpoint: illust.remote_endpoint,
-      }
-    }
-    let targetIllust = whereObj
-      ? await this.illustRepository.findOne({
-        where: whereObj,
-        relations: {
-          meta: true,
-          tag: true,
-        },
-      })
-      : null
-    if (!targetIllust) {
-      if (!addIfNotFound)
-        throw new HttpException('No Illust Found', HttpStatus.BAD_REQUEST)
-
-      targetIllust = new Illust()
-      if (illust.meta) {
-        targetIllust.meta = new Meta()
-        targetIllust.meta.pid = illust.meta.pid
-        targetIllust.meta.page = illust.meta.page
-      }
-      if (illust.remote_base) {
-        if (illust.remote_base.name) {
-          targetIllust.remote_base = await this.remoteBaseRepository.findOneBy({
-            name: illust.remote_base.name,
-          })
-        }
-        else if (illust.remote_base.id) {
-          targetIllust.remote_base = await this.remoteBaseRepository.findOneBy({
-            id: illust.remote_base.id,
-          })
-        }
-      }
-    }
-    targetIllust.remote_endpoint = illust.remote_endpoint || null
-    targetIllust.thumb_endpoint = illust.thumb_endpoint || null
-    if (illust.star || illust.star === 0)
-      targetIllust.star = illust.star
-    if (illust.date)
-      targetIllust.date = illust.date
-    if (illust.meta && illust.meta.title)
-      targetIllust.meta.title = illust.meta.title
-    if (illust.meta && illust.meta.limit)
-      targetIllust.meta.limit = illust.meta.limit
-    if (illust.tag) {
-      for (const ele of illust.tag) {
-        if (
-          targetIllust.tag.findIndex((value) => {
-            return value.name === ele.name
-          }) === -1
-        ) {
-          let targetTag: Tag
-          targetTag = await this.tagRepository.findOneBy({ name: ele.name })
-          if (!targetTag) {
-            targetTag = new Tag()
-            targetTag.name = ele.name
-            targetTag.type = 'simple'
-            await this.tagRepository.save(targetTag)
-          }
-          targetIllust.tag.push(targetTag)
-        }
-      }
-      const newTags = []
-      for (const tag of targetIllust.tag) {
-        if (
-          illust.tag.findIndex((value) => {
-            return value.name === tag.name
-          }) !== -1
-        )
-          newTags.push(tag)
-      }
-      targetIllust.tag = newTags
-    }
-    if (targetIllust.meta)
-      await this.metaRepository.save(targetIllust.meta)
-    await this.illustRepository.save(targetIllust)
-  }
-
   async deleteIllusts(illustIds: number[]) {
-    for (const illustId of illustIds) {
+    const resp_list: RespListObjDto[] = []
+    for (const [illustId, index] of illustIds.entries()) {
       try {
         await this.illustRepository.delete(illustId)
+        resp_list.push({
+          bid: index,
+          status: 'success',
+          message: 'OK',
+        })
       }
-      catch {
+      catch (err) {
+        resp_list.push({
+          bid: index,
+          status: 'error',
+          message: err,
+        })
         continue
       }
     }
+    return resp_list
   }
 
   async removeIllustsFromPoly(polyId: number, ids: number[]) {
-    const targetPoly = await this.polyRepository.findOne({
+    const targetPoly = await this.polyRepository.findOneOrFail({
       where: { id: polyId },
       relations: {
         illusts: true,
       },
     })
-    if (!targetPoly) {
-      throw new HttpException('No Poly found', HttpStatus.BAD_REQUEST)
-    }
-    else {
-      for (const id of ids) {
-        const idx = targetPoly.illusts.findIndex((value) => {
-          return value.id === id
+    const resp_list: RespListObjDto[] = []
+    for (const [id, index] of ids.entries()) {
+      const idx = targetPoly.illusts.findIndex((value) => {
+        return value.id === id
+      })
+      if (idx === -1) {
+        resp_list.push({
+          bid: index,
+          status: 'ignore',
+          message: 'illustNotFoundInPoly',
         })
-        if (idx === -1)
-          continue
+      }
+      else {
+        resp_list.push({
+          bid: index,
+          status: 'success',
+          message: 'OK',
+        })
         targetPoly.illusts.splice(idx, 1)
       }
-      await this.polyRepository.save(targetPoly)
     }
+    await this.polyRepository.save(targetPoly)
+    return resp_list
   }
 
   async deletePoly(polyId: number) {
-    await this.polyRepository.delete(polyId)
+    return await this.polyRepository.delete(polyId)
   }
 
-  async updatePoly(illusts: IllustBatchDto) {
+  async addIllustsToPoly(illusts: IllustBatchDto) {
     let targetPoly: Poly
     if (illusts.polyBase.id) {
-      targetPoly = await this.polyRepository.findOne({
+      targetPoly = await this.polyRepository.findOneOrFail({
         where: {
           id: illusts.polyBase.id,
         },
@@ -504,8 +463,6 @@ export class IllustService {
           illusts: true,
         },
       })
-      if (!targetPoly)
-        throw new HttpException('No such poly.', HttpStatus.BAD_REQUEST)
     }
     else {
       targetPoly = await this.polyRepository.findOne({
@@ -527,21 +484,8 @@ export class IllustService {
         await this.polyRepository.save(targetPoly)
       }
     }
-    let dtos: any[]
-    if (illusts.conditionObject) {
-      const list = await this.getIllustListByQuery(
-        illusts.conditionObject,
-        10000000,
-        0,
-        {},
-      )
-      dtos = list.map((value) => {
-        return { bid: null, dto: value }
-      })
-    }
-    else { dtos = illusts.dtos }
-    const resp_list = []
-    for (const illust of dtos) {
+    const resp_list: RespListObjDto[] = []
+    for (const illust of illusts.dtos) {
       let targetIllust: Illust
       if (illust.dto.id) {
         targetIllust = await this.illustRepository.findOneBy({
@@ -573,7 +517,7 @@ export class IllustService {
           targetPoly.illusts.push(targetIllust)
           resp_list.push({
             bid: illust.bid,
-            status: 'padding',
+            status: 'success',
             message: 'OK',
           })
         }
@@ -586,26 +530,11 @@ export class IllustService {
         }
       }
     }
-    try {
-      await this.polyRepository.save(targetPoly)
-      return resp_list.map((value) => {
-        if (value.status === 'padding')
-          value.status = 'success'
-        return value
-      })
-    }
-    catch (err) {
-      return resp_list.map((value) => {
-        if (value.status === 'padding') {
-          value.status = 'fault'
-          value.message = `${err}`
-        }
-        return value
-      })
-    }
+    await this.polyRepository.save(targetPoly)
+    return resp_list
   }
 
-  async getRemoteBaseList(withIllust: boolean) {
+  async getRemoteBases(withIllust: boolean) {
     const result = await this.remoteBaseRepository.find({
       where: {},
       relations: withIllust
@@ -625,22 +554,24 @@ export class IllustService {
     return result
   }
 
-  async coverRemoteBase(remoteBase: RemoteBaseDto) {
+  async updateRemoteBase(remoteBase: RemoteBaseDto) {
     let targetRemoteBase: RemoteBase
     if (remoteBase.id) {
       targetRemoteBase = await this.remoteBaseRepository.findOneBy({
         id: remoteBase.id,
       })
     }
-    else { targetRemoteBase = new RemoteBase() }
+    else {
+      targetRemoteBase = new RemoteBase()
+    }
     targetRemoteBase.name = remoteBase.name
     targetRemoteBase.type = remoteBase.type
     targetRemoteBase.origin_url = remoteBase.origin_url
     targetRemoteBase.thum_url = remoteBase.thum_url
-    await this.remoteBaseRepository.save(targetRemoteBase)
+    return await this.remoteBaseRepository.save(targetRemoteBase)
   }
 
-  async coverIllustToday(date: Date, illustId: number) {
+  async updateIllustToday(date: Date, illustId: number) {
     let targetIllustToday = await this.illustTodayRepository.findOneBy({
       date,
     })
@@ -648,18 +579,14 @@ export class IllustService {
       targetIllustToday = new IllustToday()
       targetIllustToday.date = date
     }
-    targetIllustToday.illust = await this.illustRepository.findOneBy({
+    targetIllustToday.illust = await this.illustRepository.findOneByOrFail({
       id: illustId,
     })
-    if (!targetIllustToday.illust)
-      throw new HttpException('No such illust.', HttpStatus.BAD_REQUEST)
-
-    else
-      await this.illustTodayRepository.save(targetIllustToday)
+    return await this.illustTodayRepository.save(targetIllustToday)
   }
 
   async getIllustToday(date: Date) {
-    const targetIllustToday = await this.illustTodayRepository.findOne({
+    const targetIllustToday = await this.illustTodayRepository.findOneOrFail({
       where: {
         date,
       },
@@ -670,10 +597,6 @@ export class IllustService {
         },
       },
     })
-    if (targetIllustToday)
-      return targetIllustToday
-
-    else
-      throw new HttpException('empty in date', HttpStatus.NOT_FOUND)
+    return targetIllustToday
   }
 }

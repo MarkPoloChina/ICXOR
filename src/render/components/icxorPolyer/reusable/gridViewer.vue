@@ -1,21 +1,28 @@
 <script setup lang="ts">
 import { Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
+import { useRouter } from 'vue-router'
 
-defineProps({
+const props = defineProps({
   list: Array<any>,
+  totalCnt: Number,
+  supportRemove: Boolean,
 })
 
-const emit = defineEmits(['showInfo', 'remove'])
+const emit = defineEmits(['showInfo', 'remove', 'loadMore'])
 
 const { ipcRemoveAll, ipcOnce, ipcSend } = window.electron
+const router = useRouter()
+function toPixiv(pid: number, page: number) {
+  router.push(`/pixiv/illust/${pid}/${page}`)
+}
 
-function handleRightClick(event, obj) {
+function handleRightClick(event, obj, supportToPixiv?: boolean) {
   if (event.stopPropagation)
     event.stopPropagation()
 
   ipcRemoveAll('context:click')
-  ipcOnce('context:click', (event, item) => {
+  ipcOnce('context:click', (item) => {
     switch (item) {
       case '详情':
         emit('showInfo', obj)
@@ -23,43 +30,60 @@ function handleRightClick(event, obj) {
       case '移除':
         emit('remove', obj)
         break
+      case '在Pixiv中打开':
+        toPixiv(obj.meta.pid, obj.meta.page)
+        break
       default:
         break
     }
   })
-  ipcSend('context:popup', [{ label: '详情' }, { label: '移除' }])
+  const popupTemplate = [{ label: '详情' }]
+  if (props.supportRemove)
+    popupTemplate.push({ label: '移除' })
+  if (supportToPixiv)
+    popupTemplate.push({ label: '在Pixiv中打开' })
+  ipcSend('context:popup', popupTemplate)
 }
 </script>
 
 <template>
   <div class="viewer-main">
-    <el-scrollbar style="border-radius: 5px">
-      <el-row>
-        <el-col
-          v-for="(obj, index) in list"
-          :key="index"
-          :span="6"
-          class="viewer-img-container"
+    <div class="scrollbar-container">
+      <el-scrollbar style="height: 100%; border-radius: 5px">
+        <el-row
+          v-infinite-scroll="
+            () => {
+              emit('loadMore');
+            }
+          "
+          infinite-scroll-delay="100"
         >
-          <div class="expo" />
-          <el-image
-            class="viewer-img"
-            :src="UrlGenerator.getBlobUrl(obj, 'square_medium')"
-            :preview-src-list="[UrlGenerator.getBlobUrl(obj, 'original')]"
-            fit="cover"
-            lazy
-            @contextmenu.prevent="handleRightClick($event, obj)"
-          />
-          <template #error>
-            <div class="image-slot">
-              <el-icon><Picture /></el-icon>
-            </div>
-          </template>
-        </el-col>
-      </el-row>
-    </el-scrollbar>
+          <el-col
+            v-for="(obj, index) in list"
+            :key="index"
+            :span="6"
+            class="viewer-img-container"
+          >
+            <div class="expo" />
+            <el-image
+              class="viewer-img"
+              :src="UrlGenerator.getBlobUrl(obj, 'square_medium')"
+              :preview-src-list="[UrlGenerator.getBlobUrl(obj, 'original')]"
+              fit="cover"
+              lazy
+              @contextmenu.prevent="handleRightClick($event, obj, !!obj.meta)"
+            />
+            <template #error>
+              <div class="image-slot">
+                <el-icon><Picture /></el-icon>
+              </div>
+            </template>
+          </el-col>
+        </el-row>
+      </el-scrollbar>
+    </div>
     <div class="viewer-info">
-      共{{ list.length }}张插画
+      共{{ totalCnt }}张插画
     </div>
   </div>
 </template>
@@ -68,31 +92,35 @@ function handleRightClick(event, obj) {
 .viewer-main {
   height: 100%;
   @include Flex-C;
-  .viewer-img-container {
-    position: relative;
-    .expo {
+  .scrollbar-container {
+    flex: auto;
+    overflow: hidden;
+    .viewer-img-container {
       position: relative;
-      width: 100%;
-      height: 0;
-      padding: 0;
-      padding-bottom: 100%;
-    }
-    .viewer-img {
-      border-radius: 5px;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      bottom: 10px;
-      left: 10px;
-      .image-slot {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      .expo {
+        position: relative;
         width: 100%;
-        height: 100%;
-        background: var(--el-fill-color-light);
-        color: var(--el-text-color-secondary);
-        font-size: 30px;
+        height: 0;
+        padding: 0;
+        padding-bottom: 100%;
+      }
+      .viewer-img {
+        border-radius: 5px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        bottom: 10px;
+        left: 10px;
+        .image-slot {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+          background: var(--el-fill-color-light);
+          color: var(--el-text-color-secondary);
+          font-size: 30px;
+        }
       }
     }
   }
@@ -101,7 +129,7 @@ function handleRightClick(event, obj) {
     @include Flex-R-AC;
     color: $color-greengray-2;
     margin-left: 10px;
+    flex: none;
   }
 }
 </style>
-@render/ts/util/path

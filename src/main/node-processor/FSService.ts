@@ -12,4 +12,8 @@ export class FS {
       return fs.statSync(path.join(dir, value)).isFile()
     })
   }
+
+  static async localCopy(source: string, dest: string) {
+    return fs.copyFile(source, dest)
+  }
 }

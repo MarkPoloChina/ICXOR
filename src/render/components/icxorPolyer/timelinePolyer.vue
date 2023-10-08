@@ -29,8 +29,18 @@ async function getEnum() {
     timeline[0].list = await getIllusts(timeline[0].time)
 }
 async function getIllusts(timeline: string) {
-  const dateStr = UtilDate.getDateCST(new Date(UtilDate.getISOFromDateCST(timeline)), '-')
-  const list = await API.getIllusts({ 'illust.date': [dateStr] }, -1, null, null)
+  const dateStr = UtilDate.getDateCST(
+    new Date(UtilDate.getISOFromDateCST(timeline)),
+    '-',
+  )
+  const list = await API.getIllusts(
+    { 'illust.date': [dateStr] },
+    -1,
+    undefined,
+    {
+      'meta.pid': 'DESC',
+    },
+  )
   return list
 }
 function getInfo(obj) {
@@ -53,7 +63,12 @@ function getInfo(obj) {
       :label="item.time"
       lazy
     >
-      <GridViewer :list="item.list" @show-info="getInfo" />
+      <GridViewer
+        :list="item.list"
+        :total-cnt="item.list.length"
+        :support-remove="false"
+        @show-info="getInfo"
+      />
     </el-tab-pane>
   </el-tabs>
   <el-empty v-else description="无插图" />

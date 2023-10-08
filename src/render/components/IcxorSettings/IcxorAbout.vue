@@ -96,7 +96,7 @@ function linkClick(url) {
           LICENSE
         </div>
         <div class="info">
-          <div>Illust Complexor is licensed under the GNU GPL v3.0.</div>
+          <div>ICXOR is licensed under the GNU GPL v3.0.</div>
           <br>
           <div class="single-info">
             <img

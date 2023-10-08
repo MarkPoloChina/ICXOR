@@ -5,57 +5,53 @@ import type { IllustDto } from './dto/illust.dto'
 import type { IllustBatchDto } from './dto/illust_batch.dto'
 import type { RemoteBaseDto } from './dto/remote_base.dto'
 import { IllustService } from './illust.service'
+import { FilterConditionObj } from './dto/filter_condition_obj.dto'
 
 @Controller()
 export class IllustController {
   constructor(private readonly illustService: IllustService) {}
 
   @IpcHandle('api:GET/illust/base/enum')
-  illustEnum(@Payload() [{ row, desc }]: [{ row: string; desc: boolean }]) {
+  getIllustEnum(@Payload() [{ row, desc }]: [{ row: string; desc: boolean }]) {
     return this.illustService.getIllustEnum(row, desc)
   }
 
   @IpcHandle('api:GET/illust/base/list')
-  illustList(
+  getIllusts(
     @Payload()
     [{ conditionJson, limit, offset, orderAsJson }]: [
       {
-        conditionJson: object
+        conditionJson: FilterConditionObj
         limit: number
         offset: number
         orderAsJson: object
       },
     ],
   ) {
-    return this.illustService.getIllustListByQuery(
+    return this.illustService.getIllusts(
       conditionJson,
       limit,
       offset,
-      orderAsJson || undefined,
+      orderAsJson,
     )
   }
 
   @IpcHandle('api:GET/illust/base/count')
-  illustListCount(@Payload() [{ conditionJson }]: [{ conditionJson: object }]) {
-    return this.illustService.getIllustListCountByQuery(conditionJson)
+  getIllustsCount(@Payload() [{ conditionJson }]: [{ conditionJson: object }]) {
+    return this.illustService.getIllustsCount(conditionJson)
   }
 
   @IpcHandle('api:POST/illust/bases')
-  newIllusts(@Payload() [, illusts]: [any, illusts: IllustBatchDto]) {
-    return this.illustService.newIllusts(illusts)
-  }
-
-  @IpcHandle('api:PUT/illust/bases')
-  updateIllusts(@Payload() [, illusts]: [any, illusts: IllustBatchDto]) {
+  updateIllusts(@Payload() [, illusts]: [any, IllustBatchDto]) {
     return this.illustService.updateIllusts(illusts)
   }
 
   @IpcHandle('api:PUT/illust/base')
   updateIllust(
     @Payload()
-    [{ addIfNotFound }, illusts]: [{ addIfNotFound: boolean }, IllustDto],
+    [, illusts]: [any, IllustDto],
   ) {
-    return this.illustService.updateIllust(illusts, addIfNotFound)
+    return this.illustService.updateIllust(illusts)
   }
 
   @IpcHandle('api:DELETE/illust/bases')
@@ -64,26 +60,26 @@ export class IllustController {
   }
 
   @IpcHandle('api:GET/illust/poly/list')
-  illustPolyList(
+  getPolys(
     @Payload()
     [{ withIllust, type, orderAsJson }]: [
       { withIllust: boolean; type: string; orderAsJson: object },
     ],
   ) {
-    return this.illustService.getPolyList(
+    return this.illustService.getPolys(
       withIllust,
       type,
-      orderAsJson || undefined,
+      orderAsJson,
     )
   }
 
   @IpcHandle('api:POST/illust/poly/bases')
-  updatePoly(@Payload() [, illusts]: [any, IllustBatchDto]) {
-    return this.illustService.updatePoly(illusts)
+  addIllustsToPoly(@Payload() [, illusts]: [any, IllustBatchDto]) {
+    return this.illustService.addIllustsToPoly(illusts)
   }
 
   @IpcHandle('api:DELETE/illust/poly/bases')
-  removeFromPoly(
+  removeIllustsFromPoly(
     @Payload()
     [{ polyId, illustList }]: [{ polyId: number; illustList: number[] }],
   ) {
@@ -96,7 +92,7 @@ export class IllustController {
   }
 
   @IpcHandle('api:GET/illust/poly/enum')
-  illustPolyEnum(
+  getPolyEnum(
     @Payload()
     [{ requiredType, row, desc }]: [
       { requiredType: string; row: string; desc: boolean },
@@ -106,26 +102,26 @@ export class IllustController {
   }
 
   @IpcHandle('api:GET/illust/remote-base/list')
-  remoteBase(@Payload() [{ withIllust }]: [{ withIllust: boolean }]) {
-    return this.illustService.getRemoteBaseList(withIllust)
+  getRemoteBases(@Payload() [{ withIllust }]: [{ withIllust: boolean }]) {
+    return this.illustService.getRemoteBases(withIllust)
   }
 
   @IpcHandle('api:POST/illust/remote-base')
   updateRemoteBase(
     @Payload() [, remoteBase]: [any, remoteBase: RemoteBaseDto],
   ) {
-    return this.illustService.coverRemoteBase(remoteBase)
+    return this.illustService.updateRemoteBase(remoteBase)
   }
 
   @IpcHandle('api:GET/illust/illust-today')
-  illustToday(@Payload() [{ date }]: [{ date: string }]) {
+  getIllustToday(@Payload() [{ date }]: [{ date: string }]) {
     return this.illustService.getIllustToday(new Date(date))
   }
 
-  @IpcHandle('api:PUT/illust/illust-today')
-  coverIllustToday(
+  @IpcHandle('api:POST/illust/illust-today')
+  updateIllustToday(
     @Payload() [{ date, illustId }]: [{ date: string; illustId: number }],
   ) {
-    return this.illustService.coverIllustToday(new Date(date), illustId)
+    return this.illustService.updateIllustToday(new Date(date), illustId)
   }
 }

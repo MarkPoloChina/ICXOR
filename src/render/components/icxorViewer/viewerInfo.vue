@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Check } from '@element-plus/icons-vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -9,6 +9,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:info', 'upload'])
 const showInfo = ref(false)
+watch(() => props.info, (v, oldV) => {
+  if (!oldV && v)
+    showInfo.value = true
+})
 const writableInfo = computed({
   get: () => {
     return props.info
@@ -38,6 +42,9 @@ const editable = ref(false)
 const router = useRouter()
 function toPixiv(pid, page) {
   router.push(`/pixiv/illust/${pid}/${page}`)
+}
+function toPixivUser(uid) {
+  router.push(`/pixiv/user/${uid}`)
 }
 function handleStarChange(star) {
   if (!editable.value)
@@ -74,14 +81,10 @@ defineExpose({ handleStarChange })
               <span style="vertical-align: middle; margin-right: 10px">可编辑</span><el-switch v-model="editable" />
             </template>
             <el-descriptions-item label="ID">
-              {{
-                writableInfo.id
-              }}
+              {{ writableInfo.id }}
             </el-descriptions-item>
             <el-descriptions-item label="类型">
-              {{
-                writableInfo.remote_base.name
-              }}
+              {{ writableInfo.remote_base.name }}
             </el-descriptions-item>
             <el-descriptions-item
               v-if="writableInfo.remote_endpoint"
@@ -123,9 +126,7 @@ defineExpose({ handleStarChange })
             <el-descriptions-item label="标签">
               <div v-if="!editable">
                 <el-tag v-for="tag in writableInfo.tag" :key="tag.id">
-                  {{
-                    tag.name
-                  }}
+                  {{ tag.name }}
                 </el-tag>
                 {{
                   !writableInfo.tag || writableInfo.tag.length === 0 ? "-" : ""
@@ -162,37 +163,48 @@ defineExpose({ handleStarChange })
               </el-button>
             </template>
             <el-descriptions-item label="PId">
-              {{
-                writableInfo.meta.pid
-              }}
+              {{ writableInfo.meta.pid }}
             </el-descriptions-item>
             <el-descriptions-item label="页号">
-              {{
-                writableInfo.meta.page
-              }}
+              {{ writableInfo.meta.page }}
             </el-descriptions-item>
             <el-descriptions-item label="限制级">
-              {{
-                writableInfo.meta.limit ?? "-"
-              }}
+              {{ writableInfo.meta.limit ?? "-" }}
             </el-descriptions-item>
             <el-descriptions-item label="作者">
               {{
-                writableInfo.meta.author ?? "-"
+                writableInfo.meta.author_id && writableInfo.meta.author
+                  ? `[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`
+                  : "-"
               }}
+              <el-button
+                v-if="writableInfo.meta.author_id && writableInfo.meta.author"
+                type="primary"
+                size="small"
+                style="margin-left: 20px;"
+                @click="toPixivUser(writableInfo.meta.author_id)"
+              >
+                在Pixiv打开
+              </el-button>
             </el-descriptions-item>
             <el-descriptions-item label="收藏数">
-              {{
-                writableInfo.meta.book_cnt ?? "-"
-              }}
+              {{ writableInfo.meta.book_cnt ?? "-" }}
             </el-descriptions-item>
             <el-descriptions-item label="标题">
               {{ writableInfo.meta.title ?? "-" }}
             </el-descriptions-item>
+            <el-descriptions-item label="宽度">
+              {{ writableInfo.meta.width ?? "-" }}
+            </el-descriptions-item>
+            <el-descriptions-item label="高度">
+              {{ writableInfo.meta.height ?? "-" }}
+            </el-descriptions-item>
           </el-descriptions>
           <el-descriptions
             v-if="
-              writableInfo && writableInfo.poly && writableInfo.poly.length !== 0
+              writableInfo
+                && writableInfo.poly
+                && writableInfo.poly.length !== 0
             "
             class="info"
             title="聚合数据"
@@ -203,19 +215,13 @@ defineExpose({ handleStarChange })
             <template #extra />
             <template v-for="poly in writableInfo.poly" :key="poly.id">
               <el-descriptions-item label="聚合类型">
-                {{
-                  poly.type ?? "-"
-                }}
+                {{ poly.type ?? "-" }}
               </el-descriptions-item>
               <el-descriptions-item label="聚合簇">
-                {{
-                  poly.parent ?? "-"
-                }}
+                {{ poly.parent ?? "-" }}
               </el-descriptions-item>
               <el-descriptions-item label="聚合名">
-                {{
-                  poly.name ?? "-"
-                }}
+                {{ poly.name ?? "-" }}
               </el-descriptions-item>
             </template>
           </el-descriptions>

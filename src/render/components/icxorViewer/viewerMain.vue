@@ -1,31 +1,43 @@
 <script setup lang="ts">
+import type { Ref } from 'vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import MetaForm from '@render/components/reusable/metaForm.vue'
-import PolyForm from '@render/components/reusable/polyForm.vue'
-import DownloadForm from '@render/components/reusable/downloadForm.vue'
+import MetaForm from '@render/components/share/form/metaForm.vue'
+import PolyForm from '@render/components/share/form/polyForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
-import IllustTodayForm from '../reusable/illustTodayForm.vue'
+import type { BatchLog } from '@render/ts/interface/batchLog'
+import { PathHelper, UrlGenerator } from '@render/ts/util/path'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import IllustTodayForm from '@render/components/share/form/illustTodayForm.vue'
+import type { IllustObj } from '@render/ts/interface/illustObj'
+import BatchLogDrawer from '../share/drawer/batchLogDrawer.vue'
 import ViewerGrid from './main/viewerGrid.vue'
 import ViewerFocus from './main/viewerFocus.vue'
 import ViewerTable from './main/viewerTable.vue'
 
 const props = defineProps({
   filter: Object,
+  sorter: Object,
   viewerType: String,
   curPage: Number,
+  pageSize: Number,
   currentSelected: Object,
 })
 
 const emit = defineEmits([
   'update:curPage',
+  'update:pageSize',
   'update:currentSelected',
   'update:illust-count',
   'update:star',
 ])
-const { ipcRemoveAll, ipcOnce, ipcSend } = window.electron
-const viewer = ref(null)
+const { ipcRemoveAll, ipcOnce, ipcSend, ipcInvoke, downloadTo }
+  = window.electron
+const viewer: Ref<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable>
+  = ref()
+const metaForm: Ref<typeof MetaForm> = ref()
+const polyForm: Ref<typeof PolyForm> = ref()
 const writableCurPage = computed({
   get: () => {
     return props.curPage
@@ -34,8 +46,16 @@ const writableCurPage = computed({
     emit('update:curPage', val)
   },
 })
+const writablePageSize = computed({
+  get: () => {
+    return props.pageSize
+  },
+  set: (val) => {
+    emit('update:pageSize', val)
+  },
+})
 const isLoading = ref(false)
-const illustList = ref([])
+const illustList = ref<IllustObj[]>([])
 const illustCount = ref(0)
 watch(illustCount, (val) => {
   emit('update:illust-count', val)
@@ -48,36 +68,17 @@ const currentSelected = computed({
     emit('update:currentSelected', val)
   },
 })
-const currentOperating = ref(null)
-const waitingDownloadList = ref([])
+const currentOperating = ref<IllustObj>(null)
 const chooseAll = reactive({
   poly: false,
   update: false,
-  download: false,
-})
-const waitingOperateDto = computed(() => {
-  const list = []
-  illustList.value.forEach((item) => {
-    if (item.checked)
-      list.push(item)
-  })
-  if (list.length)
-    return list
-  else if (currentOperating.value)
-    return [currentOperating.value]
-  else return null
-})
-const waitingDownloadDto = computed(() => {
-  if (chooseAll.download)
-    return waitingDownloadList.value
-  else return waitingOperateDto.value
 })
 
 const show = reactive({
   poly: false,
   update: false,
-  download: false,
   it: false,
+  drawer: false,
 })
 
 function handleFocusIndexChange(action) {
@@ -90,9 +91,9 @@ async function getIllusts() {
   isLoading.value = true
   const list = await API.getIllusts(
     props.filter,
-    100,
-    (writableCurPage.value - 1) * 100,
-    null,
+    writablePageSize.value,
+    (writableCurPage.value - 1) * writablePageSize.value,
+    props.sorter,
   )
   isLoading.value = false
   if (list)
@@ -103,7 +104,7 @@ async function getIllustsAndCount() {
   writableCurPage.value = 1
   currentSelected.value = null
   const { count } = await API.getIllustsCount(props.filter)
-  illustCount.value = Number.parseInt(count)
+  illustCount.value = count
   isLoading.value = false
   getIllusts()
 }
@@ -117,248 +118,51 @@ watch(
   },
 )
 watch(
-  () => props.curPage,
+  () => [props.curPage, props.pageSize, props.sorter],
   () => {
     getIllusts()
   },
 )
-function handleSingleIllustChange(obj) {
-  API.updateIllust(obj, null)
+function handleSingleIllustChange(obj, withClear?: boolean) {
+  API.updateIllust(obj)
     .then(() => {
       ElMessage.success('修改成功')
+      if (withClear) {
+        getIllustsAndCount()
+        metaForm.value.clearForm()
+      }
     })
     .catch((err) => {
       ElMessage.error(`错误: ${err}`)
     })
 }
-function handleUpdate({ data, controller }) {
-  if (!controller) {
-    if (!waitingOperateDto.value) {
-      ElMessage.error('项目为空')
-      return
-    }
-    ElMessageBox.confirm(
-      `将为${waitingOperateDto.value.length}个项目进行更新，确认？`,
-      'Warning',
-      {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        type: 'warning',
-      },
+
+const batchLogs = ref<BatchLog[]>([])
+
+function handleUpdate(addition: {
+  date?: Date
+  star?: number
+  tag?: Array<{ name: string }>
+}) {
+  const waitingOperateDto = []
+  if (!chooseAll.update && currentOperating.value) {
+    return handleSingleIllustChange(
+      { ...currentOperating.value, ...addition },
+      true,
     )
-      .then(() => {
-        const dto = new BatchDto()
-        waitingOperateDto.value.forEach((ele) => {
-          dto.dtos.push({
-            dto: {
-              id: ele.id,
-            },
-          })
-        })
-        dto.addition = { ...data }
-        API.updateIllusts(dto)
-          .then(() => {
-            ElMessage.success('操作成功')
-            getIllustsAndCount()
-          })
-          .catch((err) => {
-            ElMessage.error(`错误: ${err}`)
-          })
-      })
-      .catch(() => {})
   }
-  else {
-    if (illustCount.value === 0) {
-      ElMessage.error('项目为空')
-    }
-    else {
-      ElMessageBox.confirm(
-        `将为符合条件的${illustCount.value}个项目更新元，确认？`,
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          const dto = new BatchDto()
-          dto.conditionObject = props.filter
-          dto.addition = { ...data }
-          API.updateIllusts(dto)
-            .then(() => {
-              ElMessage.success('操作成功')
-              getIllustsAndCount()
-            })
-            .catch((err) => {
-              ElMessage.error(`错误: ${err}`)
-            })
-        })
-        .catch(() => {})
-    }
+  else if (chooseAll.update) {
+    illustList.value.forEach((item) => {
+      if (item.checked)
+        waitingOperateDto.push(item)
+    })
   }
-}
-function handlePoly({ data, controller }) {
-  if (!controller) {
-    if (!waitingOperateDto.value) {
-      ElMessage.error('项目为空')
-      return
-    }
-    ElMessageBox.confirm(
-      `将为${waitingOperateDto.value.length}个项目创建或添加聚合，确认？`,
-      'Warning',
-      {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        type: 'warning',
-      },
-    )
-      .then(() => {
-        const dto = new BatchDto()
-        waitingOperateDto.value.forEach((ele) => {
-          dto.dtos.push({
-            dto: ele,
-          })
-        })
-        dto.polyBase = { ...data }
-        API.addPoly(dto)
-          .then(() => {
-            ElMessage.success('操作成功')
-            getIllustsAndCount()
-          })
-          .catch((err) => {
-            ElMessage.error(`错误: ${err}`)
-          })
-      })
-      .catch(() => {})
-  }
-  else {
-    if (illustCount.value === 0) {
-      ElMessage.error('项目为空')
-    }
-    else {
-      ElMessageBox.confirm(
-        `将为符合条件的${illustCount.value}个项目创建或添加聚合，确认？`,
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          const dto = new BatchDto()
-          dto.conditionObject = props.filter
-          dto.polyBase = { ...data }
-          API.addPoly(dto)
-            .then(() => {
-              ElMessage.success('操作成功')
-              getIllustsAndCount()
-            })
-            .catch((err) => {
-              ElMessage.error(`错误: ${err}`)
-            })
-        })
-        .catch(() => {})
-    }
-  }
-}
-async function handleOpenDownloadDialog() {
-  if (!waitingOperateDto.value && !chooseAll.download) {
-    ElMessage.error('尚未选择')
-    return
-  }
-  if (chooseAll.download && illustCount.value >= 1000) {
-    ElMessage.error('不允许一次性下载超过1000张图片')
-    return
-  }
-  if (chooseAll.download && illustCount.value === 0) {
+  if (waitingOperateDto.length === 0) {
     ElMessage.error('项目为空')
     return
   }
-  if (chooseAll.download) {
-    ElMessage.info('正在收集信息')
-    waitingDownloadList.value = await API.getIllusts(
-      props.filter,
-      1000,
-      0,
-      null,
-    )
-    ElMessage.success('收集完成')
-  }
-  show.download = true
-}
-function handleFetch(chooseAll) {
-  if (!chooseAll) {
-    if (waitingOperateDto.value) {
-      ElMessageBox.confirm(
-        `将为${waitingOperateDto.value.length}个项目抓取元，确认？`,
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          const dto = new BatchDto()
-          waitingOperateDto.value.forEach((ele) => {
-            dto.dtos.push({
-              dto: ele,
-            })
-          })
-          API.updatePixivMeta(dto)
-            .then(() => {
-              ElMessage.success('请求成功')
-              getIllustsAndCount()
-            })
-            .catch((err) => {
-              ElMessage.error(`错误: ${err}`)
-            })
-        })
-        .catch(() => {})
-    }
-    else {
-      ElMessage.error('尚未选择')
-    }
-  }
-  else {
-    if (illustCount.value === 0) {
-      ElMessage.error('项目为空')
-    }
-    else {
-      ElMessageBox.confirm(
-        `将为符合条件的${illustCount.value}个项目创建或添加聚合，确认？`,
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          const dto = new BatchDto()
-          dto.conditionObject = props.filter
-          API.updatePixivMeta(dto)
-            .then(() => {
-              ElMessage.success('请求成功')
-              getIllustsAndCount()
-            })
-            .catch((err) => {
-              ElMessage.error(`错误: ${err}`)
-            })
-        })
-        .catch(() => {})
-    }
-  }
-}
-function handleIT({ data }) {
-  if (waitingOperateDto.value.length !== 1) {
-    ElMessage.error('必须为1个对象操作')
-    return
-  }
   ElMessageBox.confirm(
-    `将为${waitingOperateDto.value.length}个项目建立IT，确认？`,
+    `将为${waitingOperateDto.length}个项目进行更新，确认？`,
     'Warning',
     {
       confirmButtonText: 'OK',
@@ -367,7 +171,287 @@ function handleIT({ data }) {
     },
   )
     .then(() => {
-      API.coverIllustToday(data.date, waitingOperateDto.value[0].id)
+      const batchLog: BatchLog = {
+        total: waitingOperateDto.length,
+        status: 'padding',
+        type: 'update',
+        resp: [],
+        dto: waitingOperateDto,
+      }
+      const idx = batchLogs.value.length
+      batchLogs.value.push(batchLog)
+      const dto = new BatchDto()
+      dto.dtos.push(
+        ...waitingOperateDto.map((ele, index) => {
+          return {
+            bid: index,
+            dto: {
+              id: ele.id,
+              ...addition,
+            },
+          }
+        }),
+      )
+      API.updateIllusts(dto)
+        .then((resp: Array<any>) => {
+          batchLogs.value[idx].resp = resp
+          batchLogs.value[idx].status = 'done'
+          ElMessage.success('一项置元批处理操作成功')
+          getIllustsAndCount()
+          metaForm.value.clearForm()
+        })
+        .catch((err) => {
+          batchLogs.value[idx].status = 'reject'
+          ElMessage.error(`一项置元批处理错误: ${err}`)
+        })
+    })
+    .catch(() => {})
+}
+
+function handlePoly(polyOption: {
+  type: string
+  parent: string
+  name: string
+}) {
+  const waitingOperateDto = []
+  if (!chooseAll.poly && currentOperating.value) {
+    waitingOperateDto.push(currentOperating.value)
+  }
+  else if (chooseAll.poly) {
+    illustList.value.forEach((item) => {
+      if (item.checked)
+        waitingOperateDto.push(item)
+    })
+  }
+  if (waitingOperateDto.length === 0) {
+    ElMessage.error('项目为空')
+    return
+  }
+  ElMessageBox.confirm(
+    `将为${waitingOperateDto.length}个项目创建或添加聚合，确认？`,
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      const batchLog: BatchLog = {
+        total: waitingOperateDto.length,
+        status: 'padding',
+        type: 'poly',
+        resp: [],
+        dto: waitingOperateDto,
+      }
+      const idx = batchLogs.value.length
+      batchLogs.value.push(batchLog)
+      const dto = new BatchDto()
+      dto.dtos.push(
+        ...waitingOperateDto.map((ele, index) => {
+          return {
+            bid: index,
+            dto: ele,
+          }
+        }),
+      )
+      dto.polyBase = { ...polyOption }
+      API.addPoly(dto)
+        .then((resp) => {
+          batchLogs.value[idx].resp = resp
+          batchLogs.value[idx].status = 'done'
+          ElMessage.success('一项聚合批处理操作成功')
+          getIllustsAndCount()
+          polyForm.value.clearForm()
+        })
+        .catch((err) => {
+          batchLogs.value[idx].status = 'reject'
+          ElMessage.error(`一项聚合批处理错误: ${err}`)
+        })
+    })
+    .catch(() => {})
+}
+
+async function handleDownload() {
+  if (!currentOperating.value) {
+    ElMessage.error('项目为空')
+    return
+  }
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  const url = UrlGenerator.getBlobUrl(currentOperating.value, 'original')
+  try {
+    await downloadTo(
+      url,
+      currentOperating.value.remote_base.type === 'pixiv'
+        ? PathHelper.getBasename(url)
+        : currentOperating.value.remote_endpoint,
+      dir,
+    )
+    ElMessage.success('下载完成')
+  }
+  catch (err) {
+    ElMessage.error('下载失败')
+  }
+}
+
+async function handleDownloadBatch() {
+  const waitingOperateDto = illustList.value.filter(value => value.checked)
+  if (waitingOperateDto.length === 0) {
+    ElMessage.error('项目为空')
+    return
+  }
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  const batchLog: BatchLog = {
+    currentIdx: 0,
+    total: waitingOperateDto.length,
+    status: 'processing',
+    type: 'download',
+    resp: [],
+    dto: waitingOperateDto,
+  }
+  const idx = batchLogs.value.length
+  batchLogs.value.push(batchLog)
+  ElMessage.info('开始批处理')
+  const process = async (obj, index: number) => {
+    const url = UrlGenerator.getBlobUrl(obj, 'original')
+    try {
+      await downloadTo(
+        url,
+        obj.remote_base.type === 'pixiv'
+          ? PathHelper.getBasename(url)
+          : obj.remote_endpoint,
+        dir,
+      )
+    }
+    catch (err) {
+      batchLogs.value[idx].resp.push({
+        bid: index,
+        message: err,
+        status: 'error',
+      })
+    }
+    finally {
+      batchLogs.value[idx].currentIdx++
+    }
+  }
+  const promises = waitingOperateDto.map((obj, index) => process(obj, index))
+  Promise.all(promises).then(() => {
+    batchLogs.value[idx].status = 'done'
+    ElMessage.success(`一项下载批处理完成, 其中${batchLogs.value[idx].resp.length}项失败`)
+  })
+}
+
+function handleFetch(chooseAll: boolean) {
+  const waitingOperateDto = []
+  if (!chooseAll && currentOperating.value) {
+    waitingOperateDto.push(currentOperating.value)
+  }
+  else if (chooseAll) {
+    illustList.value.forEach((item) => {
+      if (item.checked)
+        waitingOperateDto.push(item)
+    })
+  }
+  if (waitingOperateDto.length === 0) {
+    ElMessage.error('项目为空')
+    return
+  }
+  ElMessageBox.confirm(
+    `将为${waitingOperateDto.length}个项目抓取元，确认？`,
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      const batchLog: BatchLog = {
+        total: waitingOperateDto.length,
+        status: 'padding',
+        type: 'fetch',
+        resp: [],
+        dto: waitingOperateDto,
+      }
+      const idx = batchLogs.value.length
+      batchLogs.value.push(batchLog)
+      const dto = new BatchDto()
+      const process = async (ele, index) => {
+        if (ele.meta) {
+          try {
+            const resp: PixivIllust = await API.getPixivInfo(ele.meta.pid)
+            ele.meta.author = resp.user.name
+            ele.meta.author_id = resp.user.id
+            ele.meta.title = resp.title
+            ele.meta.original_url
+              = resp.meta_single_page.original_image_url
+              || resp.meta_pages[ele.meta.page].image_urls.original
+            ele.meta.thumb_url
+              = resp.page_count === 1
+                ? resp.image_urls.large
+                : resp.meta_pages[ele.meta.page].image_urls.large
+            ele.meta.limit
+              = resp.x_restrict === 1
+                ? 'R-18'
+                : resp.x_restrict === 2
+                  ? 'R-18G'
+                  : 'normal'
+            ele.meta.book_cnt = resp.total_bookmarks
+            ele.meta.height = resp.height
+            ele.meta.width = resp.width
+            dto.dtos.push({
+              bid: index,
+              dto: ele,
+            })
+          }
+          catch (err) {
+            batchLogs.value[idx].resp.push({
+              bid: index,
+              status: 'error',
+              message: err,
+            })
+          }
+        }
+        else {
+          batchLogs.value[idx].resp.push({
+            bid: index,
+            status: 'ignore',
+            message: 'Not Pixiv Target',
+          })
+        }
+      }
+      const promises = waitingOperateDto.map((ele, index) =>
+        process(ele, index),
+      )
+      Promise.all(promises).then(() => {
+        API.updateIllusts(dto)
+          .then((resp) => {
+            batchLogs.value[idx].resp.push(...resp)
+            batchLog.status = 'done'
+            ElMessage.success('一项抓取元批处理完成')
+            getIllustsAndCount()
+          })
+          .catch((err) => {
+            batchLogs.value[idx].status = 'reject'
+            ElMessage.error(`一项抓取元批处理错误: ${err}`)
+          })
+      })
+    })
+    .catch(() => {})
+}
+
+function handleIT(info: { date: Date }) {
+  ElMessageBox.confirm('为当前项目建立IT, 确认?', 'Warning', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning',
+  })
+    .then(() => {
+      API.coverIllustToday(info.date, currentOperating.value.id)
         .then(() => {
           ElMessage.success('请求成功')
         })
@@ -377,34 +461,57 @@ function handleIT({ data }) {
     })
     .catch(() => {})
 }
-function handleDelete() {
-  if (waitingOperateDto.value) {
-    ElMessageBox.confirm(
-      `将永久删除${waitingOperateDto.value.length}个项目，确认？`,
-      'Warning',
-      {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        type: 'warning',
-      },
-    )
-      .then(() => {
-        API.deleteIllusts(waitingOperateDto.value.map(v => v.id))
-          .then(() => {
-            ElMessage.success('请求成功')
-            getIllustsAndCount()
-          })
-          .catch((err) => {
-            ElMessage.error(`错误: ${err}`)
-          })
-      })
-      .catch(() => {})
+
+function handleDelete(chooseAll: boolean) {
+  const waitingOperateDto = []
+  if (!chooseAll && currentOperating.value) {
+    waitingOperateDto.push(currentOperating.value)
   }
-  else {
-    ElMessage.error('尚未选择')
+  else if (chooseAll) {
+    illustList.value.forEach((item) => {
+      if (item.checked)
+        waitingOperateDto.push(item)
+    })
   }
+  if (waitingOperateDto.length === 0) {
+    ElMessage.error('项目为空')
+    return
+  }
+  ElMessageBox.confirm(
+    `将永久删除${waitingOperateDto.length}个项目，确认？`,
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      const batchLog: BatchLog = {
+        total: waitingOperateDto.length,
+        status: 'padding',
+        type: 'delete',
+        resp: [],
+        dto: waitingOperateDto,
+      }
+      const idx = batchLogs.value.length
+      batchLogs.value.push(batchLog)
+      API.deleteIllusts(waitingOperateDto.map(v => v.id))
+        .then((resp) => {
+          batchLogs.value[idx].resp = resp
+          batchLogs.value[idx].status = 'done'
+          ElMessage.success('一项删除批处理请求成功')
+          getIllustsAndCount()
+        })
+        .catch((err) => {
+          batchLogs.value[idx].status = 'reject'
+          ElMessage.error(`一项删除批处理错误: ${err}`)
+        })
+    })
+    .catch(() => {})
 }
-function handlePopupContext(row) {
+
+function handlePopupContext(row: IllustObj) {
   if (!row)
     return
   currentOperating.value = row
@@ -417,11 +524,11 @@ function handlePopupContext(row) {
       case '选定':
         row.checked = !row.checked
         break
-      case '生成聚合':
+      case '加入聚合':
         chooseAll.poly = false
         show.poly = true
         break
-      case '全部生成聚合':
+      case '选定项加入聚合':
         chooseAll.poly = true
         show.poly = true
         break
@@ -429,29 +536,33 @@ function handlePopupContext(row) {
         chooseAll.update = false
         show.update = true
         break
-      case '全部置元':
+      case '选定项置元':
         chooseAll.update = true
         show.update = true
         break
       case '抓取元':
         handleFetch(false)
         break
-      case '全部抓取元':
+      case '选定项抓取元':
         handleFetch(true)
         break
       case '注册为每日一图':
         show.it = true
         break
       case '下载':
-        chooseAll.download = false
-        handleOpenDownloadDialog()
+        handleDownload()
         break
-      case '全部下载':
-        chooseAll.download = true
-        handleOpenDownloadDialog()
+      case '下载选定项':
+        handleDownloadBatch()
         break
-      case '删除':
-        handleDelete()
+      case '删除基':
+        handleDelete(false)
+        break
+      case '选定项删除基':
+        handleDelete(true)
+        break
+      case '打开批处理日志':
+        show.drawer = true
         break
       default:
         break
@@ -467,7 +578,7 @@ function handlePopupContext(row) {
     },
     { type: 'separator' },
     {
-      label: '生成聚合',
+      label: '加入聚合',
     },
     {
       label: '置元',
@@ -477,13 +588,13 @@ function handlePopupContext(row) {
     },
     { type: 'separator' },
     {
-      label: '全部生成聚合',
+      label: '选定项加入聚合',
     },
     {
-      label: '全部置元',
+      label: '选定项置元',
     },
     {
-      label: '全部抓取元',
+      label: '选定项抓取元',
     },
     { type: 'separator' },
     {
@@ -494,11 +605,18 @@ function handlePopupContext(row) {
       label: '下载',
     },
     {
-      label: '全部下载',
+      label: '下载选定项',
     },
     { type: 'separator' },
     {
-      label: '删除',
+      label: '删除基',
+    },
+    {
+      label: '选定项删除基',
+    },
+    { type: 'separator' },
+    {
+      label: '打开批处理日志',
     },
   ])
 }
@@ -530,19 +648,17 @@ defineExpose({
       />
     </KeepAlive>
     <MetaForm
+      ref="metaForm"
       v-model="show.update"
-      :choose-all="chooseAll.update"
-      type="viewer"
-      @confirm="handleUpdate"
+      @update:addition="handleUpdate"
     />
     <PolyForm
+      ref="polyForm"
       v-model="show.poly"
-      :choose-all="chooseAll.poly"
-      type="viewer"
-      @confirm="handlePoly"
+      @update:poly-option="handlePoly"
     />
     <IllustTodayForm v-model="show.it" @confirm="handleIT" />
-    <DownloadForm v-model="show.download" :download-list="waitingDownloadDto" />
+    <BatchLogDrawer v-model="show.drawer" :batch-logs="batchLogs" />
   </div>
 </template>
 

@@ -5,8 +5,8 @@ import { FilenameAdapter } from '@render/ts/util/filename'
 import { onMounted, reactive, ref } from 'vue'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
-import MetaForm from '../reusable/metaForm.vue'
-import FilterTable from './reusable/filterTable.vue'
+import MetaForm from '@render/components/share/form/metaForm.vue'
+import FilterTable from '@render/components/share/table/filterTable.vue'
 
 const { ipcInvoke } = window.electron
 
@@ -17,31 +17,31 @@ const metaForm = ref()
 const table = ref()
 const loading = ref(false)
 const importOption = reactive({
-  paths: [],
-  pathDir: '',
-  autoKeys: {},
-  importType: 'directory',
-  importPolicy: 'add',
-  acceptNormal: true,
-  addition: {
-    remote_base: { id: null },
-    meta: {},
+  autoInject: {
+    defaultRemoteBaseId: undefined,
+    metaTitle: false,
+    remoteEndpointForPixiv: false,
+    jpgForThumbEndpoint: false,
+    remoteEndpointPrefixForDefault: '',
   },
+  importType: 'directory',
+  addIfNotFound: true,
+  addition: {},
 })
 function initTab() {
   importOption.importType = 'directory'
-  importOption.importPolicy = 'add'
-  importOption.autoKeys = {}
-  importOption.paths = []
-  importOption.pathDir = ''
-  importOption.acceptNormal = true
-  importOption.addition = {
-    remote_base: { id: null },
-    meta: {},
+  importOption.addIfNotFound = true
+  importOption.autoInject = {
+    defaultRemoteBaseId: undefined,
+    metaTitle: false,
+    remoteEndpointForPixiv: false,
+    jpgForThumbEndpoint: false,
+    remoteEndpointPrefixForDefault: '',
   }
+  importOption.addition = {}
   log.list.length = 0
   log.message = ''
-  metaForm.value.initForm()
+  metaForm.value.clearForm()
 }
 onMounted(() => {
   getRemoteBaseList()
@@ -49,39 +49,30 @@ onMounted(() => {
 async function getRemoteBaseList() {
   remoteBaseList.value = await API.getRemoteBase()
 }
-async function getDirectory() {
-  let _path = ''
-  _path = await ipcInvoke('dialog:openDirectory')
-  if (_path)
-    importOption.pathDir = _path
-}
-async function getFile() {
-  let _path = []
-  _path = await ipcInvoke('dialog:openFile')
-  if (_path)
-    importOption.paths = _path
-}
 async function startAction() {
-  if (
-    (importOption.importType === 'directory' && !importOption.pathDir)
-    || (importOption.importType === 'files' && importOption.paths.length === 0)
-  ) {
-    ElMessage.error('路径非法')
-    return
+  const paths = []
+  if (importOption.importType === 'directory') {
+    const dir = await ipcInvoke('dialog:openDirectory')
+    if (!dir)
+      return
+    ElMessage.info('开始收集信息')
+    loading.value = true
+    paths.push(...(await ipcInvoke(
+      'fs:getFilenames',
+      dir,
+    )))
   }
-  ElMessage.info('开始收集信息')
-  loading.value = true
-  const paths
-    = importOption.importType === 'directory'
-      ? await ipcInvoke(
-        'fs:getFilenames',
-        importOption.pathDir,
-      )
-      : importOption.paths
+  else {
+    const files: string[] = await ipcInvoke('dialog:openFile')
+    if (!files)
+      return
+    ElMessage.info('开始收集信息')
+    loading.value = true
+    paths.push(...files)
+  }
   const resp = await FilenameAdapter.getDtoList(
     paths,
-    importOption.autoKeys,
-    importOption.acceptNormal,
+    importOption.autoInject,
   )
   ElMessage.info(`信息收集完成，共${resp.length}条数据`)
   loading.value = false
@@ -113,18 +104,14 @@ function handleUpload() {
         dto.dtos.push({
           bid: idx,
           dto: {
+            ...importOption.addition,
             ...log.list[idx].dto,
           },
         })
       })
-      dto.addition = { ...importOption.addition }
-      if (importOption.importPolicy === 'cover')
-        dto.control.addIfNotFound = true
+      dto.control.addIfNotFound = importOption.addIfNotFound
       try {
-        const data
-          = importOption.importPolicy === 'add'
-            ? await API.newIllusts(dto)
-            : await API.updateIllusts(dto)
+        const data = await API.updateIllusts(dto)
         ElMessage.info('处理完成')
         data.forEach((item) => {
           log.list[item.bid].status = item.status
@@ -143,11 +130,6 @@ function handleUpload() {
       }
     })
     .catch(() => {})
-}
-function updateInfo({ data, controller }) {
-  importOption.addition = { ...importOption.addition, ...data }
-  if (controller)
-    importOption.autoKeys = controller
 }
 </script>
 
@@ -174,61 +156,42 @@ function updateInfo({ data, controller }) {
               </el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item
-            v-if="importOption.importType === 'directory'"
-            label="路径"
-          >
+          <el-form-item label="默认识别">
             <el-row :gutter="20" style="width: 100%">
               <el-col :span="6">
-                <el-button @click="getDirectory">
-                  选择文件夹
-                </el-button>
-              </el-col>
-              <el-col :span="18">
-                <el-input :model-value="importOption.pathDir" disabled />
-              </el-col>
-            </el-row>
-          </el-form-item>
-          <el-form-item v-else label="路径">
-            <el-row :gutter="20" style="width: 100%">
-              <el-col :span="6">
-                <el-button @click="getFile">
-                  选择文件
-                </el-button>
+                <el-select
+                  v-model="importOption.autoInject.defaultRemoteBaseId"
+                  placeholder="选择默认基"
+                >
+                  <el-option
+                    v-for="item in remoteBaseList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
+                </el-select>
               </el-col>
               <el-col :span="18">
                 <el-input
-                  :model-value="importOption.paths.toString()"
-                  disabled
+                  v-model="importOption.autoInject.remoteEndpointPrefixForDefault"
+                  placeholder="默认前导"
                 />
               </el-col>
             </el-row>
           </el-form-item>
-          <el-form-item label="默认基">
-            <el-select
-              v-model="importOption.addition.remote_base.id"
-              placeholder="选择默认基"
-            >
-              <el-option
-                v-for="item in remoteBaseList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="策略">
-            <el-radio-group v-model="importOption.importPolicy">
-              <el-radio label="add">
-                增加
-              </el-radio>
-              <el-radio label="modify">
-                更新
-              </el-radio>
-              <el-radio label="cover">
-                覆盖
-              </el-radio>
-            </el-radio-group>
+          <el-form-item label="自动注入">
+            <el-checkbox
+              v-model="importOption.autoInject.metaTitle"
+              label="标题"
+            />
+            <el-checkbox
+              v-model="importOption.autoInject.remoteEndpointForPixiv"
+              label="Pixiv末端"
+            />
+            <el-checkbox
+              v-model="importOption.autoInject.jpgForThumbEndpoint"
+              label="jpg缩图末端"
+            />
           </el-form-item>
           <el-form-item>
             <el-row :gutter="20" style="width: 100%">
@@ -237,11 +200,11 @@ function updateInfo({ data, controller }) {
                   附加元
                 </el-button>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="6">
                 <el-switch
-                  v-model="importOption.acceptNormal"
-                  active-text="全部图片"
-                  inactive-text="仅可识别"
+                  v-model="importOption.addIfNotFound"
+                  active-text="增量"
+                  inactive-text="仅修改"
                 />
               </el-col>
             </el-row>
@@ -284,8 +247,7 @@ function updateInfo({ data, controller }) {
   <MetaForm
     ref="metaForm"
     v-model="showDialog"
-    type="basic"
-    @confirm="updateInfo"
+    @update:addition="importOption.addition = $event"
   />
 </template>
 

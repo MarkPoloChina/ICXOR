@@ -10,6 +10,7 @@ const defaultSetting = {
   useLocal: false,
   pixivUserId: '',
   pixivToken: '',
+  pixivProxy: '',
 }
 
 export default createStore({
@@ -21,6 +22,7 @@ export default createStore({
     useLocal: false,
     pixivUserId: '',
     pixivToken: '',
+    pixivProxy: '',
   },
   getters: {},
   mutations: {

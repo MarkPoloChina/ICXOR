@@ -1,7 +1,6 @@
 import { Controller } from '@nestjs/common'
 import { IpcHandle } from '@doubleshot/nest-electron'
 import { Payload } from '@nestjs/microservices'
-import type { IllustBatchDto } from '../illust/dto/illust_batch.dto'
 import { PixivApiService } from './pixiv-api.service'
 
 @Controller()
@@ -22,13 +21,33 @@ export class PixivApiController {
     return json
   }
 
-  @IpcHandle('api:PUT/pixiv-api/pixiv-json/list')
-  async updateMetas(@Payload() [, illusts]: [any, illusts: IllustBatchDto]) {
-    return this.pixivApiService.updateMetas(illusts)
-  }
-
   @IpcHandle('api:GET/pixiv-api/pixiv-json')
   async getJson(@Payload() [{ pid }]: [{ pid: number }]) {
-    return this.pixivApiService.getPixivJson(pid)
+    return this.pixivApiService.getPixivIllustJson(pid)
+  }
+
+  @IpcHandle('api:GET/pixiv-api/user-json')
+  async getUserJson(@Payload() [{ uid }]: [{ uid: number }]) {
+    return this.pixivApiService.getPixivUserJson(uid)
+  }
+
+  @IpcHandle('api:GET/pixiv-api/user-illusts')
+  async getUserIllusts(@Payload() [{ uid }]: [{ uid: number }]) {
+    return this.pixivApiService.getPixivUserIllusts(uid)
+  }
+
+  @IpcHandle('api:GET/pixiv-api/next')
+  async getPixivNextRequest(@Payload() [{ nextUrl }]: [{ nextUrl: string }]) {
+    return this.pixivApiService.getPixivNextRequest(nextUrl)
+  }
+
+  @IpcHandle('api:GET/pixiv-api/file/ugoira')
+  async downloadPixivUgoira(@Payload() [{ url, dest }]: [{ url: string; dest: string }]) {
+    return this.pixivApiService.downloadPixivUgoira(url, dest)
+  }
+
+  @IpcHandle('api:GET/pixiv-api/ugoira-json')
+  async dgetPixivUgoiraJson(@Payload() [{ pid }]: [{ pid: number }]) {
+    return this.pixivApiService.getPixivUgoiraJson(pid)
   }
 }

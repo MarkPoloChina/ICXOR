@@ -88,6 +88,8 @@ function handleRemove(obj) {
     >
       <GridViewer
         :list="item.list"
+        :total-cnt="item.list.length"
+        :support-remove="true"
         @show-info="getInfo"
         @remove="handleRemove"
       />

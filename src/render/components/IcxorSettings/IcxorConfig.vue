@@ -4,6 +4,7 @@ import { useStore } from 'vuex'
 import { onMounted, reactive, ref } from 'vue'
 import { PathHelper } from '@render/ts/util/path'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { UtilDate } from '@render/ts/util/date'
 
 const { ipcInvoke } = window.electron
 const configForm = reactive({
@@ -14,6 +15,7 @@ const configForm = reactive({
   cos: '',
   pixivToken: '',
   pixivUserId: '',
+  pixivProxy: '',
 })
 const store = useStore()
 onMounted(() => {
@@ -67,6 +69,27 @@ function clearCache() {
     })
     .catch(() => {})
 }
+async function exportFile(filename: string) {
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  try {
+    await ipcInvoke(
+      'fs:copy',
+      PathHelper.joinFilenamePath(PathHelper.getBaseUrl(), filename),
+      PathHelper.joinFilenamePath(
+        dir,
+        `${PathHelper.getPrefixName(filename)}_${UtilDate.getFullTimeNumber(
+          new Date(),
+        )}${PathHelper.getExtNameWithDot(filename)}`,
+      ),
+    )
+    ElMessage.success('导出成功')
+  }
+  catch (error) {
+    ElMessage.error('导出失败')
+  }
+}
 </script>
 
 <template>
@@ -93,6 +116,22 @@ function clearCache() {
           <el-form :model="configForm" label-width="100px" style="width: 100%">
             <el-form-item label="本地路径">
               <span>{{ PathHelper.getBaseUrl() }}</span>
+              <el-button
+                type="primary"
+                size="small"
+                style="margin-left: 20px"
+                @click="exportFile('main.db')"
+              >
+                导出DB
+              </el-button>
+              <el-button
+                type="primary"
+                size="small"
+                style="margin-left: 20px"
+                @click="exportFile('config.json')"
+              >
+                导出Config
+              </el-button>
             </el-form-item>
             <el-form-item label="缓存大小">
               <span>{{ cacheSize ?? "正在计算中" }}</span>
@@ -153,23 +192,19 @@ function clearCache() {
                 placeholder="请输入UserId"
               />
             </el-form-item>
+            <el-form-item label="代理">
+              <el-input
+                v-model="configForm.pixivProxy"
+                placeholder="请输入形如host:port的代理"
+              />
+            </el-form-item>
           </el-form>
         </div>
       </el-scrollbar>
     </div>
     <div class="btn-block">
-      <el-button
-        type="success"
-        :icon="Check"
-        circle
-        @click="commit"
-      />
-      <el-button
-        type="danger"
-        :icon="Remove"
-        circle
-        @click="revoke"
-      />
+      <el-button type="success" :icon="Check" circle @click="commit" />
+      <el-button type="danger" :icon="Remove" circle @click="revoke" />
     </div>
   </div>
 </template>

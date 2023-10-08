@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
-import { Picture, Search, Star } from '@element-plus/icons-vue'
-import { UrlGenerator } from '@render/ts/util/path'
+import { reactive, ref, toRaw, watch } from 'vue'
+import { Download, Picture, Search, Star } from '@element-plus/icons-vue'
+import { PathHelper, UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 
+const { ipcInvoke, downloadPixivTo } = window.electron
 const form = reactive({
   pid: '',
   page: 0,
@@ -13,7 +15,8 @@ const pid = ref('')
 const page = ref(0)
 const maxpage = ref(10000)
 const isLoading = ref(false)
-const illustObj = ref(null)
+const isImgLoading = ref(false)
+const illustObj = ref<PixivIllust>(null)
 watch(
   () => form.page,
   (v) => {
@@ -25,6 +28,21 @@ function handleSearchByLink(_pid, _page) {
   form.page = Number.parseInt(_page)
   form.pid = _pid
   handleSearch(_pid, Number.parseInt(_page))
+}
+async function handleDownload() {
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  try {
+    if (illustObj.value.type === 'ugoira')
+      await API.downloadPixivUgoira(illustObj.value, dir)
+    else
+      await downloadPixivTo(toRaw(illustObj.value), dir, page.value)
+    ElMessage.success('下载完成')
+  }
+  catch (err) {
+    ElMessage.error(`下载失败: ${err}`)
+  }
 }
 function handleSearchByBtn() {
   if (!form.pid || !/[1-9]+[0-9]*]*/.test(form.pid)) {
@@ -55,7 +73,12 @@ function handleSearch(_pid, _page) {
       isLoading.value = false
     })
 }
-
+watch(
+  () => [illustObj.value, page.value],
+  () => {
+    isImgLoading.value = true
+  },
+)
 defineExpose({ handleSearchByLink })
 </script>
 
@@ -64,19 +87,27 @@ defineExpose({ handleSearchByLink })
     <div class="illust-form">
       <el-form label-width="80px" style="width: 100%" label-position="left">
         <el-form-item label="PID">
-          <el-input v-model="form.pid" placeholder="Input PID" />
+          <el-input v-model="form.pid" placeholder="输入PID" />
         </el-form-item>
-        <el-form-item label="Page">
+        <el-form-item label="页号">
           <el-row style="width: 100%" justify="space-between">
             <el-col :span="12">
               <el-input-number v-model="form.page" :min="0" :max="maxpage" />
             </el-col>
-            <el-col :span="2">
-              <el-button
-                :icon="Search"
-                type="primary"
-                @click="handleSearchByBtn"
-              />
+            <el-col :span="8">
+              <el-row justify="end">
+                <el-button
+                  v-if="illustObj"
+                  :icon="Download"
+                  type="primary"
+                  @click="handleDownload"
+                />
+                <el-button
+                  :icon="Search"
+                  type="primary"
+                  @click="handleSearchByBtn"
+                />
+              </el-row>
             </el-col>
           </el-row>
         </el-form-item>
@@ -85,6 +116,7 @@ defineExpose({ handleSearchByLink })
     <div v-if="illustObj" class="illust-result">
       <div class="result-left">
         <el-image
+          v-loading="isImgLoading"
           class="viewer-img"
           :src="
             UrlGenerator.getPixivUrlProxy(
@@ -94,11 +126,14 @@ defineExpose({ handleSearchByLink })
             )
           "
           :preview-src-list="[
-            UrlGenerator.getPixivUrlProxy(illustObj.page_count === 1
-              ? illustObj.meta_single_page.original_image_url
-              : illustObj.meta_pages[page].image_urls.original),
+            UrlGenerator.getPixivUrlProxy(
+              illustObj.page_count === 1
+                ? illustObj.meta_single_page.original_image_url
+                : illustObj.meta_pages[page].image_urls.original,
+            ),
           ]"
           fit="contain"
+          @load="isImgLoading = false"
         >
           <template #error>
             <div class="image-slot">
@@ -121,11 +156,19 @@ defineExpose({ handleSearchByLink })
               <el-button
                 :icon="Star"
                 circle
-                type="success"
-                size="small"
+                type="warning"
                 style="margin-left: 10px"
               />
             </template>
+            <el-descriptions-item label="类型">
+              <el-tag>
+                {{
+                  { ugoira: "动图", manga: "漫画", illust: "插画" }[
+                    illustObj.type
+                  ]
+                }}
+              </el-tag>
+            </el-descriptions-item>
             <el-descriptions-item label="ID">
               {{ illustObj.id }}
             </el-descriptions-item>
@@ -143,6 +186,23 @@ defineExpose({ handleSearchByLink })
             </el-descriptions-item>
             <el-descriptions-item label="作者名">
               {{ illustObj.user.name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="限制级">
+              <el-tag v-if="illustObj.x_restrict === 0" type="success">
+                普通
+              </el-tag>
+              <el-tag v-else-if="illustObj.x_restrict === 1" type="warning">
+                R-18
+              </el-tag>
+              <el-tag v-else-if="illustObj.x_restrict === 2" type="danger">
+                R-18G
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="分辨率">
+              {{ `H${illustObj.height} * W${illustObj.width}` }}
+            </el-descriptions-item>
+            <el-descriptions-item label="URL">
+              {{ illustObj.url }}
             </el-descriptions-item>
           </el-descriptions>
         </el-scrollbar>
@@ -166,8 +226,9 @@ defineExpose({ handleSearchByLink })
     justify-content: center;
     align-items: center;
     .viewer-img {
-      max-height: 100%;
-      max-width: 100%;
+      height: 100%;
+      width: 100%;
+      text-align: center;
     }
   }
   .result-right {

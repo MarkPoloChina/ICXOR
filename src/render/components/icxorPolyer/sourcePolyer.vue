@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import { API } from '@render/ts/api'
 import InfoViewer from './reusable/InfoViewer.vue'
-import GridLargeViewer from './reusable/gridLargeViewer.vue'
+import GridViewer from './reusable/gridViewer.vue'
 
 const source = reactive([])
 const dialogVisible = ref(false)
@@ -40,7 +40,6 @@ async function getIllusts(type, page = 0) {
     { 'remote_base.name': [type] },
     100,
     page * 100,
-    null,
   )
   return list
 }
@@ -76,9 +75,10 @@ async function handleLoadMore() {
       :label="item.type"
       lazy
     >
-      <GridLargeViewer
+      <GridViewer
         :list="item.list"
         :total-cnt="item.cnt"
+        :support-remove="false"
         @show-info="getInfo"
         @load-more="handleLoadMore"
       />

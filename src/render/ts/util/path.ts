@@ -1,5 +1,6 @@
 import path from 'path-browserify'
 import store from '@render/store/index'
+import type { IllustObj } from '../interface/illustObj'
 
 const { ipcSendSync } = window.electron
 const STORE_PATH = ipcSendSync('app:getPath', null)
@@ -32,33 +33,57 @@ export class PathHelper {
 }
 
 export class UrlGenerator {
-  static getBlobUrl(obj: any, type: string) {
-    if (obj.remote_endpoint) {
-      return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
-        type !== 'original' && obj.remote_base.thum_url
-          ? obj.remote_base.thum_url
-          : obj.remote_base.origin_url
-      }/${encodeURIComponent(
-        type !== 'original' && obj.thumb_endpoint
-          ? obj.thumb_endpoint
-          : obj.remote_endpoint,
-      )}`
+  static getBlobUrl(obj: IllustObj, type: string) {
+    if (obj.remote_base.type === 'pixiv') {
+      if (type === 'original') {
+        if (obj.remote_endpoint && obj.remote_base.origin_url) {
+          return `${ihs_base}${obj.remote_base.origin_url}/${encodeURIComponent(
+            obj.remote_endpoint,
+          )}`
+        }
+        else if (obj.meta.original_url) {
+          return this.getPixivUrlProxy(obj.meta.original_url)
+        }
+        else {
+          return this.getPixivUrlCat(obj.meta.pid, obj.meta.page)
+        }
+      }
+      else {
+        if (obj.thumb_endpoint && obj.remote_base.thum_url) {
+          return `${ihs_base}${obj.remote_base.thum_url}/${encodeURIComponent(
+            obj.thumb_endpoint,
+          )}`
+        }
+        else if (obj.meta.thumb_url) {
+          return this.getPixivUrlProxy(obj.meta.thumb_url)
+        }
+        else { return this.getPixivUrlCat(obj.meta.pid, obj.meta.page) }
+      }
     }
-    else if (obj.remote_base.type === 'pixiv') {
-      if (type === 'original' && obj.meta.original_url)
-        return this.getPixivUrlProxy(obj.meta.original_url)
-      else if (obj.meta.thumb_url)
-        return this.getPixivUrlProxy(obj.meta.thumb_url)
+    else {
+      if (type !== 'original' && obj.remote_base.thum_url) {
+        return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
+          obj.remote_base.thum_url
+        }/${encodeURIComponent(obj.thumb_endpoint || obj.remote_endpoint)}`
+      }
+      else {
+        return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
+          obj.remote_base.origin_url
+        }/${encodeURIComponent(obj.remote_endpoint)}`
+      }
     }
-    return ''
   }
 
   static getPixivUrlProxy(url: string) {
     return url.replace('i.pximg.net', 'i.pixiv.re')
   }
 
-  static getPixivUrlCat(pid: number, page: number, ext: string) {
-    const url = new URL(`https://pixiv.cat/${pid}-${page === 0 ? '' : page + 1}${ext}`)
+  static getPixivUrlCat(pid: number, page: number, ext?: string) {
+    const url = new URL(
+      `https://pixiv.re/${pid}${page === 0 ? '' : `-${page + 1}`}${
+        ext ?? '.jpg'
+      }`,
+    )
     return url.href
   }
 }

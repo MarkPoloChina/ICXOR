@@ -1,15 +1,21 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, SelectQueryBuilder } from 'typeorm'
-import Pixiv from 'pixiv.ts'
-import type { PixivIllust } from 'pixiv.ts'
+import { Repository } from 'typeorm'
+import Pixiv from '@markpolochina/pixiv.ts'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { ConfigDB } from '@main/node-processor/DBService'
 import { Meta } from '../illust/entities/meta.entities'
-import { IllustBatchDto } from '../illust/dto/illust_batch.dto'
-import { Illust } from '../illust/entities/illust.entities'
 
 let pixivApi: Pixiv = null
 async function initPixiv() {
+  const proxyStr: string | null | undefined = ConfigDB.getByKey('pixivProxy')
+  if (
+    proxyStr
+    && proxyStr.match(
+      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\:[1-9]\d{0,4}$/,
+    )
+  )
+    Pixiv.setProxy(proxyStr.split(':')[0], Number(proxyStr.split(':')[1]))
   const token = ConfigDB.getByKey('pixivToken')
   if (token)
     pixivApi = await Pixiv.refreshLogin(token)
@@ -20,16 +26,16 @@ export class PixivApiService {
   @InjectRepository(Meta)
   private readonly metaRepository: Repository<Meta>
 
-  @InjectRepository(Illust)
-  private readonly illustRepository: Repository<Illust>
-
   async getPixivUrl(pid: number, page: number, type: string) {
-    if (!pixivApi)
-      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
     if (!['square_medium', 'medium', 'original'].includes(type))
       throw new HttpException('illegal type.', HttpStatus.BAD_REQUEST)
-    const illust
-      = await pixivApi.illust.get(pid)
+    const illust = await pixivApi.illust.get(pid)
     if (!illust || page >= illust.page_count || !illust.visible)
       throw new HttpException('pid or page no found', HttpStatus.NOT_FOUND)
     const url
@@ -42,8 +48,12 @@ export class PixivApiService {
   }
 
   async getLatestIllusts(_isPrivate: boolean) {
-    if (!pixivApi)
-      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
     const list = []
     const queryAsync = (pid: number, index: number) => {
       return new Promise((resolve, reject) => {
@@ -58,7 +68,9 @@ export class PixivApiService {
       let json: { illusts: Array<PixivIllust>; next_url: string }
       if (!url) {
         json = {
-          illusts: await pixivApi.user.bookmarksIllust({ user_id: Number(ConfigDB.getByKey('pixivUserId')) }),
+          illusts: await pixivApi.user.bookmarksIllust({
+            user_id: Number(ConfigDB.getByKey('pixivUserId')),
+          }),
           next_url: pixivApi.user.nextURL,
         }
       }
@@ -78,79 +90,76 @@ export class PixivApiService {
       })
       if (flag)
         return await check(json.next_url)
-      else
-        return list
+      else return list
     }
     return await check()
   }
 
-  async updateMetas(illusts: IllustBatchDto) {
-    if (!pixivApi)
-      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
-    const limitMap = {
-      0: 'normal',
-      1: 'R-18',
-      2: 'R-18G',
+  async getPixivIllustJson(pid: number | string) {
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
     }
-    const list: Meta[] = []
-    if (illusts.conditionObject) {
-      let querybuilder: SelectQueryBuilder<Illust> = this.illustRepository
-        .createQueryBuilder()
-        .leftJoinAndSelect('Illust.meta', 'meta')
-        .leftJoinAndSelect('Illust.poly', 'poly')
-        .leftJoinAndSelect('Illust.tag', 'tag')
-        .leftJoinAndSelect('Illust.remote_base', 'remote_base')
-      let firstCause = true
-      Object.keys(illusts.conditionObject).forEach((colName, index) => {
-        if (illusts.conditionObject[colName].length) {
-          const param1 = `(${colName} IN (:...row${index}))`
-          const param2 = {
-            [`row${index}`]: illusts.conditionObject[colName],
-          }
-          if (firstCause) {
-            querybuilder = querybuilder.where(param1, param2)
-            firstCause = false
-          }
-          else { querybuilder = querybuilder.andWhere(param1, param2) }
-        }
-      })
-      const results = await querybuilder.getMany()
-      for (const illust of results) {
-        if (illust.meta)
-          list.push(illust.meta)
-      }
-    }
-    else {
-      for (const illust of illusts.dtos) {
-        if (!illust.dto.meta)
-          continue
-        const result = await this.metaRepository.findBy({
-          pid: illust.dto.meta.pid,
-        })
-        if (result)
-          list.push(...result)
-      }
-    }
-    list.forEach((meta) => {
-      pixivApi.illust.get(meta.pid).then((illust) => {
-        if (!illust || !illust.visible)
-          return
-        meta.author = illust.user.name
-        meta.author_id = illust.user.id
-        meta.book_cnt = illust.total_bookmarks
-        meta.limit = limitMap[illust.x_restrict]
-        this.metaRepository.save(meta)
-      })
-    })
-  }
-
-  async getPixivJson(pid: number) {
-    if (!pixivApi)
-      throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
-    const illust
-      = await pixivApi.illust.get(pid)
+    const illust = await pixivApi.illust.detail({ illust_id: Number(pid) })
     if (!illust || !illust.visible)
       throw new HttpException('pid no found', HttpStatus.NOT_FOUND)
     return illust
+  }
+
+  async getPixivUserJson(uid: number | string) {
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+    const user = await pixivApi.user.detail({ user_id: Number(uid) })
+    if (!user)
+      throw new HttpException('uid no found', HttpStatus.NOT_FOUND)
+    return user
+  }
+
+  async getPixivUserIllusts(uid: number | string) {
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+    const illusts = await pixivApi.user.illusts({ user_id: Number(uid) })
+    return { illusts, nextUrl: pixivApi.user.nextURL }
+  }
+
+  async getPixivNextRequest(nextUrl: string) {
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+    const resp = await pixivApi.api.next(nextUrl)
+    return resp
+  }
+
+  async downloadPixivUgoira(url: string | PixivIllust, dest: string) {
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+    return await pixivApi.util.downloadUgoira(url, dest, { speed: 1 })
+  }
+
+  async getPixivUgoiraJson(pid: number | string) {
+    if (!pixivApi) {
+      throw new HttpException(
+        'API not started.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+    return await pixivApi.ugoira.metadata({ illust_id: Number(pid) })
   }
 }

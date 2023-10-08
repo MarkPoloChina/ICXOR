@@ -11,36 +11,77 @@ const emit = defineEmits(['update:modelValue'])
   <el-dialog
     :model-value="modelValue"
     title="详细信息"
-    width="70%"
+    width="80%"
     :before-close="() => emit('update:modelValue', false)"
   >
-    <el-descriptions :column="3" border>
-      <template #extra>
-        <!-- <el-button type="primary">Operation</el-button> -->
-      </template>
-      <el-descriptions-item>
-        <template #label>
-          来源
-        </template>
+    <el-descriptions
+      v-if="info"
+      style="margin-bottom: 10px"
+      title="基准"
+      border
+    >
+      <el-descriptions-item label="ID">
+        {{ info.id }}
+      </el-descriptions-item>
+      <el-descriptions-item label="类型">
         {{ info.remote_base.name }}
       </el-descriptions-item>
-      <el-descriptions-item>
-        <template #label>
-          PID
-        </template>
+      <el-descriptions-item v-if="info.remote_endpoint" label="末端">
+        {{ info.remote_endpoint }}
+      </el-descriptions-item>
+      <el-descriptions-item label="评分">
+        <el-rate :model-value="info.star" :disabled="true" clearable />
+      </el-descriptions-item>
+      <el-descriptions-item label="入库时间">
+        <el-date-picker
+          :model-value="info.date"
+          style="width: 180px"
+          value-format="YYYY-MM-DD"
+          type="date"
+          placeholder="Pick a day"
+          :disabled="true"
+        />
+      </el-descriptions-item>
+      <el-descriptions-item label="标签">
+        <el-tag v-for="tag in info.tag" :key="tag.id">
+          {{ tag.name }}
+        </el-tag>
+        {{ !info.tag || info.tag.length === 0 ? "-" : "" }}
+      </el-descriptions-item>
+    </el-descriptions>
+    <el-descriptions
+      v-if="info && info.meta"
+      class="info"
+      title="元数据"
+      border
+    >
+      <el-descriptions-item label="PId">
         {{ info.meta.pid }}
       </el-descriptions-item>
-      <el-descriptions-item>
-        <template #label>
-          Page
-        </template>
+      <el-descriptions-item label="页号">
         {{ info.meta.page }}
       </el-descriptions-item>
-      <el-descriptions-item>
-        <template #label>
-          标题
-        </template>
-        {{ info.meta.title }}
+      <el-descriptions-item label="限制级">
+        {{ info.meta.limit ?? "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="作者">
+        {{
+          info.meta.author_id && info.meta.author
+            ? `[${info.meta.author_id}] ${info.meta.author}`
+            : "-"
+        }}
+      </el-descriptions-item>
+      <el-descriptions-item label="收藏数">
+        {{ info.meta.book_cnt ?? "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="标题">
+        {{ info.meta.title ?? "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="宽度">
+        {{ info.meta.width ?? "-" }}
+      </el-descriptions-item>
+      <el-descriptions-item label="高度">
+        {{ info.meta.height ?? "-" }}
       </el-descriptions-item>
     </el-descriptions>
     <!-- <template #footer>

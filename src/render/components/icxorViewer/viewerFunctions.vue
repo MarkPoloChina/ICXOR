@@ -5,10 +5,12 @@ import { computed, reactive, watch } from 'vue'
 const props = defineProps({
   illustCount: Number,
   curPage: Number,
+  pageSize: Number,
 })
 
 const emit = defineEmits([
   'update:curPage',
+  'update:pageSize',
   'update:viewer-type',
   'focusUp',
   'focusDown',
@@ -22,6 +24,14 @@ const writableCurPage = computed({
   },
   set: (val) => {
     emit('update:curPage', val)
+  },
+})
+const writablePageSize = computed({
+  get: () => {
+    return props.pageSize
+  },
+  set: (val) => {
+    emit('update:pageSize', val)
   },
 })
 watch(viewerController, (val) => {
@@ -62,11 +72,12 @@ watch(viewerController, (val) => {
       </el-button-group>
       <el-pagination
         v-model:current-page="writableCurPage"
+        v-model:page-size="writablePageSize"
         background
-        layout="total, prev, pager, next"
+        layout="total, sizes, prev, pager, next"
         :total="illustCount"
-        :page-size="100"
         :pager-count="5"
+        :page-sizes="[100, 1000]"
         small
       />
     </div>

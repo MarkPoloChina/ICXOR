@@ -1,3 +1,4 @@
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electron', {
@@ -35,4 +36,7 @@ contextBridge.exposeInMainWorld('electron', {
   // downloader
   downloadTo: (url: string, rename: string, dir: string): Promise<void> =>
     ipcRenderer.invoke('ds:download', url, rename, dir),
+
+  downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number): Promise<void> =>
+    ipcRenderer.invoke('ds:downloadPixiv', illustObj, dir, page),
 })

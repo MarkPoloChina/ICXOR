@@ -33,9 +33,8 @@ watch(
 watch(
   () => props.currentSelected,
   (val) => {
-    if (!val)
-      return
-    table.value.setCurrentRow(val)
+    if (val)
+      table.value.setCurrentRow(val)
   },
   {
     deep: false,
@@ -48,7 +47,7 @@ function handleContextDeteched(row) {
   emits('popupContext', row)
 }
 function handleSelect(selection, row) {
-  row.checked = selection.length !== 0
+  row.checked = !row.checked
 }
 function handleSelectAll(selection) {
   props.tableData.forEach((item) => {
@@ -72,17 +71,18 @@ function handleSelectAll(selection) {
       @select-all="handleSelectAll"
       @row-contextmenu="handleContextDeteched"
     >
-      <el-table-column type="selection" width="55" />
-      <el-table-column prop="remote_base.name" label="类型" :min-width="80" />
-      <el-table-column prop="meta.pid" label="PID" :min-width="120" />
-      <el-table-column prop="meta.page" label="页号" :min-width="50" />
-      <el-table-column label="标题/末端" :min-width="280" show-overflow-tooltip>
+      <el-table-column type="selection" width="40" />
+      <el-table-column prop="id" label="ID" :min-width="70" />
+      <el-table-column prop="remote_base.name" label="类型" :min-width="70" />
+      <el-table-column prop="star" label="评级" :width="150">
         <template #default="scope">
-          {{
-            scope.row.meta ? scope.row.meta.title : scope.row.remote_endpoint
-          }}
+          <el-rate
+            :model-value="scope.row.star"
+            :disabled="true"
+          />
         </template>
       </el-table-column>
+      <el-table-column prop="remote_endpoint" label="末端" :min-width="250" show-overflow-tooltip />
     </el-table>
   </div>
 </template>

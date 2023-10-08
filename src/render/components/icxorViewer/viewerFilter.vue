@@ -7,11 +7,13 @@ import {
   Refresh,
 } from '@element-plus/icons-vue'
 
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
+import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 
-const emit = defineEmits(['update:filter'])
+const emit = defineEmits(['update:filter', 'update:sorter'])
 const show = ref(false)
-const filterCondition = reactive({
+const filterCondition = reactive<FilterConditionObj>({
   'remote_base.id': [],
   'illust.date': [],
   'illust.star': [],
@@ -20,6 +22,14 @@ const filterCondition = reactive({
   'poly.name': [],
   'tag.name': [],
   'meta.pid': [],
+  'AR': 'all',
+})
+const filterSortKey = ref('Illust.id')
+const filterSortDesc = ref<'DESC' | 'ASC'>('DESC')
+const filterSort = computed<FilterSortObj>(() => {
+  const obj = {}
+  obj[filterSortKey.value] = filterSortDesc.value
+  return obj
 })
 const options = {
   'remote_base.id': [],
@@ -38,11 +48,56 @@ const options = {
       label: '作者专题',
     },
   ],
+  'AR': [{
+    value: 'all',
+    label: '所有纵横比',
+  },
+  {
+    value: 'horizontal',
+    label: '横版',
+  },
+  {
+    value: 'vertical',
+    label: '竖版',
+  }],
+  'sortKey': [
+    {
+      value: 'Illust.id',
+      label: '基ID',
+    },
+    {
+      value: 'Illust.remote_endpoint',
+      label: '末端',
+    },
+    {
+      value: 'meta.pid',
+      label: 'PID',
+    },
+    {
+      value: 'meta.author_id',
+      label: '作者ID',
+    },
+    {
+      value: 'meta.book_cnt',
+      label: '收藏数',
+    },
+  ],
+  'sortDesc': [{
+    value: 'ASC',
+    label: '顺序',
+  },
+  {
+    value: 'DESC',
+    label: '倒序',
+  }],
 }
 const polyOptions = ref([])
 const polyValue = ref()
 watch(filterCondition, (val) => {
   emit('update:filter', val)
+})
+watch(filterSort, (val) => {
+  emit('update:sorter', val)
 })
 onMounted(() => {
   getTypeOptions()
@@ -98,9 +153,12 @@ function handlePolyChange(val) {
   })
 }
 function handleClear() {
-  Object.keys(filterCondition).forEach((key) => {
+  filterCondition.AR = 'all'
+  Object.keys(filterCondition).filter(value => value !== 'AR').forEach((key) => {
     filterCondition[key] = []
   })
+  filterSortKey.value = 'Illust.id'
+  filterSortDesc.value = 'DESC'
 }
 </script>
 
@@ -196,12 +254,57 @@ function handleClear() {
           </div>
           <div>
             <el-select
+              v-model="filterCondition.AR"
+              placeholder="选择纵横比"
+            >
+              <el-option
+                v-for="item in options.AR"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+                {{ item.label }}
+              </el-option>
+            </el-select>
+          </div>
+          <div>
+            <el-select
               v-model="filterCondition['meta.pid']"
               multiple
               filterable
               allow-create
               placeholder="填写PID"
             />
+          </div>
+          <div
+            style="
+              margin-top: 25px;
+              padding-top: 25px;
+              border-top: 1px solid rgba(0, 0, 0, 0.1);
+            "
+          >
+            <el-select v-model="filterSortKey" placeholder="选择排序规则">
+              <el-option
+                v-for="item in options.sortKey"
+                :key="item.value"
+                :label="`按${item.label}排序`"
+                :value="item.value"
+              >
+                {{ `按${item.label}排序` }}
+              </el-option>
+            </el-select>
+          </div>
+          <div>
+            <el-select v-model="filterSortDesc" placeholder="选择顺序">
+              <el-option
+                v-for="item in options.sortDesc"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+                {{ item.label }}
+              </el-option>
+            </el-select>
           </div>
         </div>
       </transition>

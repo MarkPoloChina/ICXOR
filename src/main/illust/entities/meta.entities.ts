@@ -35,6 +35,12 @@ export class Meta {
   @Column({ type: 'int', nullable: true })
   book_cnt: number
 
+  @Column({ type: 'int', nullable: true })
+  width: number
+
+  @Column({ type: 'int', nullable: true })
+  height: number
+
   @OneToOne(() => Illust, illust => illust.meta, {
     onDelete: 'CASCADE',
   })

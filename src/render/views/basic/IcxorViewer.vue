@@ -9,9 +9,11 @@ const viewerMain = ref()
 const viewerInfo = ref()
 const viewerType = ref('table')
 const filter = ref({})
+const sorter = ref({ 'Illust.id': 'DESC' })
 const currentSelected = ref(null)
 const illustCount = ref(0)
 const curPage = ref(1)
+const pageSize = ref(100)
 </script>
 
 <template>
@@ -21,15 +23,17 @@ const curPage = ref(1)
     </div>
     <div class="main">
       <div class="col selector-col">
-        <ViewerFilter @update:filter="filter = $event" />
+        <ViewerFilter @update:filter="filter = $event" @update:sorter="sorter = $event" />
       </div>
       <div class="col main-and-func-col">
         <div class="main-row">
           <ViewerMain
             ref="viewerMain"
             v-model:curPage="curPage"
+            v-model:page-size="pageSize"
             v-model:currentSelected="currentSelected"
             :filter="filter"
+            :sorter="sorter"
             :viewer-type="viewerType"
             @update:illust-count="illustCount = $event"
             @update:star="viewerInfo.handleStarChange($event)"
@@ -38,6 +42,7 @@ const curPage = ref(1)
         <div class="func-row">
           <ViewerFunctions
             v-model:curPage="curPage"
+            v-model:page-size="pageSize"
             :illust-count="illustCount"
             @update:viewer-type="viewerType = $event"
             @focus-up="viewerMain.handleFocusIndexChange('up')"

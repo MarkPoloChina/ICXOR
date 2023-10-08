@@ -48,6 +48,11 @@ const routes: RouteRecordRaw[] = [
         name: 'pixivIllust',
         component: () => import('@render/views/basic/IcxorPixiv.vue'),
       },
+      {
+        path: 'pixiv/user/:uid',
+        name: 'pixivUser',
+        component: () => import('@render/views/basic/IcxorPixiv.vue'),
+      },
     ],
   }]
 

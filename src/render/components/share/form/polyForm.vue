@@ -1,21 +1,19 @@
 <script setup lang="ts">
+import type { Poly } from '@main/illust/entities/poly.entities'
 import { API } from '@render/ts/api'
 import { computed, onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
-  type: String,
-  chooseAll: Boolean,
 })
 
-const emit = defineEmits(['update:modelValue', 'confirm'])
+const emit = defineEmits(['update:modelValue', 'update:poly-option'])
 const polyInfo = reactive({
   type: 'picolt',
   parent: '',
   name: '',
-  waifu2x: '',
 })
-const polyParentEnum = ref([])
+const polyParentEnum = ref<Poly[]>([])
 const dialogVisible = computed({
   get: () => {
     return props.modelValue
@@ -27,38 +25,23 @@ const dialogVisible = computed({
 onMounted(() => {
   getPolyParentEnum(polyInfo.type)
 })
-function getPolyParentEnum(type) {
+function getPolyParentEnum(type?: string) {
   if (type) {
     API.getEnumPolyParent(type).then((data) => {
       polyParentEnum.value = data
     })
   }
 }
-function initForm() {
+function handleConfirm() {
+  dialogVisible.value = false
+  emit('update:poly-option', polyInfo)
+}
+function clearForm() {
   polyInfo.type = 'picolt'
   polyInfo.parent = ''
   polyInfo.name = ''
-  polyInfo.waifu2x = ''
-  getPolyParentEnum(polyInfo.type)
 }
-function handleConfirm() {
-  dialogVisible.value = false
-  let controller = null
-  let data = null
-  if (props.type === 'pixiv') {
-    data = { ...polyInfo }
-  }
-  else if (props.type === 'viewer') {
-    data = { ...polyInfo }
-    controller = props.chooseAll
-  }
-  emit('confirm', {
-    data,
-    controller,
-  })
-}
-
-defineExpose({ initForm })
+defineExpose({ clearForm })
 </script>
 
 <template>
@@ -111,37 +94,16 @@ defineExpose({ initForm })
         <el-form-item label="聚合名">
           <el-input v-model="polyInfo.name" placeholder="输入聚合名" />
         </el-form-item>
-        <!-- <el-form-item label="Waifu2x">
-  <el-select
-    v-model="importOption.copy.waifu2x"
-    placeholder="选择Waifu2x"
-  >
-    <el-option
-      v-for="item in [
-        {
-          value: 'null',
-          label: '原始版本',
-        },
-        {
-          value: 'ncnn',
-          label: 'NCNN',
-        },
-        {
-          value: 'real',
-          label: 'RealGUN',
-        },
-      ]"
-      :key="item.value"
-      :label="item.label"
-      :value="item.value"
-    />
-  </el-select>
-</el-form-item> -->
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="handleConfirm"> Confirm </el-button>
+          <el-button
+            type="primary"
+            @click="handleConfirm"
+          >
+            Confirm
+          </el-button>
         </span>
       </template>
     </el-dialog>

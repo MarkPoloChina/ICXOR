@@ -94,11 +94,17 @@ function prepareFS() {
   ipcMain.handle('fs:getFilenames', async (event, dir) => {
     return await FS.parseFilenamesFromDirectoryAsync(dir)
   })
+  ipcMain.handle('fs:copy', async (event, src, dest) => {
+    await FS.localCopy(src, dest)
+  })
 }
 
 function prepareDS() {
   ipcMain.handle('ds:download', async (event, url, filename, dir) => {
     await DS.downloadAndSave(url, filename, dir)
+  })
+  ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
+    await DS.downloadFromIllustObj(illustObj, dir, page)
   })
 }
 

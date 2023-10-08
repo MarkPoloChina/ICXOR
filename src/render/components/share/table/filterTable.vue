@@ -132,19 +132,11 @@ defineExpose({ onReset })
       </el-table-column>
       <el-table-column prop="filename" label="文件名" :width="350" />
       <el-table-column prop="status" label="状态" :width="100">
-        <template #header="{ column }">
+        <template #header>
           <div
-            style="display: flex; align-items: center; justify-content: center"
+            style="display: flex; align-items: center; justify-content: space-between"
           >
-            <span
-              style="
-                margin-right: 0.5rem;
-                font-size: 0.75rem;
-                line-height: 1rem;
-              "
-            >
-              {{ column.title }}
-            </span>
+            状态
             <ElPopover ref="popoverRef" trigger="click" width="150">
               <div class="filter-wrapper">
                 <div class="filter-group">
@@ -187,7 +179,7 @@ defineExpose({ onReset })
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="message" label="说明" :width="500" />
+      <el-table-column prop="message" label="说明" />
     </el-table>
     <el-pagination
       v-model:current-page="writableCurPage"

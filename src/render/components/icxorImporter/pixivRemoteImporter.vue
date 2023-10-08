@@ -4,6 +4,7 @@ import { BatchDto } from '@render/ts/dto/batch'
 import { Check, Download, Remove } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref } from 'vue'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 
 const resultTable = ref([])
 const selectedList = ref([])
@@ -14,9 +15,9 @@ const importOption = reactive({
   addition: {
     remote_base: {
       id: 2,
+      name: 'Pixiv',
     },
-    date: null,
-    meta: {},
+    date: undefined,
   },
 })
 function initTab() {
@@ -58,23 +59,43 @@ function handleUpload() {
     .then(() => {
       loading.value = true
       const dto = new BatchDto()
-      dto.addition = { ...importOption.addition }
-      selectedList.value.forEach((ele) => {
+      let curBid = 0
+      selectedList.value.forEach((ele: PixivIllust) => {
         for (let i = 0; i < ele.page_count; i++) {
           dto.dtos.push({
             dto: {
+              remote_base: importOption.addition.remote_base,
+              date: importOption.addition.date,
               meta: {
                 pid: ele.id,
                 page: i,
                 title: ele.title,
-                original_url: ele.meta_single_page.original_image_url || ele.meta_pages[i].image_urls.original,
-                thumb_url: ele.page_count === 1 ? ele.image_urls.large : ele.meta_pages[i].image_urls.large,
+                original_url:
+                  ele.meta_single_page.original_image_url
+                  || ele.meta_pages[i].image_urls.original,
+                thumb_url:
+                  ele.page_count === 1
+                    ? ele.image_urls.large
+                    : ele.meta_pages[i].image_urls.large,
+                limit:
+                  ele.x_restrict === 1
+                    ? 'R-18'
+                    : ele.x_restrict === 2
+                      ? 'R-18G'
+                      : 'normal',
+                author: ele.user.name,
+                author_id: ele.user.id,
+                book_cnt: ele.total_bookmarks,
+                width: ele.width,
+                height: ele.height,
               },
             },
+            bid: curBid,
           })
+          curBid++
         }
       })
-      API.newIllusts(dto)
+      API.updateIllusts(dto)
         .then(() => {
           selectedList.value.length = 0
           table.value.clearSelection()
@@ -171,24 +192,9 @@ function handleSelectionChange(val) {
       </el-table>
     </div>
     <div class="btn-area">
-      <el-button
-        type="primary"
-        :icon="Download"
-        circle
-        @click="startAction"
-      />
-      <el-button
-        type="success"
-        :icon="Check"
-        circle
-        @click="handleUpload"
-      />
-      <el-button
-        type="danger"
-        :icon="Remove"
-        circle
-        @click="initTab"
-      />
+      <el-button type="primary" :icon="Download" circle @click="startAction" />
+      <el-button type="success" :icon="Check" circle @click="handleUpload" />
+      <el-button type="danger" :icon="Remove" circle @click="initTab" />
     </div>
   </div>
 </template>

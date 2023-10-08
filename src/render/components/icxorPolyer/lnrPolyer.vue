@@ -27,7 +27,7 @@ async function getData() {
 }
 function handleRightClick() {
   ipcRemoveAll('context:click')
-  ipcOnce('context:click', (event, item) => {
+  ipcOnce('context:click', (item) => {
     switch (item) {
       case '删除当前聚合':
         handleDeletePoly()
@@ -101,6 +101,8 @@ function handleDeletePoly() {
     >
       <GridViewer
         :list="item.list"
+        :total-cnt="item.list.length"
+        :support-remove="true"
         @show-info="getInfo"
         @remove="handleRemove"
       />

@@ -1,3 +1,6 @@
+import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
+import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { isReactive, toRaw } from 'vue'
 
 const { apiAdapter } = window.electron
@@ -41,7 +44,7 @@ function recursivelyConvertToRaw(obj: any) {
   else if (Array.isArray(obj)) {
     return obj.map(item => recursivelyConvertToRaw(item))
   }
-  else if (typeof obj === 'object') {
+  else if (typeof obj === 'object' && obj !== null) {
     const result = {}
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key))
@@ -61,7 +64,12 @@ async function axiosAdapter(
   body?: any,
 ) {
   try {
-    const ipcBack = await apiAdapter(url, method, recursivelyConvertToRaw(params), recursivelyConvertToRaw(body))
+    const ipcBack = await apiAdapter(
+      url,
+      method,
+      recursivelyConvertToRaw(params),
+      recursivelyConvertToRaw(body),
+    )
     return {
       code: 200,
       message: 'OK',
@@ -103,7 +111,12 @@ export class API {
     return resp.data
   }
 
-  static async getIllusts(conditionJson, limit, offset, orderAsJson) {
+  static async getIllusts(
+    conditionJson?: FilterConditionObj,
+    limit?: number,
+    offset?: number,
+    orderAsJson?: FilterSortObj,
+  ) {
     const resp = await ax.get('/illust/base/list', {
       params: {
         orderAsJson,
@@ -115,7 +128,7 @@ export class API {
     return resp.data
   }
 
-  static async getIllustsCount(conditionJson) {
+  static async getIllustsCount(conditionJson?: FilterConditionObj) {
     const resp = await ax.get('/illust/base/count', {
       params: {
         conditionJson,
@@ -124,22 +137,13 @@ export class API {
     return resp.data
   }
 
-  static async newIllusts(illustList) {
+  static async updateIllusts(illustList) {
     const resp = await ax.post('/illust/bases', illustList)
     return resp.data
   }
 
-  static async updateIllusts(illustList) {
-    const resp = await ax.put('/illust/bases', illustList)
-    return resp.data
-  }
-
-  static async updateIllust(illustList, addIfNotFound) {
-    const resp = await ax.put('/illust/base', illustList, {
-      params: {
-        addIfNotFound,
-      },
-    })
+  static async updateIllust(illust) {
+    const resp = await ax.put('/illust/base', illust)
     return resp.data
   }
 
@@ -149,7 +153,7 @@ export class API {
         illustIds,
       },
     })
-    return resp
+    return resp.data
   }
 
   static async getPoly(type) {
@@ -216,11 +220,6 @@ export class API {
     return resp.data
   }
 
-  static async updatePixivMeta(illust) {
-    const resp = await ax.put('/pixiv-api/pixiv-json/list', illust)
-    return resp.data
-  }
-
   static async getRemoteBase() {
     const resp = await ax.get('/illust/remote-base/list', {
       params: {
@@ -236,7 +235,7 @@ export class API {
   }
 
   static async coverIllustToday(date, illustId) {
-    const resp = await ax.put('/illust/illust-today', null, {
+    const resp = await ax.post('/illust/illust-today', null, {
       params: {
         date,
         illustId,
@@ -249,6 +248,43 @@ export class API {
     const resp = await ax.get('/pixiv-api/pixiv-json', {
       params: {
         pid,
+      },
+    })
+    return resp.data
+  }
+
+  static async getPixivUserInfo(uid) {
+    const resp = await ax.get('/pixiv-api/user-json', {
+      params: {
+        uid,
+      },
+    })
+    return resp.data
+  }
+
+  static async getPixivUserIllusts(uid) {
+    const resp = await ax.get('/pixiv-api/user-illusts', {
+      params: {
+        uid,
+      },
+    })
+    return resp.data
+  }
+
+  static async getPixivNextRequest(nextUrl: string) {
+    const resp = await ax.get('/pixiv-api/next', {
+      params: {
+        nextUrl,
+      },
+    })
+    return resp.data
+  }
+
+  static async downloadPixivUgoira(url: string | PixivIllust, dest: string) {
+    const resp = await ax.get('/pixiv-api/file/ugoira', {
+      params: {
+        url,
+        dest,
       },
     })
     return resp.data
