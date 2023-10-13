@@ -1,5 +1,6 @@
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
+import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { isReactive, toRaw } from 'vue'
 
@@ -234,12 +235,9 @@ export class API {
     return resp.data
   }
 
-  static async coverIllustToday(date, illustId) {
-    const resp = await ax.post('/illust/illust-today', null, {
-      params: {
-        date,
-        illustId,
-      },
+  static async coverIllustToday(date: string, itdto: IllustTodayDto) {
+    const resp = await ax.post('/illust/illust-today', itdto, {
+      params: { date },
     })
     return resp.data
   }

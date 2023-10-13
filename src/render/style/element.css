@@ -1,9 +1,0 @@
-html.dark {
-  --el-color-primary: #2e89c0
-}
-:root {
-  --el-color-primary: #2e89c0
-}
-/* To fit the color into both dark mode and light mode, use css instead of scss to overload element color.
- * if there are better ways, back to scss.
- */

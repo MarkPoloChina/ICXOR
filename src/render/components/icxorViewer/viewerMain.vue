@@ -11,6 +11,7 @@ import { PathHelper, UrlGenerator } from '@render/ts/util/path'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import IllustTodayForm from '@render/components/share/form/illustTodayForm.vue'
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
 import BatchLogDrawer from '../share/drawer/batchLogDrawer.vue'
 import ViewerGrid from './main/viewerGrid.vue'
 import ViewerFocus from './main/viewerFocus.vue'
@@ -38,6 +39,7 @@ const viewer: Ref<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable>
   = ref()
 const metaForm: Ref<typeof MetaForm> = ref()
 const polyForm: Ref<typeof PolyForm> = ref()
+const itForm: Ref<typeof IllustTodayForm> = ref()
 const writableCurPage = computed({
   get: () => {
     return props.curPage
@@ -444,16 +446,27 @@ function handleFetch(chooseAll: boolean) {
     .catch(() => {})
 }
 
-function handleIT(info: { date: Date }) {
+function handleIT(info: { date: string; char: string; tags: string[] }) {
   ElMessageBox.confirm('为当前项目建立IT, 确认?', 'Warning', {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
     type: 'warning',
   })
     .then(() => {
-      API.coverIllustToday(info.date, currentOperating.value.id)
+      const dto: IllustTodayDto = {
+        char: info.char,
+        tags: info.tags,
+        type: currentOperating.value.remote_base.type,
+        target: currentOperating.value.meta
+          ? `${currentOperating.value.meta.pid}${
+          currentOperating.value.meta.page ? `-${currentOperating.value.meta.page + 1}` : ''
+          }`
+          : `${currentOperating.value.remote_base.origin_url}/${currentOperating.value.remote_endpoint}`,
+      }
+      API.coverIllustToday(info.date, dto)
         .then(() => {
           ElMessage.success('请求成功')
+          itForm.value.initForm()
         })
         .catch((err) => {
           ElMessage.error(`错误: ${err}`)
@@ -657,7 +670,7 @@ defineExpose({
       v-model="show.poly"
       @update:poly-option="handlePoly"
     />
-    <IllustTodayForm v-model="show.it" @confirm="handleIT" />
+    <IllustTodayForm ref="itForm" v-model="show.it" :current-operating="currentOperating" @confirm="handleIT" />
     <BatchLogDrawer v-model="show.drawer" :batch-logs="batchLogs" />
   </div>
 </template>

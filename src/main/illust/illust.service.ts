@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, SelectQueryBuilder } from 'typeorm'
+import { MPAPI } from '@main/node-processor/ApiService'
 import { IllustDto } from './dto/illust.dto'
 import { IllustBatchDto } from './dto/illust_batch.dto'
 import { RemoteBaseDto } from './dto/remote_base.dto'
 import { Illust } from './entities/illust.entities'
-import { IllustToday } from './entities/illust_today.entities'
 import { Meta } from './entities/meta.entities'
 import { Poly } from './entities/poly.entities'
 import { RemoteBase } from './entities/remote_base.entities'
@@ -13,6 +13,7 @@ import { Tag } from './entities/tag.entities'
 import { RespListObjDto } from './dto/resp_list_obj.dto'
 import { FilterConditionObj } from './dto/filter_condition_obj.dto'
 import { FilterPolySortObj, FilterSortObj } from './dto/filter_sort_obj.dto'
+import { IllustTodayDto } from './dto/illust_today.dto'
 
 @Injectable()
 export class IllustService {
@@ -27,8 +28,6 @@ export class IllustService {
     private readonly remoteBaseRepository: Repository<RemoteBase>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
-    @InjectRepository(IllustToday)
-    private readonly illustTodayRepository: Repository<IllustToday>,
   ) {}
 
   async getMetaEnum(row: string, desc: boolean) {
@@ -571,32 +570,11 @@ export class IllustService {
     return await this.remoteBaseRepository.save(targetRemoteBase)
   }
 
-  async updateIllustToday(date: Date, illustId: number) {
-    let targetIllustToday = await this.illustTodayRepository.findOneBy({
-      date,
-    })
-    if (!targetIllustToday) {
-      targetIllustToday = new IllustToday()
-      targetIllustToday.date = date
-    }
-    targetIllustToday.illust = await this.illustRepository.findOneByOrFail({
-      id: illustId,
-    })
-    return await this.illustTodayRepository.save(targetIllustToday)
+  async updateIllustToday(date: string, dto: IllustTodayDto) {
+    return await MPAPI.updateIllustToday(date, dto)
   }
 
-  async getIllustToday(date: Date) {
-    const targetIllustToday = await this.illustTodayRepository.findOneOrFail({
-      where: {
-        date,
-      },
-      relations: {
-        illust: {
-          meta: true,
-          remote_base: true,
-        },
-      },
-    })
-    return targetIllustToday
+  async getIllustToday(date: string) {
+    return await MPAPI.getIllustToday(date)
   }
 }

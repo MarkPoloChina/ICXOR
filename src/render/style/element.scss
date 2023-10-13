@@ -1,7 +1,13 @@
-@forward "element-plus/theme-chalk/src/common/var.scss" with (
-  $colors: (
-    "primary": (
-      "base": #2e89c0,
-    ),
-  )
-);
+// @forward "element-plus/theme-chalk/src/common/var.scss" with (
+//   $colors: (
+//     "primary": (
+//       "base": #2e89c0,
+//     ),
+//   )
+// );
+html.dark {
+  --el-color-primary: #2e89c0
+}
+:root {
+  --el-color-primary: #2e89c0
+}

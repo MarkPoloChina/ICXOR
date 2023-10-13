@@ -1,14 +1,20 @@
 <script setup lang="ts">
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import { API } from '@render/ts/api'
+import type { IllustObj } from '@render/ts/interface/illustObj'
 import { ElMessage } from 'element-plus'
-import { computed, reactive } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
+  currentOperating: Object,
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
 const baseInfo = reactive({
   date: null,
+  tags: [],
+  char: null,
 })
 const dialogVisible = computed({
   get: () => {
@@ -20,6 +26,8 @@ const dialogVisible = computed({
 })
 function initForm() {
   baseInfo.date = null
+  baseInfo.tags = []
+  baseInfo.char = null
 }
 function handleConfirm() {
   if (!baseInfo.date) {
@@ -29,7 +37,12 @@ function handleConfirm() {
   dialogVisible.value = false
   emit('confirm', baseInfo)
 }
-
+watch(() => props.currentOperating, async (val: IllustObj) => {
+  if (val && val.meta) {
+    const info: PixivIllust = await API.getPixivInfo(val.meta.pid)
+    baseInfo.tags = info.tags.map(item => item.name)
+  }
+})
 defineExpose({ initForm })
 </script>
 
@@ -44,6 +57,21 @@ defineExpose({ initForm })
             type="date"
             placeholder="Pick a day"
           />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select
+            v-model="baseInfo.char"
+            filterable
+            allow-create
+            placeholder="从标签中选择角色"
+          >
+            <el-option
+              v-for="item in baseInfo.tags"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>

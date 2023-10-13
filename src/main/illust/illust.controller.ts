@@ -6,6 +6,7 @@ import type { IllustBatchDto } from './dto/illust_batch.dto'
 import type { RemoteBaseDto } from './dto/remote_base.dto'
 import { IllustService } from './illust.service'
 import { FilterConditionObj } from './dto/filter_condition_obj.dto'
+import { IllustTodayDto } from './dto/illust_today.dto'
 
 @Controller()
 export class IllustController {
@@ -115,13 +116,13 @@ export class IllustController {
 
   @IpcHandle('api:GET/illust/illust-today')
   getIllustToday(@Payload() [{ date }]: [{ date: string }]) {
-    return this.illustService.getIllustToday(new Date(date))
+    return this.illustService.getIllustToday(date)
   }
 
   @IpcHandle('api:POST/illust/illust-today')
   updateIllustToday(
-    @Payload() [{ date, illustId }]: [{ date: string; illustId: number }],
+    @Payload() [{ date }, itdto]: [{ date: string }, itdto: IllustTodayDto],
   ) {
-    return this.illustService.updateIllustToday(new Date(date), illustId)
+    return this.illustService.updateIllustToday(date, itdto)
   }
 }

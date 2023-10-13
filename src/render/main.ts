@@ -6,6 +6,6 @@ import App from './App.vue'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
-import '@render/style/element.css'
+import '@render/style/element.scss'
 
 createApp(App).use(store).use(router).use(ElementPlus).mount('#app')

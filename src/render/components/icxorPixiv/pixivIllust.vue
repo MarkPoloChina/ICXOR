@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, toRaw, watch } from 'vue'
 import { Download, Picture, Search, Star } from '@element-plus/icons-vue'
-import { PathHelper, UrlGenerator } from '@render/ts/util/path'
+import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'

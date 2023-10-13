@@ -20,6 +20,14 @@ async function initPixiv() {
   if (token)
     pixivApi = await Pixiv.refreshLogin(token)
 }
+function checkIfAvailable() {
+  if (!pixivApi) {
+    throw new HttpException(
+      'API not started.',
+      HttpStatus.SERVICE_UNAVAILABLE,
+    )
+  }
+}
 initPixiv()
 @Injectable()
 export class PixivApiService {
@@ -27,12 +35,7 @@ export class PixivApiService {
   private readonly metaRepository: Repository<Meta>
 
   async getPixivUrl(pid: number, page: number, type: string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     if (!['square_medium', 'medium', 'original'].includes(type))
       throw new HttpException('illegal type.', HttpStatus.BAD_REQUEST)
     const illust = await pixivApi.illust.get(pid)
@@ -48,12 +51,7 @@ export class PixivApiService {
   }
 
   async getLatestIllusts(_isPrivate: boolean) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     const list = []
     const queryAsync = (pid: number, index: number) => {
       return new Promise((resolve, reject) => {
@@ -96,12 +94,7 @@ export class PixivApiService {
   }
 
   async getPixivIllustJson(pid: number | string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     const illust = await pixivApi.illust.detail({ illust_id: Number(pid) })
     if (!illust || !illust.visible)
       throw new HttpException('pid no found', HttpStatus.NOT_FOUND)
@@ -109,12 +102,7 @@ export class PixivApiService {
   }
 
   async getPixivUserJson(uid: number | string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     const user = await pixivApi.user.detail({ user_id: Number(uid) })
     if (!user)
       throw new HttpException('uid no found', HttpStatus.NOT_FOUND)
@@ -122,44 +110,24 @@ export class PixivApiService {
   }
 
   async getPixivUserIllusts(uid: number | string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     const illusts = await pixivApi.user.illusts({ user_id: Number(uid) })
     return { illusts, nextUrl: pixivApi.user.nextURL }
   }
 
   async getPixivNextRequest(nextUrl: string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     const resp = await pixivApi.api.next(nextUrl)
     return resp
   }
 
   async downloadPixivUgoira(url: string | PixivIllust, dest: string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     return await pixivApi.util.downloadUgoira(url, dest, { speed: 1 })
   }
 
   async getPixivUgoiraJson(pid: number | string) {
-    if (!pixivApi) {
-      throw new HttpException(
-        'API not started.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      )
-    }
+    checkIfAvailable()
     return await pixivApi.ugoira.metadata({ illust_id: Number(pid) })
   }
 }
