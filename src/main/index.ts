@@ -106,6 +106,9 @@ function prepareDS() {
   ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
     await DS.downloadFromIllustObj(illustObj, dir, page)
   })
+  ipcMain.handle('ds:downloadUgoira', async (event, illustObj, dir, meta) => {
+    await DS.downloadFromUgoira(illustObj, dir, meta)
+  })
 }
 
 function prepareEnv() {

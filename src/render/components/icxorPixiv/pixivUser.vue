@@ -7,7 +7,7 @@ import { API } from '@render/ts/api'
 import type { PixivIllust, PixivUser } from '@markpolochina/pixiv.ts'
 import { useRouter } from 'vue-router'
 
-const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo } = window.electron
+const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
 const router = useRouter()
 const form = reactive({
   uid: '',
@@ -26,9 +26,11 @@ async function handleDownload(illustObj: PixivIllust) {
   if (!dir)
     return
   try {
-    if (illustObj.type === 'ugoira')
-      await API.downloadPixivUgoira(illustObj, dir)
-    else await downloadPixivTo(toRaw(illustObj), dir)
+    if (illustObj.type === 'ugoira') {
+      const meta = await API.getPixivUgoiraJson(illustObj.id)
+      await downloadPixivUgoiraTo(toRaw(illustObj), dir, meta)
+    }
+    else { await downloadPixivTo(toRaw(illustObj), dir) }
     ElMessage.success('下载完成')
   }
   catch (err) {
@@ -45,9 +47,14 @@ async function handleDownloadAll() {
       break
   }
   const promises = userIllusts.value.map((ele) => {
-    if (ele.type === 'ugoira')
-      return API.downloadPixivUgoira(ele, dir)
-    else return downloadPixivTo(toRaw(ele), dir)
+    if (ele.type === 'ugoira') {
+      const process = async () => {
+        const meta = await API.getPixivUgoiraJson(ele.id)
+        return downloadPixivUgoiraTo(toRaw(ele), dir, meta)
+      }
+      return process()
+    }
+    else { return downloadPixivTo(toRaw(ele), dir) }
   })
   Promise.all(promises).then(() => {
     ElMessage.success('下载完成')
@@ -196,14 +203,14 @@ defineExpose({ handleSearchByLink })
             border
             direction="vertical"
           >
-            <template #extra>
+            <!-- <template #extra>
               <el-button
                 :icon="Star"
                 circle
                 type="warning"
                 style="margin-left: 10px"
               />
-            </template>
+            </template> -->
             <el-descriptions-item label="头像">
               <el-avatar
                 :src="

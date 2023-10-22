@@ -1,4 +1,4 @@
-import { PixivIllust } from "@markpolochina/pixiv.ts";
+import { PixivIllust, UgoiraMetaData } from "@markpolochina/pixiv.ts";
 
 declare global {
   interface Window {
@@ -19,6 +19,7 @@ declare global {
       ): Promise<any>;
       downloadTo(url: string, rename: string, dir: string): Promise<void>;
       downloadPixivTo(illustObj: PixivIllust, dir: string, page?: number): Promise<void>;
+      downloadPixivUgoiraTo(illustObj: PixivIllust, dir: string, meta: UgoiraMetaData): Promise<void>;
     };
   }
 }

@@ -41,13 +41,15 @@ export class PixivApiController {
     return this.pixivApiService.getPixivNextRequest(nextUrl)
   }
 
-  @IpcHandle('api:GET/pixiv-api/file/ugoira')
-  async downloadPixivUgoira(@Payload() [{ url, dest }]: [{ url: string; dest: string }]) {
-    return this.pixivApiService.downloadPixivUgoira(url, dest)
+  @IpcHandle('api:GET/pixiv-api/ugoira-json')
+  async getPixivUgoiraJson(@Payload() [{ pid }]: [{ pid: number }]) {
+    return this.pixivApiService.getPixivUgoiraJson(pid)
   }
 
-  @IpcHandle('api:GET/pixiv-api/ugoira-json')
-  async dgetPixivUgoiraJson(@Payload() [{ pid }]: [{ pid: number }]) {
-    return this.pixivApiService.getPixivUgoiraJson(pid)
+  @IpcHandle('api:POST/pixiv-api/bookmark')
+  async togglePixivBookmark(@Payload() [{ pid, op }]: [{ pid: number; op: boolean }]) {
+    if (op)
+      return this.pixivApiService.bookmarkIllust(pid)
+    else return this.pixivApiService.unbookmarkIllust(pid)
   }
 }

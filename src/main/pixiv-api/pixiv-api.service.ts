@@ -38,7 +38,7 @@ export class PixivApiService {
     checkIfAvailable()
     if (!['square_medium', 'medium', 'original'].includes(type))
       throw new HttpException('illegal type.', HttpStatus.BAD_REQUEST)
-    const illust = await pixivApi.illust.get(pid)
+    const illust = await pixivApi.illust.detail({ illust_id: pid })
     if (!illust || page >= illust.page_count || !illust.visible)
       throw new HttpException('pid or page no found', HttpStatus.NOT_FOUND)
     const url
@@ -50,7 +50,7 @@ export class PixivApiService {
     return url
   }
 
-  async getLatestIllusts(_isPrivate: boolean) {
+  async getLatestIllusts(isPrivate: boolean) {
     checkIfAvailable()
     const list = []
     const queryAsync = (pid: number, index: number) => {
@@ -68,6 +68,7 @@ export class PixivApiService {
         json = {
           illusts: await pixivApi.user.bookmarksIllust({
             user_id: Number(ConfigDB.getByKey('pixivUserId')),
+            restrict: isPrivate ? 'private' : 'public',
           }),
           next_url: pixivApi.user.nextURL,
         }
@@ -121,13 +122,18 @@ export class PixivApiService {
     return resp
   }
 
-  async downloadPixivUgoira(url: string | PixivIllust, dest: string) {
-    checkIfAvailable()
-    return await pixivApi.util.downloadUgoira(url, dest, { speed: 1 })
-  }
-
   async getPixivUgoiraJson(pid: number | string) {
     checkIfAvailable()
     return await pixivApi.ugoira.metadata({ illust_id: Number(pid) })
+  }
+
+  async bookmarkIllust(pid: number | string) {
+    checkIfAvailable()
+    return await pixivApi.illust.bookmarkIllust({ illust_id: Number(pid), restrict: 'public' })
+  }
+
+  async unbookmarkIllust(pid: number | string) {
+    checkIfAvailable()
+    return await pixivApi.illust.unbookmarkIllust({ illust_id: Number(pid) })
   }
 }

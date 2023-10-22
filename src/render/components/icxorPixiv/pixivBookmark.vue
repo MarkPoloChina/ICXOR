@@ -6,13 +6,14 @@ import { API } from '@render/ts/api'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { useRouter } from 'vue-router'
 
-const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo } = window.electron
+const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
 const router = useRouter()
 const form = reactive({
   type: 'public',
 })
 const isLoading = ref(false)
 const illusts = ref<PixivIllust[]>([])
+const success = ref<number[]>([])
 async function handleDownload(illustObj: PixivIllust) {
   const dir = await ipcInvoke('dialog:openDirectory')
   if (!dir)
@@ -22,14 +23,25 @@ async function handleDownload(illustObj: PixivIllust) {
     return
   }
   try {
-    if (illustObj.type === 'ugoira')
-      await API.downloadPixivUgoira(illustObj, dir)
-    else await downloadPixivTo(toRaw(illustObj), dir)
+    if (illustObj.type === 'ugoira') {
+      const meta = await API.getPixivUgoiraJson(illustObj.id)
+      await downloadPixivUgoiraTo(toRaw(illustObj), dir, meta)
+    }
+    else { await downloadPixivTo(toRaw(illustObj), dir) }
     ElMessage.success('下载完成')
   }
   catch (err) {
     ElMessage.error(`下载失败: ${err}`)
   }
+}
+function tableRowClassName({
+  row,
+}: {
+  row: PixivIllust
+}) {
+  if (success.value.includes(row.id))
+    return 'success-row'
+  return ''
 }
 async function handleDownloadAll() {
   const dir = await ipcInvoke('dialog:openDirectory')
@@ -43,9 +55,15 @@ async function handleDownloadAll() {
       return ele.visible
     })
     .map((ele) => {
-      if (ele.type === 'ugoira')
-        return API.downloadPixivUgoira(ele, dir)
-      else return downloadPixivTo(toRaw(ele), dir)
+      const process = async () => {
+        if (ele.type === 'ugoira') {
+          const meta = await API.getPixivUgoiraJson(ele.id)
+          await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
+        }
+        else { await downloadPixivTo(toRaw(ele), dir) }
+        success.value.push(ele.id)
+      }
+      return process()
     })
   Promise.all(promises).then(() => {
     ElMessage.success('下载完成')
@@ -59,7 +77,7 @@ async function handleDownloadAll() {
 async function handleSearch() {
   isLoading.value = true
   try {
-    const resp = await API.getBookmark(false)
+    const resp = await API.getBookmark(form.type === 'private')
     illusts.value.length = 0
     illusts.value.push(...resp)
   }
@@ -127,6 +145,7 @@ function handleRightClick(obj: PixivIllust) {
         v-loading="isLoading"
         style="height: 100%"
         :data="illusts"
+        :row-class-name="tableRowClassName"
         @row-contextmenu="handleRightClick"
       >
         <el-table-column
@@ -161,5 +180,14 @@ function handleRightClick(obj: PixivIllust) {
   margin-top: 20px;
   margin-bottom: 20px;
   height: calc(100% - 80px);
+}
+:deep(.warning-row) {
+  background-color: var(--el-color-warning-light-9);
+}
+:deep(.success-row) {
+  background-color: var(--el-color-success-light-9);
+}
+:deep(.danger-row) {
+  background-color: var(--el-color-danger-light-9);
 }
 </style>

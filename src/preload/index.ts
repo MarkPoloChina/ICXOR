@@ -1,4 +1,4 @@
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electron', {
@@ -39,4 +39,7 @@ contextBridge.exposeInMainWorld('electron', {
 
   downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number): Promise<void> =>
     ipcRenderer.invoke('ds:downloadPixiv', illustObj, dir, page),
+
+  downloadPixivUgoiraTo: (illustObj: PixivIllust, dir: string, meta: UgoiraMetaData): Promise<void> =>
+    ipcRenderer.invoke('ds:downloadUgoira', illustObj, dir, meta),
 })

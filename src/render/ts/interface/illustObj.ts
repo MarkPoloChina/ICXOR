@@ -1,7 +1,6 @@
 import type { Meta } from '@main/illust/entities/meta.entities'
 import type { Poly } from '@main/illust/entities/poly.entities'
 import type { RemoteBase } from '@main/illust/entities/remote_base.entities'
-import type { Tag } from '@main/illust/entities/tag.entities'
 
 export interface IllustObj {
   id: number
@@ -11,7 +10,11 @@ export interface IllustObj {
   thumb_endpoint: string
   date: Date
   poly: Poly[]
-  tag: Tag[]
+  tag: { id?: number
+    type?: string
+    name: string
+    illusts?: IllustObj[]
+  }[]
   meta?: Meta
   remote_base: RemoteBase
   updateDate: Date

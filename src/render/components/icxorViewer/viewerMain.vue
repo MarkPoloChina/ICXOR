@@ -125,7 +125,7 @@ watch(
     getIllusts()
   },
 )
-function handleSingleIllustChange(obj, withClear?: boolean) {
+function handleSingleIllustChange(obj: IllustObj, withClear?: boolean) {
   API.updateIllust(obj)
     .then(() => {
       ElMessage.success('修改成功')

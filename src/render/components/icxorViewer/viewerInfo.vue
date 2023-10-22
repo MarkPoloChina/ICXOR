@@ -86,6 +86,9 @@ defineExpose({ handleStarChange })
             <el-descriptions-item label="类型">
               {{ writableInfo.remote_base.name }}
             </el-descriptions-item>
+            <el-descriptions-item label="URL">
+              {{ writableInfo.link ?? '-' }}
+            </el-descriptions-item>
             <el-descriptions-item
               v-if="writableInfo.remote_endpoint"
               label="末端"

@@ -59,6 +59,7 @@ function handleUpload() {
     .then(() => {
       loading.value = true
       const dto = new BatchDto()
+      dto.control.addIfNotFound = true
       let curBid = 0
       selectedList.value.forEach((ele: PixivIllust) => {
         for (let i = 0; i < ele.page_count; i++) {

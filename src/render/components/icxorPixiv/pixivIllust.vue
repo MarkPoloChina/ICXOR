@@ -4,9 +4,9 @@ import { Download, Picture, Search, Star } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 
-const { ipcInvoke, downloadPixivTo } = window.electron
+const { ipcInvoke, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
 const form = reactive({
   pid: '',
   page: 0,
@@ -34,10 +34,11 @@ async function handleDownload() {
   if (!dir)
     return
   try {
-    if (illustObj.value.type === 'ugoira')
-      await API.downloadPixivUgoira(illustObj.value, dir)
-    else
-      await downloadPixivTo(toRaw(illustObj.value), dir, page.value)
+    if (illustObj.value.type === 'ugoira') {
+      const meta: UgoiraMetaData = await API.getPixivUgoiraJson(illustObj.value.id)
+      await downloadPixivUgoiraTo(toRaw(illustObj.value), dir, meta)
+    }
+    else { await downloadPixivTo(toRaw(illustObj.value), dir, page.value) }
     ElMessage.success('下载完成')
   }
   catch (err) {
@@ -71,6 +72,16 @@ function handleSearch(_pid, _page) {
     })
     .finally(() => {
       isLoading.value = false
+    })
+}
+function handleBookmark() {
+  API.togglePixivBookmark(illustObj.value.id, !illustObj.value.is_bookmarked)
+    .then(() => {
+      illustObj.value.is_bookmarked = !illustObj.value.is_bookmarked
+      ElMessage.success(`${!illustObj.value.is_bookmarked ? '取消' : ''}收藏成功`)
+    })
+    .catch((err) => {
+      ElMessage.error(`错误: ${err}`)
     })
 }
 watch(
@@ -154,10 +165,12 @@ defineExpose({ handleSearchByLink })
           >
             <template #extra>
               <el-button
+                :plain="!illustObj.is_bookmarked"
                 :icon="Star"
                 circle
                 type="warning"
                 style="margin-left: 10px"
+                @click="handleBookmark"
               />
             </template>
             <el-descriptions-item label="类型">

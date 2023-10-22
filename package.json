@@ -1,6 +1,6 @@
 {
   "name": "icxor",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "private": true,
   "packageManager": "yarn@1.22.19",
   "description": "ICXOR (Illust Complexor) is a tool built by electron to manage illusts at both local and remote.",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@doubleshot/nest-electron": "^0.2.3",
     "@element-plus/icons-vue": "^2.1.0",
-    "@markpolochina/pixiv.ts": "^0.6.2",
+    "@markpolochina/pixiv.ts": "^0.6.3",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/microservices": "^10.0.0",
@@ -30,6 +30,9 @@
     "axios": "^1.5.0",
     "element-plus": "^2.3.12",
     "fs-extra": "^11.1.1",
+    "get-pixels": "^3.3.3",
+    "gif-encoder": "^0.7.2",
+    "image-size": "^1.0.2",
     "path-browserify": "^1.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
@@ -37,10 +40,13 @@
     "typeorm": "^0.3.17",
     "vue": "^3.2.47",
     "vue-router": "^4.2.4",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "zip-lib": "^0.7.3"
   },
   "devDependencies": {
     "@lightwing/eslint-config": "^0.0.21",
+    "@types/get-pixels": "^3.3.3",
+    "@types/gif-encoder": "^0.7.3",
     "@vitejs/plugin-vue": "4.3.4",
     "@vitejs/plugin-vue-jsx": "^3.0.2",
     "@vue/compiler-sfc": "3.3.4",

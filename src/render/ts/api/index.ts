@@ -1,8 +1,9 @@
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { isReactive, toRaw } from 'vue'
+import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { BatchDto } from '@render/ts/dto/batch'
 
 const { apiAdapter } = window.electron
 const ax = {
@@ -138,17 +139,17 @@ export class API {
     return resp.data
   }
 
-  static async updateIllusts(illustList) {
+  static async updateIllusts(illustList: BatchDto) {
     const resp = await ax.post('/illust/bases', illustList)
     return resp.data
   }
 
-  static async updateIllust(illust) {
+  static async updateIllust(illust: IllustObj) {
     const resp = await ax.put('/illust/base', illust)
     return resp.data
   }
 
-  static async deleteIllusts(illustIds) {
+  static async deleteIllusts(illustIds: number[]) {
     const resp = await ax.delete('/illust/bases', {
       params: {
         illustIds,
@@ -157,7 +158,7 @@ export class API {
     return resp.data
   }
 
-  static async getPoly(type) {
+  static async getPoly(type: string) {
     const resp = await ax.get('/illust/poly/list', {
       params: {
         withIllust: false,
@@ -167,7 +168,7 @@ export class API {
     return resp.data
   }
 
-  static async getPolyWithIllust(type) {
+  static async getPolyWithIllust(type: string) {
     const resp = await ax.get('/illust/poly/list', {
       params: {
         withIllust: true,
@@ -177,12 +178,12 @@ export class API {
     return resp.data
   }
 
-  static async addPoly(illustList) {
+  static async addPoly(illustList: BatchDto) {
     const resp = await ax.post('/illust/poly/bases', illustList)
     return resp.data
   }
 
-  static async removePolyById(polyId, illustList) {
+  static async removePolyById(polyId: number, illustList: number[]) {
     const resp = await ax.delete('/illust/poly/bases', {
       params: {
         polyId,
@@ -192,7 +193,7 @@ export class API {
     return resp.data
   }
 
-  static async deletePoly(polyId) {
+  static async deletePoly(polyId: number) {
     const resp = await ax.delete('/illust/poly', {
       params: {
         polyId,
@@ -201,7 +202,7 @@ export class API {
     return resp.data
   }
 
-  static async getBookmark(isPrivate) {
+  static async getBookmark(isPrivate: boolean) {
     const resp = await ax.get('/pixiv-api/pixiv-json/latest', {
       params: {
         isPrivate,
@@ -210,7 +211,7 @@ export class API {
     return resp.data
   }
 
-  static async getPixivImageUrl(pid, page, type) {
+  static async getPixivImageUrl(pid: number, page: number, type: string) {
     const resp = await ax.get('/pixiv-api/url', {
       params: {
         pid,
@@ -242,7 +243,7 @@ export class API {
     return resp.data
   }
 
-  static async getPixivInfo(pid) {
+  static async getPixivInfo(pid: number) {
     const resp = await ax.get('/pixiv-api/pixiv-json', {
       params: {
         pid,
@@ -251,7 +252,7 @@ export class API {
     return resp.data
   }
 
-  static async getPixivUserInfo(uid) {
+  static async getPixivUserInfo(uid: number) {
     const resp = await ax.get('/pixiv-api/user-json', {
       params: {
         uid,
@@ -260,7 +261,7 @@ export class API {
     return resp.data
   }
 
-  static async getPixivUserIllusts(uid) {
+  static async getPixivUserIllusts(uid: number) {
     const resp = await ax.get('/pixiv-api/user-illusts', {
       params: {
         uid,
@@ -278,11 +279,20 @@ export class API {
     return resp.data
   }
 
-  static async downloadPixivUgoira(url: string | PixivIllust, dest: string) {
-    const resp = await ax.get('/pixiv-api/file/ugoira', {
+  static async getPixivUgoiraJson(pid: number) {
+    const resp = await ax.get('/pixiv-api/ugoira-json', {
       params: {
-        url,
-        dest,
+        pid,
+      },
+    })
+    return resp.data
+  }
+
+  static async togglePixivBookmark(pid: number, op: boolean) {
+    const resp = await ax.post('/pixiv-api/bookmark', null, {
+      params: {
+        pid,
+        op,
       },
     })
     return resp.data
