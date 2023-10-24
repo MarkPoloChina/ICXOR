@@ -21,7 +21,9 @@ export class Poly {
   @Column({ type: 'varchar', nullable: true })
   parent: string
 
-  @ManyToMany(() => Illust, illust => illust.poly)
+  @ManyToMany(() => Illust, illust => illust.poly, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable()
   illusts: Illust[]
 }

@@ -144,14 +144,11 @@ const batchLogs = ref<BatchLog[]>([])
 function handleUpdate(addition: {
   date?: Date
   star?: number
-  tag?: Array<{ name: string }>
+  tag?: Array<{ name: string; type: string }>
 }) {
   const waitingOperateDto = []
   if (!chooseAll.update && currentOperating.value) {
-    return handleSingleIllustChange(
-      { ...currentOperating.value, ...addition },
-      true,
-    )
+    waitingOperateDto.push(currentOperating.value)
   }
   else if (chooseAll.update) {
     illustList.value.forEach((item) => {
@@ -190,6 +187,7 @@ function handleUpdate(addition: {
             dto: {
               id: ele.id,
               ...addition,
+              tag: addition.tag ? [...ele.tag, ...addition.tag] : undefined,
             },
           }
         }),
@@ -389,6 +387,7 @@ function handleFetch(chooseAll: boolean) {
             ele.meta.author = resp.user.name
             ele.meta.author_id = resp.user.id
             ele.meta.title = resp.title
+            ele.meta.type = resp.type
             ele.meta.original_url
               = resp.meta_single_page.original_image_url
               || resp.meta_pages[ele.meta.page].image_urls.original
@@ -405,6 +404,7 @@ function handleFetch(chooseAll: boolean) {
             ele.meta.book_cnt = resp.total_bookmarks
             ele.meta.height = resp.height
             ele.meta.width = resp.width
+            ele.meta.tags_str = resp.tags.map(tag => tag.name).join(',')
             dto.dtos.push({
               bid: index,
               dto: ele,

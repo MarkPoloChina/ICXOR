@@ -158,6 +158,20 @@ export class API {
     return resp.data
   }
 
+  static async getTags() {
+    const resp = await ax.get('/illust/tag/list', {
+      params: {},
+    })
+    return resp.data
+  }
+
+  static async addAuthorTag(tag: string) {
+    const resp = await ax.post('/illust/tag/author', null, {
+      params: { tag },
+    })
+    return resp.data
+  }
+
   static async getPoly(type: string) {
     const resp = await ax.get('/illust/poly/list', {
       params: {

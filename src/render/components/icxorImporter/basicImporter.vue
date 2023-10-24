@@ -22,6 +22,7 @@ const importOption = reactive({
     metaTitle: false,
     remoteEndpointForPixiv: false,
     jpgForThumbEndpoint: false,
+    sameForThumbEndpoint: false,
     remoteEndpointPrefixForDefault: '',
   },
   importType: 'directory',
@@ -36,6 +37,7 @@ function initTab() {
     metaTitle: false,
     remoteEndpointForPixiv: false,
     jpgForThumbEndpoint: false,
+    sameForThumbEndpoint: false,
     remoteEndpointPrefixForDefault: '',
   }
   importOption.addition = {}
@@ -191,6 +193,10 @@ function handleUpload() {
             <el-checkbox
               v-model="importOption.autoInject.jpgForThumbEndpoint"
               label="jpg缩图末端"
+            />
+            <el-checkbox
+              v-model="importOption.autoInject.sameForThumbEndpoint"
+              label="一致缩图末端"
             />
           </el-form-item>
           <el-form-item>

@@ -12,6 +12,7 @@ export interface IllustDto {
   meta?: {
     pid: number
     page: number
+    type?: string
     title?: string
     limit?: string
     original_url?: string | null
@@ -21,6 +22,7 @@ export interface IllustDto {
     book_cnt?: number
     width?: number
     height?: number
+    tags_str?: string
   }
   remote_base?: {
     id: number | undefined

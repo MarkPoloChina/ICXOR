@@ -15,10 +15,12 @@ export class Tag {
   @Column({ type: 'varchar', nullable: false })
   type: string
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   name: string
 
-  @ManyToMany(() => Illust, illust => illust.tag)
+  @ManyToMany(() => Illust, illust => illust.tag, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable()
   illusts: Illust[]
 }

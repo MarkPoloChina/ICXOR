@@ -33,10 +33,16 @@ export class Illust {
   @Column({ type: 'date', nullable: true })
   date: Date
 
-  @ManyToMany(() => Poly, poly => poly.illusts)
+  @ManyToMany(() => Poly, poly => poly.illusts, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   poly: Poly[]
 
-  @ManyToMany(() => Tag, tag => tag.illusts)
+  @ManyToMany(() => Tag, tag => tag.illusts, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   tag: Tag[]
 
   @OneToOne(() => Meta, meta => meta.illust, {

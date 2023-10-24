@@ -61,10 +61,10 @@ export class UrlGenerator {
       }
     }
     else {
-      if (type !== 'original' && obj.remote_base.thum_url) {
+      if (type !== 'original' && obj.remote_base.thum_url && obj.thumb_endpoint) {
         return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
           obj.remote_base.thum_url
-        }/${encodeURIComponent(obj.thumb_endpoint || obj.remote_endpoint)}`
+        }/${encodeURIComponent(obj.thumb_endpoint)}`
       }
       else {
         return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${

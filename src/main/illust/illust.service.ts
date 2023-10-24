@@ -93,21 +93,35 @@ export class IllustService {
       .leftJoinAndSelect('Illust.tag', 'tag')
       .leftJoinAndSelect('Illust.remote_base', 'remote_base')
     let firstCause = true
-    if (conditionObj.AR && conditionObj.AR !== 'all') {
-      const param = `meta.width ${
-        conditionObj.AR === 'horizontal' ? '>' : '<'
-      }= meta.height`
-      querybuilder = querybuilder.where(param)
-      firstCause = false
-    }
     Object.keys(conditionObj)
-      .filter(value => value !== 'AR')
       .forEach((colName, index) => {
-        if (conditionObj[colName].length) {
-          const param1 = `(${colName} IN (:...row${index}))`
-          const param2 = {
+        let param1: string
+        let param2: object
+        if (Array.isArray(conditionObj[colName]) && conditionObj[colName].length) {
+          param1 = `(${colName} IN (:...row${index}))`
+          param2 = {
             [`row${index}`]: conditionObj[colName],
           }
+        }
+        else if (colName === 'AR') {
+          if (conditionObj[colName] !== 'all')
+            param1 = `meta.width ${conditionObj.AR === 'horizontal' ? '>' : '<'}= meta.height`
+        }
+        else if (colName === 'meta.pid' || colName === 'meta.author_id') {
+          if (conditionObj[colName]) {
+            param1 = `(${colName} = :row${index})`
+            param2 = {
+              [`row${index}`]: `${conditionObj[colName]}`,
+            }
+          }
+        }
+        else if (typeof conditionObj[colName] === 'string' && conditionObj[colName]) {
+          param1 = `(${colName} LIKE :row${index})`
+          param2 = {
+            [`row${index}`]: `%${conditionObj[colName]}%`,
+          }
+        }
+        if (param1) {
           if (firstCause) {
             querybuilder = querybuilder.where(param1, param2)
             firstCause = false
@@ -150,21 +164,35 @@ export class IllustService {
       .leftJoin('Illust.tag', 'tag')
       .leftJoin('Illust.remote_base', 'remote_base')
     let firstCause = true
-    if (conditionObj.AR && conditionObj.AR !== 'all') {
-      const param = `meta.width ${
-        conditionObj.AR === 'horizontal' ? '>' : '<'
-      }= meta.height`
-      querybuilder = querybuilder.where(param)
-      firstCause = false
-    }
     Object.keys(conditionObj)
-      .filter(value => value !== 'AR')
       .forEach((colName, index) => {
-        if (conditionObj[colName].length) {
-          const param1 = `(${colName} IN (:...row${index}))`
-          const param2 = {
+        let param1: string
+        let param2: object
+        if (Array.isArray(conditionObj[colName]) && conditionObj[colName].length) {
+          param1 = `(${colName} IN (:...row${index}))`
+          param2 = {
             [`row${index}`]: conditionObj[colName],
           }
+        }
+        else if (colName === 'AR') {
+          if (conditionObj[colName] !== 'all')
+            param1 = `meta.width ${conditionObj.AR === 'horizontal' ? '>' : '<'}= meta.height`
+        }
+        else if (colName === 'meta.pid' || colName === 'meta.author_id') {
+          if (conditionObj[colName]) {
+            param1 = `(${colName} = :row${index})`
+            param2 = {
+              [`row${index}`]: `${conditionObj[colName]}`,
+            }
+          }
+        }
+        else if (typeof conditionObj[colName] === 'string' && conditionObj[colName]) {
+          param1 = `(${colName} LIKE :row${index})`
+          param2 = {
+            [`row${index}`]: `%${conditionObj[colName]}%`,
+          }
+        }
+        if (param1) {
           if (firstCause) {
             querybuilder = querybuilder.where(param1, param2)
             firstCause = false
@@ -239,7 +267,7 @@ export class IllustService {
     if (illust.remote_endpoint !== undefined)
       targetIllust.remote_endpoint = illust.remote_endpoint
     if (illust.thumb_endpoint !== undefined)
-      targetIllust.remote_endpoint = illust.remote_endpoint
+      targetIllust.thumb_endpoint = illust.thumb_endpoint
     if (illust.tag) {
       targetIllust.tag.length = 0
       for (const tag of illust.tag) {
@@ -254,8 +282,7 @@ export class IllustService {
           if (!targetTag) {
             targetTag = new Tag()
             targetTag.name = tag.name
-            targetTag.type = 'simple'
-            await this.tagRepository.save(targetTag)
+            targetTag.type = tag.type || 'simple'
           }
           targetIllust.tag.push(targetTag)
         }
@@ -338,28 +365,17 @@ export class IllustService {
       if (illust.dto.remote_endpoint !== undefined)
         targetIllust.remote_endpoint = illust.dto.remote_endpoint
       if (illust.dto.thumb_endpoint !== undefined)
-        targetIllust.remote_endpoint = illust.dto.remote_endpoint
+        targetIllust.thumb_endpoint = illust.dto.thumb_endpoint
       if (illust.dto.tag) {
-        targetIllust.tag.length = 0
         for (const tag of illust.dto.tag) {
-          if (tag.id) {
-            const targetTag = await this.tagRepository.findOneBy({
-              id: tag.id,
-            })
-            if (targetTag)
-              targetIllust.tag.push(targetTag)
+          let targetTag: Tag
+          targetTag = await this.tagRepository.findOneBy({ name: tag.name })
+          if (!targetTag) {
+            targetTag = new Tag()
+            targetTag.name = tag.name
+            targetTag.type = tag.type || 'simple'
           }
-          else {
-            let targetTag: Tag
-            targetTag = await this.tagRepository.findOneBy({ name: tag.name })
-            if (!targetTag) {
-              targetTag = new Tag()
-              targetTag.name = tag.name
-              targetTag.type = 'simple'
-              await this.tagRepository.save(targetTag)
-            }
-            targetIllust.tag.push(targetTag)
-          }
+          targetIllust.tag.push(targetTag)
         }
       }
       if (illust.dto.meta && targetIllust.meta) {
@@ -370,8 +386,6 @@ export class IllustService {
       }
       try {
         const msg = targetIllust.id ? 'Modified.' : 'Added.'
-        if (targetIllust.meta)
-          await this.metaRepository.save(targetIllust.meta)
         await this.illustRepository.save(targetIllust)
         resp_list.push({
           bid: illust.bid,
@@ -480,7 +494,6 @@ export class IllustService {
         targetPoly.parent = illusts.polyBase.parent || null
         targetPoly.type = illusts.polyBase.type
         targetPoly.illusts = []
-        await this.polyRepository.save(targetPoly)
       }
     }
     const resp_list: RespListObjDto[] = []
@@ -576,5 +589,22 @@ export class IllustService {
 
   async getIllustToday(date: string) {
     return await MPAPI.getIllustToday(date)
+  }
+
+  async getTags() {
+    const result = await this.tagRepository.find({
+      order: {
+        type: 'ASC',
+        name: 'ASC',
+      },
+    })
+    return result
+  }
+
+  async addAuthorTag(tag: string) {
+    const targetTag = new Tag()
+    targetTag.name = tag
+    targetTag.type = 'author'
+    return await this.tagRepository.save(targetTag)
   }
 }

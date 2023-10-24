@@ -107,6 +107,16 @@ export class IllustController {
     return this.illustService.getRemoteBases(withIllust)
   }
 
+  @IpcHandle('api:GET/illust/tag/list')
+  getTags() {
+    return this.illustService.getTags()
+  }
+
+  @IpcHandle('api:POST/illust/tag/author')
+  addAuthorTag(@Payload() [{ tag }]: [{ tag: string }]) {
+    return this.illustService.addAuthorTag(tag)
+  }
+
   @IpcHandle('api:POST/illust/remote-base')
   updateRemoteBase(
     @Payload() [, remoteBase]: [any, remoteBase: RemoteBaseDto],

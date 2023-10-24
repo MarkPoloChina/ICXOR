@@ -2,6 +2,8 @@
 import { Check } from '@element-plus/icons-vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { API } from '@render/ts/api'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   info: Object,
@@ -53,6 +55,13 @@ function handleStarChange(star) {
     writableInfo.value.star = 0
   else writableInfo.value.star = star
   emit('upload', writableInfo.value)
+}
+function handleAddAuthorTag(tag: string) {
+  API.addAuthorTag(tag).then(() => {
+    ElMessage.success('添加成功')
+  }).catch(() => {
+    ElMessage.error('添加失败,可能已存在')
+  })
 }
 
 defineExpose({ handleStarChange })
@@ -189,6 +198,15 @@ defineExpose({ handleStarChange })
               >
                 在Pixiv打开
               </el-button>
+              <el-button
+                v-if="writableInfo.meta.author_id && writableInfo.meta.author"
+                type="primary"
+                size="small"
+                style="margin-left: 20px;"
+                @click="handleAddAuthorTag(`[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`)"
+              >
+                添加标签
+              </el-button>
             </el-descriptions-item>
             <el-descriptions-item label="收藏数">
               {{ writableInfo.meta.book_cnt ?? "-" }}
@@ -201,6 +219,16 @@ defineExpose({ handleStarChange })
             </el-descriptions-item>
             <el-descriptions-item label="高度">
               {{ writableInfo.meta.height ?? "-" }}
+            </el-descriptions-item>
+            <el-descriptions-item label="pixiv标签">
+              <div v-if="writableInfo.meta.tags_str">
+                <el-tag v-for="tag in writableInfo.meta.tags_str.split(',')" :key="tag">
+                  {{ tag }}
+                </el-tag>
+              </div>
+              <div v-else>
+                -
+              </div>
             </el-descriptions-item>
           </el-descriptions>
           <el-descriptions

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -11,6 +11,7 @@ const notChange = reactive({
   star: true,
   tag: true,
 })
+const tagType = ref('simple')
 const dialogVisible = computed({
   get: () => {
     return props.modelValue
@@ -37,6 +38,9 @@ watch(
         addition[key] = defaultAddition[key]
     })
   },
+  {
+    deep: true,
+  },
 )
 function handleConfirm() {
   const data = {
@@ -45,13 +49,14 @@ function handleConfirm() {
     tag: notChange.tag
       ? undefined
       : addition.tag.map((v: string) => {
-        return { name: v }
+        return { name: v, type: tagType.value }
       }),
   }
   dialogVisible.value = false
   emit('update:addition', data)
 }
 function clearForm() {
+  tagType.value = 'simple'
   Object.keys(notChange).forEach((key) => {
     notChange[key] = true
   })
@@ -93,7 +98,20 @@ defineExpose({ clearForm })
             style="margin-left: 20px"
           />
         </el-form-item>
-        <el-form-item label="标签">
+        <el-form-item label="增加标签">
+          <el-select
+            v-model="tagType"
+            placeholder="选择标签类型"
+            :disabled="notChange.tag"
+            style="width: 100px;"
+          >
+            <el-option
+              v-for="item in ['simple', 'works']"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
           <el-select
             v-model="addition.tag"
             multiple
@@ -101,10 +119,11 @@ defineExpose({ clearForm })
             allow-create
             placeholder="填写标签"
             :disabled="notChange.tag"
+            style="margin-left: 20px"
           />
           <el-checkbox
             v-model="notChange.tag"
-            label="不修改"
+            label="不增加"
             style="margin-left: 20px"
           />
         </el-form-item>

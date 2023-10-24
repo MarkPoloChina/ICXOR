@@ -39,6 +39,7 @@ function handleConfirm() {
 }
 watch(() => props.currentOperating, async (val: IllustObj) => {
   if (val && val.meta) {
+    baseInfo.tags.length = 0
     const info: PixivIllust = await API.getPixivInfo(val.meta.pid)
     baseInfo.tags = info.tags.map(item => item.name)
   }

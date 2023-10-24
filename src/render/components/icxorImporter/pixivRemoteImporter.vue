@@ -70,6 +70,7 @@ function handleUpload() {
               meta: {
                 pid: ele.id,
                 page: i,
+                type: ele.type,
                 title: ele.title,
                 original_url:
                   ele.meta_single_page.original_image_url
@@ -89,6 +90,7 @@ function handleUpload() {
                 book_cnt: ele.total_bookmarks,
                 width: ele.width,
                 height: ele.height,
+                tags_str: ele.tags.map(tag => tag.name).join(','),
               },
             },
             bid: curBid,

@@ -60,14 +60,6 @@ defineExpose({ clearForm })
                   value: 'picolt',
                   label: 'PICOLT',
                 },
-                {
-                  value: 'lnr',
-                  label: 'LNR',
-                },
-                {
-                  value: 'author',
-                  label: '作者专题',
-                },
               ]"
               :key="item.value"
               :label="item.label"

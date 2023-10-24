@@ -20,6 +20,9 @@ export class Meta {
   @Column({ type: 'int', nullable: false })
   page: number
 
+  @Column({ type: 'varchar', nullable: true })
+  type: string
+
   @Column({ type: 'varchar', nullable: true, length: 45 })
   author: string
 
@@ -40,6 +43,9 @@ export class Meta {
 
   @Column({ type: 'int', nullable: true })
   height: number
+
+  @Column({ type: 'varchar', nullable: true })
+  tags_str: string
 
   @OneToOne(() => Illust, illust => illust.meta, {
     onDelete: 'CASCADE',
