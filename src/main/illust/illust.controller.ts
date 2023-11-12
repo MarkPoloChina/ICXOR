@@ -7,6 +7,7 @@ import type { RemoteBaseDto } from './dto/remote_base.dto'
 import { IllustService } from './illust.service'
 import { FilterConditionObj } from './dto/filter_condition_obj.dto'
 import { IllustTodayDto } from './dto/illust_today.dto'
+import { Tag } from './entities/tag.entities'
 
 @Controller()
 export class IllustController {
@@ -110,6 +111,16 @@ export class IllustController {
   @IpcHandle('api:GET/illust/tag/list')
   getTags() {
     return this.illustService.getTags()
+  }
+
+  @IpcHandle('api:PUT/illust/tag')
+  updateTag(@Payload() [,tag]: [any, tag: Tag]) {
+    return this.illustService.updateTag(tag)
+  }
+
+  @IpcHandle('api:DELETE/illust/tag')
+  deleteTag(@Payload() [{ tagId }]: [{ tagId: number }]) {
+    return this.illustService.deleteTag(tagId)
   }
 
   @IpcHandle('api:POST/illust/tag/author')

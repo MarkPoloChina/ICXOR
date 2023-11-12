@@ -1,6 +1,6 @@
 {
   "name": "icxor",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "private": true,
   "packageManager": "yarn@1.22.19",
   "description": "ICXOR (Illust Complexor) is a tool built by electron to manage illusts at both local and remote.",

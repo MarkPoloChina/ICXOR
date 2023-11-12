@@ -55,7 +55,4 @@ export class Meta {
 
   @Column({ type: 'varchar', nullable: true, length: 512 })
   original_url: string
-
-  @Column({ type: 'varchar', nullable: true, length: 512 })
-  thumb_url: string
 }

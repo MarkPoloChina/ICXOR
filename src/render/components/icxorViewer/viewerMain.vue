@@ -180,6 +180,7 @@ function handleUpdate(addition: {
       const idx = batchLogs.value.length
       batchLogs.value.push(batchLog)
       const dto = new BatchDto()
+      dto.control.updatePolicy = 'onlyUpdate'
       dto.dtos.push(
         ...waitingOperateDto.map((ele, index) => {
           return {
@@ -391,10 +392,6 @@ function handleFetch(chooseAll: boolean) {
             ele.meta.original_url
               = resp.meta_single_page.original_image_url
               || resp.meta_pages[ele.meta.page].image_urls.original
-            ele.meta.thumb_url
-              = resp.page_count === 1
-                ? resp.image_urls.large
-                : resp.meta_pages[ele.meta.page].image_urls.large
             ele.meta.limit
               = resp.x_restrict === 1
                 ? 'R-18'

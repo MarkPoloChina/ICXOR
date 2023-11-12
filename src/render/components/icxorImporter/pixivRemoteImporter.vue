@@ -59,7 +59,7 @@ function handleUpload() {
     .then(() => {
       loading.value = true
       const dto = new BatchDto()
-      dto.control.addIfNotFound = true
+      dto.control.updatePolicy = 'onlyAdd'
       let curBid = 0
       selectedList.value.forEach((ele: PixivIllust) => {
         for (let i = 0; i < ele.page_count; i++) {
@@ -75,10 +75,6 @@ function handleUpload() {
                 original_url:
                   ele.meta_single_page.original_image_url
                   || ele.meta_pages[i].image_urls.original,
-                thumb_url:
-                  ele.page_count === 1
-                    ? ele.image_urls.large
-                    : ele.meta_pages[i].image_urls.large,
                 limit:
                   ele.x_restrict === 1
                     ? 'R-18'

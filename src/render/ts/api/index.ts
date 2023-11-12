@@ -4,6 +4,7 @@ import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
 import { isReactive, toRaw } from 'vue'
 import type { IllustObj } from '@render/ts/interface/illustObj'
 import type { BatchDto } from '@render/ts/dto/batch'
+import type { Tag } from '@main/illust/entities/tag.entities'
 
 const { apiAdapter } = window.electron
 const ax = {
@@ -161,6 +162,20 @@ export class API {
   static async getTags() {
     const resp = await ax.get('/illust/tag/list', {
       params: {},
+    })
+    return resp.data
+  }
+
+  static async updateTag(tag: Tag) {
+    const resp = await ax.put('/illust/tag', tag, {
+      params: {},
+    })
+    return resp.data
+  }
+
+  static async deleteTag(tagId: number) {
+    const resp = await ax.delete('/illust/tag', {
+      params: { tagId },
     })
     return resp.data
   }

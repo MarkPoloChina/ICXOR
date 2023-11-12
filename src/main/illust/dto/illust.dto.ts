@@ -16,7 +16,6 @@ export interface IllustDto {
     title?: string
     limit?: string
     original_url?: string | null
-    thumb_url?: string | null
     author_id?: number
     author?: string
     book_cnt?: number

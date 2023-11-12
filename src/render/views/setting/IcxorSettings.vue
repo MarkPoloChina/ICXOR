@@ -4,6 +4,7 @@ import IcxorAbout from '@render/components/IcxorSettings/IcxorAbout.vue'
 import IcxorRemote from '@render/components/IcxorSettings/IcxorRemote.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import IcxorTag from '@render/components/IcxorSettings/IcxorTag.vue'
 
 const currentTab = ref('config')
 const route = useRoute()
@@ -24,6 +25,9 @@ onMounted(() => {
       </el-tab-pane>
       <el-tab-pane label="远程基" name="remote" lazy>
         <IcxorRemote />
+      </el-tab-pane>
+      <el-tab-pane label="标签" name="tag" lazy>
+        <IcxorTag />
       </el-tab-pane>
       <el-tab-pane label="关于" name="about" lazy>
         <IcxorAbout />

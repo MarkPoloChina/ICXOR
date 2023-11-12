@@ -44,8 +44,8 @@ function handleRightClick(event, obj) {
               ? 'bigger'
               : ''
           }`"
-          :src="UrlGenerator.getBlobUrl(obj, 'square_medium')"
-          :preview-src-list="[UrlGenerator.getBlobUrl(obj, 'original')]"
+          :src="UrlGenerator.getBlobUrl(obj, 'large')"
+          :preview-src-list="[UrlGenerator.getBlobUrl(obj, 's_large')]"
           fit="cover"
           lazy
           @contextmenu="handleRightClick($event, obj)"

@@ -68,7 +68,7 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
             <el-image
               class="viewer-img"
               :src="UrlGenerator.getBlobUrl(obj, 'square_medium')"
-              :preview-src-list="[UrlGenerator.getBlobUrl(obj, 'original')]"
+              :preview-src-list="[UrlGenerator.getBlobUrl(obj, 's_large')]"
               fit="cover"
               lazy
               @contextmenu.prevent="handleRightClick($event, obj, !!obj.meta)"

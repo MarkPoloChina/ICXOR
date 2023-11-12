@@ -169,8 +169,7 @@ export class FilenameAdapter {
       defaultRemoteBaseId: number | undefined
       metaTitle: boolean
       remoteEndpointForPixiv: boolean
-      jpgForThumbEndpoint: boolean
-      sameForThumbEndpoint: boolean
+      thumbEndpoint: 'notSet' | 'same' | 'jpg'
       remoteEndpointPrefixForDefault: string
     },
   ) => {
@@ -234,9 +233,9 @@ export class FilenameAdapter {
           },
         }
       }
-      if (log.dto && log.dto.remote_endpoint && autoInject.jpgForThumbEndpoint)
+      if (log.dto && log.dto.remote_endpoint && autoInject.thumbEndpoint === 'jpg')
         log.dto.thumb_endpoint = `${PathHelper.getPrefixName(log.dto.remote_endpoint)}.jpg`
-      else if (log.dto && log.dto.remote_endpoint && autoInject.sameForThumbEndpoint)
+      else if (log.dto && log.dto.remote_endpoint && autoInject.thumbEndpoint === 'same')
         log.dto.thumb_endpoint = `${log.dto.remote_endpoint}`
       logs.push(log)
       index++

@@ -33,7 +33,7 @@ async function getIllusts(name: string) {
     -1,
     undefined,
     {
-      'meta.pid': 'DESC',
+      'meta.book_cnt': 'DESC',
     },
   )
   return list

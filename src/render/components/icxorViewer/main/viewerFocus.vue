@@ -2,7 +2,6 @@
 import { Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { onActivated, onDeactivated, ref, watch } from 'vue'
-import { useStore } from 'vuex'
 
 const props = defineProps({
   tableData: Array<any>,
@@ -16,7 +15,6 @@ const emit = defineEmits([
   'popupContext',
   'starChange',
 ])
-const store = useStore()
 const currentIndex = ref(0)
 const table = ref()
 watch(
@@ -111,8 +109,7 @@ defineExpose({ handleIndexChange })
         class="viewer-img"
         :src="
           UrlGenerator.getBlobUrl(
-            tableData[currentIndex],
-            store.state.useLocal ? 'original' : 'medium',
+            tableData[currentIndex], 's_large',
           )
         "
         :preview-src-list="[

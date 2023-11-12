@@ -16,28 +16,37 @@ const showDialog = ref(false)
 const metaForm = ref()
 const table = ref()
 const loading = ref(false)
-const importOption = reactive({
+const importOption = reactive<{
+  importType: 'directory' | 'files'
+  updatePolicy: 'cover' | 'onlyUpdate' | 'onlyAdd'
+  autoInject: {
+    defaultRemoteBaseId: number | undefined
+    metaTitle: boolean
+    remoteEndpointForPixiv: boolean
+    thumbEndpoint: 'notSet' | 'same' | 'jpg'
+    remoteEndpointPrefixForDefault: string
+  }
+  addition: Record<string, any>
+}>({
   autoInject: {
     defaultRemoteBaseId: undefined,
     metaTitle: false,
     remoteEndpointForPixiv: false,
-    jpgForThumbEndpoint: false,
-    sameForThumbEndpoint: false,
+    thumbEndpoint: 'notSet',
     remoteEndpointPrefixForDefault: '',
   },
   importType: 'directory',
-  addIfNotFound: true,
+  updatePolicy: 'cover',
   addition: {},
 })
 function initTab() {
   importOption.importType = 'directory'
-  importOption.addIfNotFound = true
+  importOption.updatePolicy = 'cover'
   importOption.autoInject = {
     defaultRemoteBaseId: undefined,
     metaTitle: false,
     remoteEndpointForPixiv: false,
-    jpgForThumbEndpoint: false,
-    sameForThumbEndpoint: false,
+    thumbEndpoint: 'notSet',
     remoteEndpointPrefixForDefault: '',
   }
   importOption.addition = {}
@@ -111,7 +120,7 @@ function handleUpload() {
           },
         })
       })
-      dto.control.addIfNotFound = importOption.addIfNotFound
+      dto.control.updatePolicy = importOption.updatePolicy
       try {
         const data = await API.updateIllusts(dto)
         ElMessage.info('处理完成')
@@ -181,7 +190,7 @@ function handleUpload() {
               </el-col>
             </el-row>
           </el-form-item>
-          <el-form-item label="自动注入">
+          <el-form-item label="信息注入">
             <el-checkbox
               v-model="importOption.autoInject.metaTitle"
               label="标题"
@@ -190,30 +199,21 @@ function handleUpload() {
               v-model="importOption.autoInject.remoteEndpointForPixiv"
               label="Pixiv末端"
             />
-            <el-checkbox
-              v-model="importOption.autoInject.jpgForThumbEndpoint"
-              label="jpg缩图末端"
-            />
-            <el-checkbox
-              v-model="importOption.autoInject.sameForThumbEndpoint"
-              label="一致缩图末端"
-            />
+            <el-select v-model="importOption.autoInject.thumbEndpoint" style="margin-left: 20px;">
+              <el-option label="不变" value="notSet" />
+              <el-option label="与原图一致" value="same" />
+              <el-option label="jpg扩展名" value="jpg" />
+            </el-select>
+            <el-button style="margin-left: 20px;" @click="showDialog = true">
+              附加元
+            </el-button>
           </el-form-item>
-          <el-form-item>
-            <el-row :gutter="20" style="width: 100%">
-              <el-col :span="6">
-                <el-button @click="showDialog = true">
-                  附加元
-                </el-button>
-              </el-col>
-              <el-col :span="6">
-                <el-switch
-                  v-model="importOption.addIfNotFound"
-                  active-text="增量"
-                  inactive-text="仅修改"
-                />
-              </el-col>
-            </el-row>
+          <el-form-item label="更新策略">
+            <el-select v-model="importOption.updatePolicy">
+              <el-option label="覆盖" value="cover" />
+              <el-option label="仅更新" value="onlyUpdate" />
+              <el-option label="仅添加" value="onlyAdd" />
+            </el-select>
           </el-form-item>
         </el-form>
       </div>

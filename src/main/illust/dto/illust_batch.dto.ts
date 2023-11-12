@@ -2,7 +2,7 @@ import type { IllustDto } from './illust.dto'
 
 export interface IllustBatchDto {
   control: {
-    addIfNotFound: boolean
+    updatePolicy: 'cover' | 'onlyUpdate' | 'onlyAdd'
   }
   dtos: Array<{
     dto: IllustDto

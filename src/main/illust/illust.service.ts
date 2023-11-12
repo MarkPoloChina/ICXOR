@@ -333,7 +333,7 @@ export class IllustService {
         })
         : null
       if (!targetIllust) {
-        if (!illusts.control.addIfNotFound) {
+        if (illusts.control.updatePolicy === 'onlyUpdate') {
           resp_list.push({
             bid: illust.bid,
             status: 'ignore',
@@ -357,6 +357,14 @@ export class IllustService {
             name: illust.dto.remote_base.name,
           })
         }
+      }
+      else if (illusts.control.updatePolicy === 'onlyAdd') {
+        resp_list.push({
+          bid: illust.bid,
+          status: 'ignore',
+          message: 'Illust Already Exist.',
+        })
+        continue
       }
       if (illust.dto.star !== undefined)
         targetIllust.star = illust.dto.star
@@ -606,5 +614,18 @@ export class IllustService {
     targetTag.name = tag
     targetTag.type = 'author'
     return await this.tagRepository.save(targetTag)
+  }
+
+  async updateTag(tag: Tag) {
+    const targetTag = await this.tagRepository.findOneByOrFail({
+      id: tag.id,
+    })
+    targetTag.name = tag.name
+    targetTag.type = tag.type
+    return await this.tagRepository.save(targetTag)
+  }
+
+  async deleteTag(tagId: number) {
+    return await this.tagRepository.delete(tagId)
   }
 }

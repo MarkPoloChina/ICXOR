@@ -1,9 +1,11 @@
 import type { IllustDto } from '@main/illust/dto/illust.dto'
 
 export class BatchDto {
-  control = {
-    addIfNotFound: false,
-  }
+  control: {
+    updatePolicy: 'cover' | 'onlyUpdate' | 'onlyAdd'
+  } = {
+      updatePolicy: 'cover',
+    }
 
   dtos: Array<{
     bid: number | string

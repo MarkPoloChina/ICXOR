@@ -10,5 +10,14 @@
     "outdir",
     "outfile",
     "postuninstall"
-  ]
+  ],
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "database": "/Users/markpolo/Library/Application Support/Electron/main.db",
+      "name": "electronDB"
+    }
+  ],
+  "sqltools.useNodeRuntime": true
 }
