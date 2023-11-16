@@ -16,4 +16,8 @@ export class FS {
   static async localCopy(source: string, dest: string) {
     return fs.copyFile(source, dest)
   }
+
+  static async isExists(path: string) {
+    return await fs.pathExists(path)
+  }
 }

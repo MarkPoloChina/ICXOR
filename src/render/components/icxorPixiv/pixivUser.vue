@@ -5,10 +5,9 @@ import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
 import type { PixivIllust, PixivUser } from '@markpolochina/pixiv.ts'
-import { useRouter } from 'vue-router'
 
+const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
-const router = useRouter()
 const form = reactive({
   uid: '',
 })
@@ -110,7 +109,7 @@ function handleRightClick(event, obj: PixivIllust) {
         handleDownload(obj)
         break
       case '在Pixiv中打开':
-        router.push(`/pixiv/illust/${obj.id}/0`)
+        emit('toIllust', { pid: obj.id, page: 0 })
         break
       default:
         break

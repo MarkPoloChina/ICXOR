@@ -3,33 +3,25 @@ import PixivBookmark from '@render/components/icxorPixiv/pixivBookmark.vue'
 import PixivIllust from '@render/components/icxorPixiv/pixivIllust.vue'
 import PixivUser from '@render/components/icxorPixiv/pixivUser.vue'
 import type { Ref } from 'vue'
-import { onActivated, ref, watch } from 'vue'
+import { onActivated, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const currentTab = ref('illust')
 const route = useRoute()
 const illust: Ref<typeof PixivIllust> = ref()
 const user: Ref<typeof PixivUser> = ref()
-watch(() => route.fullPath, (v, oldV) => {
-  if (v === oldV)
-    return
-  if (route.fullPath.startsWith('/pixiv/illust')) {
-    currentTab.value = 'illust'
-    illust.value.handleSearchByLink(route.params.pid, route.params.page)
-  }
-  else if (route.fullPath.startsWith('/pixiv/user')) {
-    currentTab.value = 'user'
-    user.value.handleSearchByLink(route.params.uid)
-  }
-})
 onActivated(() => {
-  if (route.fullPath.startsWith('/pixiv/illust')) {
-    currentTab.value = 'illust'
-    illust.value.handleSearchByLink(route.params.pid, route.params.page)
-  }
-  else if (route.fullPath.startsWith('/pixiv/user')) {
-    currentTab.value = 'user'
-    user.value.handleSearchByLink(route.params.uid)
+  switch (route.query.redirect) {
+    case 'illust':
+      currentTab.value = 'illust'
+      illust.value.handleSearchByLink(route.query.pid, route.query.page)
+      break
+    case 'user':
+      currentTab.value = 'user'
+      user.value.handleSearchByLink(route.query.uid)
+      break
+    default:
+      break
   }
 })
 </script>
@@ -41,13 +33,28 @@ onActivated(() => {
     </div>
     <el-tabs v-model="currentTab" class="tabs">
       <el-tab-pane label="插画" name="illust">
-        <PixivIllust ref="illust" />
+        <PixivIllust
+          ref="illust" @to-user="($event) => {
+            currentTab = 'user'
+            user.handleSearchByLink($event.uid)
+          }"
+        />
       </el-tab-pane>
       <el-tab-pane label="画师" name="user">
-        <PixivUser ref="user" />
+        <PixivUser
+          ref="user" @to-illust="($event) => {
+            currentTab = 'illust'
+            illust.handleSearchByLink($event.pid, $event.page)
+          }"
+        />
       </el-tab-pane>
       <el-tab-pane label="收藏" name="bookmark">
-        <PixivBookmark />
+        <PixivBookmark
+          @to-illust="($event) => {
+            currentTab = 'illust'
+            illust.handleSearchByLink($event.pid, $event.page)
+          }"
+        />
       </el-tab-pane>
     </el-tabs>
   </div>

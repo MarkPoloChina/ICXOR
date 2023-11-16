@@ -11,7 +11,7 @@ export interface FilterConditionObj {
   'meta.author'?: string
   'meta.tags_str'?: string
   'remote_base.id'?: number[]
-  'remote_base.name'?: number[]
+  'remote_base.name'?: string[]
   'poly.type'?: string[]
   'poly.parent'?: string[]
   'poly.name'?: string[]

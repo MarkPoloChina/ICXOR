@@ -2,14 +2,14 @@
 import IcxorConfig from '@render/components/IcxorSettings/IcxorConfig.vue'
 import IcxorAbout from '@render/components/IcxorSettings/IcxorAbout.vue'
 import IcxorRemote from '@render/components/IcxorSettings/IcxorRemote.vue'
-import { onMounted, ref } from 'vue'
+import { onActivated, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import IcxorTag from '@render/components/IcxorSettings/IcxorTag.vue'
 
 const currentTab = ref('config')
 const route = useRoute()
-onMounted(() => {
-  if (route.path === '/about')
+onActivated(() => {
+  if (route.query.redirect === 'about')
     currentTab.value = 'about'
 })
 </script>

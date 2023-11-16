@@ -6,6 +6,7 @@ import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
 import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 
+const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
 const form = reactive({
   pid: '',
@@ -194,11 +195,14 @@ defineExpose({ handleSearchByLink })
             <el-descriptions-item label="总收藏数">
               {{ illustObj.total_bookmarks }}
             </el-descriptions-item>
-            <el-descriptions-item label="作者id">
-              {{ illustObj.user.id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="作者名">
-              {{ illustObj.user.name }}
+            <el-descriptions-item label="作者">
+              <el-link
+                type="primary"
+                :underline="false"
+                @click="emit('toUser', { uid: illustObj.user.id })"
+              >
+                {{ `[${illustObj.user.id}] ${illustObj.user.name}` }}
+              </el-link>
             </el-descriptions-item>
             <el-descriptions-item label="限制级">
               <el-tag v-if="illustObj.x_restrict === 0" type="success">

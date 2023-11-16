@@ -34,23 +34,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@render/views/setting/IcxorSettings.vue'),
       },
       {
-        path: 'about',
-        name: 'about',
-        component: () => import('@render/views/setting/IcxorSettings.vue'),
-      },
-      {
         path: 'pixiv',
         name: 'pixiv',
-        component: () => import('@render/views/basic/IcxorPixiv.vue'),
-      },
-      {
-        path: 'pixiv/illust/:pid/:page',
-        name: 'pixivIllust',
-        component: () => import('@render/views/basic/IcxorPixiv.vue'),
-      },
-      {
-        path: 'pixiv/user/:uid',
-        name: 'pixivUser',
         component: () => import('@render/views/basic/IcxorPixiv.vue'),
       },
     ],

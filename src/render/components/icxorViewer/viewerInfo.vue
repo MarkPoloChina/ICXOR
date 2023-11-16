@@ -43,10 +43,23 @@ const writableTag = computed({
 const editable = ref(false)
 const router = useRouter()
 function toPixiv(pid, page) {
-  router.push(`/pixiv/illust/${pid}/${page}`)
+  router.push({
+    name: 'pixiv',
+    query: {
+      redirect: 'illust',
+      pid,
+      page,
+    },
+  })
 }
 function toPixivUser(uid) {
-  router.push(`/pixiv/user/${uid}`)
+  router.push({
+    name: 'pixiv',
+    query: {
+      redirect: 'user',
+      uid,
+    },
+  })
 }
 function handleStarChange(star) {
   if (!editable.value)
@@ -165,17 +178,14 @@ defineExpose({ handleStarChange })
             border
             direction="vertical"
           >
-            <template #extra>
-              <el-button
+            <el-descriptions-item label="PId">
+              <el-link
                 type="primary"
-                size="small"
+                :underline="false"
                 @click="toPixiv(writableInfo.meta.pid, writableInfo.meta.page)"
               >
-                在Pixiv打开
-              </el-button>
-            </template>
-            <el-descriptions-item label="PId">
-              {{ writableInfo.meta.pid }}
+                {{ writableInfo.meta.pid }}
+              </el-link>
             </el-descriptions-item>
             <el-descriptions-item label="页号">
               {{ writableInfo.meta.page }}
@@ -184,20 +194,21 @@ defineExpose({ handleStarChange })
               {{ writableInfo.meta.limit ?? "-" }}
             </el-descriptions-item>
             <el-descriptions-item label="作者">
-              {{
-                writableInfo.meta.author_id && writableInfo.meta.author
-                  ? `[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`
-                  : "-"
-              }}
-              <el-button
+              <el-link
                 v-if="writableInfo.meta.author_id && writableInfo.meta.author"
                 type="primary"
-                size="small"
-                style="margin-left: 20px;"
+                :underline="false"
                 @click="toPixivUser(writableInfo.meta.author_id)"
               >
-                在Pixiv打开
-              </el-button>
+                {{
+                  `[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`
+                }}
+              </el-link>
+              <span v-else>
+                {{
+                  "-"
+                }}
+              </span>
               <el-button
                 v-if="writableInfo.meta.author_id && writableInfo.meta.author"
                 type="primary"

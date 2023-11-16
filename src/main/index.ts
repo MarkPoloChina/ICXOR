@@ -124,7 +124,12 @@ function prepareEnv() {
             if (BrowserWindow.getAllWindows().length === 0)
               await createWindow()
             const currentWin = BrowserWindow.getAllWindows()[0]
-            currentWin.webContents.send('router:go', '/about')
+            currentWin.webContents.send('router:push', {
+              name: 'settings',
+              query: {
+                redirect: 'about',
+              },
+            })
           },
         },
         {

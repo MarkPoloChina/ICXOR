@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { API } from '@render/ts/api'
+import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 import InfoViewer from './reusable/InfoViewer.vue'
 import GridViewer from './reusable/gridViewer.vue'
 
@@ -35,11 +36,13 @@ async function getEnum() {
   if (source[0])
     source[0].list = await getIllusts(source[0].type)
 }
-async function getIllusts(type, page = 0) {
+async function getIllusts(type: string, page = 0) {
+  const filter: FilterSortObj = type === 'Pixiv' ? { 'meta.pid': 'DESC' } : { 'Illust.remote_endpoint': 'ASC' }
   const list = await API.getIllusts(
     { 'remote_base.name': [type] },
     100,
     page * 100,
+    filter,
   )
   return list
 }

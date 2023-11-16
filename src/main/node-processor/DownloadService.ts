@@ -88,8 +88,10 @@ export class DS {
       )
     }
     const process = async (url: string) => {
-      const ab = await this.downloadFromUrl(url, true)
-      await FS.saveArrayBufferTo(ab, path.basename(url), dir)
+      if (!await FS.isExists(path.join(dir, path.basename(url)))) {
+        const ab = await this.downloadFromUrl(url, true)
+        await FS.saveArrayBufferTo(ab, path.basename(url), dir)
+      }
     }
     const promises = urls.map(url => process(url))
     await Promise.all(promises)

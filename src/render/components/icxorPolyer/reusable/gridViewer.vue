@@ -13,9 +13,6 @@ const emit = defineEmits(['showInfo', 'remove', 'loadMore'])
 
 const { ipcRemoveAll, ipcOnce, ipcSend } = window.electron
 const router = useRouter()
-function toPixiv(pid: number, page: number) {
-  router.push(`/pixiv/illust/${pid}/${page}`)
-}
 
 function handleRightClick(event, obj, supportToPixiv?: boolean) {
   if (event.stopPropagation)
@@ -31,7 +28,23 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
         emit('remove', obj)
         break
       case '在Pixiv中打开':
-        toPixiv(obj.meta.pid, obj.meta.page)
+        router.push({
+          name: 'pixiv',
+          query: {
+            redirect: 'illust',
+            pid: obj.meta.pid,
+            page: obj.meta.page,
+          },
+        })
+        break
+      case '在Pixiv中打开作者':
+        router.push({
+          name: 'pixiv',
+          query: {
+            redirect: 'user',
+            uid: obj.meta.author_id,
+          },
+        })
         break
       default:
         break
@@ -41,7 +54,7 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
   if (props.supportRemove)
     popupTemplate.push({ label: '移除' })
   if (supportToPixiv)
-    popupTemplate.push({ label: '在Pixiv中打开' })
+    popupTemplate.push({ label: '在Pixiv中打开' }, { label: '在Pixiv中打开作者' })
   ipcSend('context:popup', popupTemplate)
 }
 </script>

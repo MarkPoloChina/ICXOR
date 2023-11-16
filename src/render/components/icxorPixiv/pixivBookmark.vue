@@ -4,16 +4,16 @@ import { Download, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
-import { useRouter } from 'vue-router'
 
+const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
-const router = useRouter()
 const form = reactive({
   type: 'public',
 })
 const isLoading = ref(false)
 const illusts = ref<PixivIllust[]>([])
 const success = ref<number[]>([])
+const retrys = ref<Record<number, number>>({})
 async function handleDownload(illustObj: PixivIllust) {
   const dir = await ipcInvoke('dialog:openDirectory')
   if (!dir)
@@ -56,11 +56,25 @@ async function handleDownloadAll() {
     })
     .map((ele) => {
       const process = async () => {
-        if (ele.type === 'ugoira') {
-          const meta = await API.getPixivUgoiraJson(ele.id)
-          await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
+        try {
+          if (ele.type === 'ugoira') {
+            const meta = await API.getPixivUgoiraJson(ele.id)
+            await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
+          }
+          else { await downloadPixivTo(toRaw(ele), dir) }
         }
-        else { await downloadPixivTo(toRaw(ele), dir) }
+        catch (err) {
+          if (!retrys.value[ele.id])
+            retrys.value[ele.id] = 0
+          if (retrys.value[ele.id] >= 3) {
+            throw new Error('Too much retry')
+          }
+          else {
+            ElMessage.error(`下载失败${err}。3s秒后自动重试`)
+            retrys.value[ele.id] += 1
+            setTimeout(process, 3000)
+          }
+        }
         success.value.push(ele.id)
       }
       return process()
@@ -72,6 +86,8 @@ async function handleDownloadAll() {
         `忽略了${invisable.length}个不可访问项目: ${invisable.toString()}`,
       )
     }
+  }).catch((err) => {
+    ElMessage.error(`下载失败: ${err}`)
   })
 }
 async function handleSearch() {
@@ -96,7 +112,7 @@ function handleRightClick(obj: PixivIllust) {
         handleDownload(obj)
         break
       case '在Pixiv中打开':
-        router.push(`/pixiv/illust/${obj.id}/0`)
+        emit('toIllust', { pid: obj.id, page: 0 })
         break
       default:
         break

@@ -21,7 +21,7 @@ onMounted(() => {
   ipcOn('dark-mode:updated', (message) => {
     isDark.value = message
   })
-  ipcOn('router:go', (message) => {
+  ipcOn('router:push', (message) => {
     router.push(message)
   })
   useStore().commit('initStore')
