@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: build and release
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build app
+        run: yarn build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy target files for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          robocopy "dist/electron" "dist_p" *.exe
+          robocopy "dist/electron" "dist_p" *.msi
+          robocopy "dist/electron" "dist_p" *.exe.blockmap
+          return 0
+
+      - name: Copy target files for MacOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          rsync -av --include="*.dmg" --exclude="*" "dist/electron/" "dist_p/"
+          rsync -av --include="*.dmg.blockmap" --exclude="*" "dist/electron/" "dist_p/"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}
+          path: dist_p
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: 'dist_p/**'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
