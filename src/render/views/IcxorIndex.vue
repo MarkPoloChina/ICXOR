@@ -11,6 +11,7 @@ import { useStore } from 'vuex'
 
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const { ipcInvoke, ipcOn } = window.electron
 
@@ -18,6 +19,12 @@ const isDark = useDark()
 const router = useRouter()
 onMounted(() => {
   ipcInvoke('dark-mode:get').then(value => (isDark.value = value))
+  ipcOn('app:message', (type, message) => {
+    ElMessage({
+      type,
+      message,
+    })
+  })
   ipcOn('dark-mode:updated', (message) => {
     isDark.value = message
   })

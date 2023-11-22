@@ -17,7 +17,50 @@ export default defineConfig({
       external: ['electron'],
       electron: {
         build: {
-          config: './electron-builder.config.js',
+          config: {
+            directories: {
+              output: 'dist/electron',
+              buildResources: 'build',
+            },
+            publish: {
+              provider: 'github',
+              owner: 'MarkPoloChina',
+              repo: 'ICXOR',
+              releaseType: 'release',
+            },
+            npmRebuild: false,
+            files: [
+              'dist/main/**/*',
+              'dist/preload/**/*',
+              'dist/render/**/*',
+            ],
+            appId: 'com.mpsto.icxor',
+            productName: 'ICXOR',
+            copyright: 'Copyright © 2023 MPSTO',
+            win: {
+              icon: 'build/basic/icons/icon.ico',
+            },
+            nsis: {
+              oneClick: false,
+              language: '2052',
+              allowToChangeInstallationDirectory: true,
+              createDesktopShortcut: true,
+              createStartMenuShortcut: true,
+            },
+            mac: {
+              // notarize: {
+              //   teamId: process.env.NOTARIZE_TEAM_ID,
+              // },
+              darkModeSupport: true,
+              icon: 'build/mac/icons/icon.icns',
+              // entitlements: 'build/mac/entitlements.mac.plist',
+              // entitlementsInherit: 'build/mac/entitlements.mac.plist',
+              target: [{
+                target: 'default',
+                arch: ['universal'],
+              }],
+            },
+          },
         },
         preload: {
           entry: 'src/preload/index.ts',

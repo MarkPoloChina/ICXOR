@@ -11,6 +11,8 @@ import {
   session,
   shell,
 } from 'electron'
+import { autoUpdater } from 'electron-updater'
+import log from 'electron-log'
 import type { MicroserviceOptions } from '@nestjs/microservices'
 import { ElectronIpcTransport } from '@doubleshot/nest-electron'
 import { AppModule } from '@main/app.module'
@@ -73,44 +75,6 @@ async function createWindow() {
   return { win }
 }
 
-let toReloadSignal = false
-
-function prepareDB() {
-  ipcMain.handle('db:init', () => {
-    ConfigDB.initDB()
-  })
-  ipcMain.handle('db:get', (event, key) => {
-    return ConfigDB.getByKey(key)
-  })
-  ipcMain.handle('db:set', (event, key, value) => {
-    ConfigDB.setByKey(key, value)
-  })
-}
-
-function prepareFS() {
-  ipcMain.handle('fs:save', async (event, ab, filename, dir) => {
-    await FS.saveArrayBufferTo(ab, filename, dir)
-  })
-  ipcMain.handle('fs:getFilenames', async (event, dir) => {
-    return await FS.parseFilenamesFromDirectoryAsync(dir)
-  })
-  ipcMain.handle('fs:copy', async (event, src, dest) => {
-    await FS.localCopy(src, dest)
-  })
-}
-
-function prepareDS() {
-  ipcMain.handle('ds:download', async (event, url, filename, dir) => {
-    await DS.downloadAndSave(url, filename, dir)
-  })
-  ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
-    await DS.downloadFromIllustObj(illustObj, dir, page)
-  })
-  ipcMain.handle('ds:downloadUgoira', async (event, illustObj, dir, meta) => {
-    await DS.downloadFromUgoira(illustObj, dir, meta)
-  })
-}
-
 function prepareEnv() {
   // 设置菜单模块
   const menu = Menu.buildFromTemplate([
@@ -133,21 +97,38 @@ function prepareEnv() {
           },
         },
         {
+          label: '检查更新',
+          click: async () => {
+            autoUpdater.on('error', (err) => {
+              const currentWin = BrowserWindow.getAllWindows()[0]
+              if (!currentWin)
+                return
+              currentWin.webContents.send('app:message', 'error', `检查更新错误:${String(err)}`)
+            })
+            autoUpdater.on('update-not-available', (info) => {
+              const currentWin = BrowserWindow.getAllWindows()[0]
+              if (!currentWin)
+                return
+              currentWin.webContents.send('app:message', 'success', `当前(${info.version})已是最新版本`)
+            })
+            autoUpdater.on('checking-for-update', () => {
+              const currentWin = BrowserWindow.getAllWindows()[0]
+              if (!currentWin)
+                return
+              currentWin.webContents.send('app:message', 'info', '检查更新中...')
+            })
+            autoUpdater.checkForUpdatesAndNotify().finally(() => {
+              autoUpdater.removeAllListeners()
+            })
+          },
+        },
+        {
           type: 'separator',
         },
         {
           label: '打开调试窗口',
           click: () => {
             BrowserWindow.getFocusedWindow().webContents.openDevTools()
-          },
-        },
-        {
-          label: '重载',
-          click: () => {
-            toReloadSignal = true
-            BrowserWindow.getFocusedWindow().close()
-            createWindow()
-            toReloadSignal = false
           },
         },
         {
@@ -273,6 +254,10 @@ function prepareEnv() {
     event.returnValue = app.getPath('userData')
   })
 
+  ipcMain.on('app:getOS', (event) => {
+    event.returnValue = process.platform
+  })
+
   ipcMain.handle('app:getCacheSize', async () => {
     const size = await session.defaultSession.getCacheSize()
     return size
@@ -285,14 +270,50 @@ function prepareEnv() {
   ipcMain.on('app:openLink', (event, url) => {
     shell.openExternal(url)
   })
+
+  ipcMain.on('app:openInFolder', (event, path) => {
+    shell.showItemInFolder(path)
+  })
+
+  ipcMain.handle('db:init', () => {
+    ConfigDB.initDB()
+  })
+  ipcMain.handle('db:get', (event, key) => {
+    return ConfigDB.getByKey(key)
+  })
+  ipcMain.handle('db:set', (event, key, value) => {
+    ConfigDB.setByKey(key, value)
+  })
+
+  ipcMain.handle('fs:save', async (event, ab, filename, dir) => {
+    await FS.saveArrayBufferTo(ab, filename, dir)
+  })
+  ipcMain.handle('fs:getFilenames', async (event, dir) => {
+    return await FS.parseFilenamesFromDirectoryAsync(dir)
+  })
+  ipcMain.handle('fs:copy', async (event, src, dest) => {
+    await FS.localCopy(src, dest)
+  })
+
+  ipcMain.handle('ds:download', async (event, url, filename, dir) => {
+    await DS.downloadAndSave(url, filename, dir)
+  })
+  ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
+    await DS.downloadFromIllustObj(illustObj, dir, page)
+  })
+  ipcMain.handle('ds:downloadUgoira', async (event, illustObj, dir, meta) => {
+    await DS.downloadFromUgoira(illustObj, dir, meta)
+  })
+
+  log.transports.file.level = 'debug'
+  autoUpdater.logger = log
 }
 
 async function electronAppInit() {
   const isDev = !app.isPackaged
   app.on('window-all-closed', () => {
-    if (process.platform === 'darwin' || toReloadSignal)
-      return
-    app.quit()
+    if (process.platform !== 'darwin')
+      app.quit()
   })
 
   app.on('activate', () => {
@@ -316,9 +337,6 @@ async function electronAppInit() {
 
   await app.whenReady()
   prepareEnv()
-  prepareDB()
-  prepareFS()
-  prepareDS()
 }
 
 async function bootstrap() {

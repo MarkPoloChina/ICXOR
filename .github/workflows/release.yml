@@ -5,16 +5,90 @@ on:
     tags:
       - 'v*'
 
-jobs:
-  release:
-    name: build and release
+  workflow_dispatch:
 
-    runs-on: ${{ matrix.os }}
+jobs:
+  release_macos:
+    name: Build for MacOS and Release
+
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Install the Apple certificate
+      #   env:
+      #     BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      #     P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      #     KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      #   run: |
+      #     # create variables
+      #     CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+      #     KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+      #     # import certificate and provisioning profile from secrets
+      #     echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+      #     # create temporary keychain
+      #     security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+      #     security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+      #     security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+      #     # import certificate to keychain
+      #     security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+      #     security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build app
+        run: yarn build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # APPLE_ID: ${{ secrets.DEVELOPER_APPLE_ID }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.DEVELOPER_APPLE_PASSWORD }}
+          # NOTARIZE_TEAM_ID: ${{ secrets.DEVELOPER_TEAM_ID }}
+
+      - name: Copy target files
+        run: |
+          rsync -av --include="*.dmg" --exclude="*" "dist/electron/" "dist_p/"
+          rsync -av --include="*.zip" --exclude="*" "dist/electron/" "dist_p/"
+          rsync -av --include="*.blockmap" --exclude="*" "dist/electron/" "dist_p/"
+          rsync -av --include="latest-mac.yml" --exclude="*" "dist/electron/" "dist_p/"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows
+          path: dist_p
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: 'dist_p/**'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release_windows:
+    name: Build for Windows and Release
+
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
 
     permissions:
       contents: write
@@ -37,23 +111,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Copy target files for Windows
-        if: matrix.os == 'windows-latest'
         run: |
           robocopy "dist/electron" "dist_p" *.exe
-          robocopy "dist/electron" "dist_p" *.msi
-          robocopy "dist/electron" "dist_p" *.exe.blockmap
+          robocopy "dist/electron" "dist_p" *.blockmap
+          robocopy "dist/electron" "dist_p" latest.yml
           return 0
 
-      - name: Copy target files for MacOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          rsync -av --include="*.dmg" --exclude="*" "dist/electron/" "dist_p/"
-          rsync -av --include="*.dmg.blockmap" --exclude="*" "dist/electron/" "dist_p/"
-
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}
+          name: MacOS
           path: dist_p
 
       - name: Release

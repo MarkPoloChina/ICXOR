@@ -1,6 +1,6 @@
 {
   "name": "icxor",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": true,
   "packageManager": "yarn@1.22.19",
   "description": "ICXOR (Illust Complexor) is a tool built by electron to manage illusts at both local and remote.",
@@ -9,6 +9,10 @@
     "email": "1228479724@qq.com"
   },
   "license": "GPL v3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarkPoloChina/ICXOR.git"
+  },
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "rimraf dist && vite",
@@ -44,6 +48,7 @@
     "zip-lib": "^0.7.3"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.2.0",
     "@lightwing/eslint-config": "^0.0.21",
     "@types/get-pixels": "^3.3.3",
     "@types/gif-encoder": "^0.7.3",
@@ -53,6 +58,8 @@
     "electron": "26.2.0",
     "electron-builder": "24.6.4",
     "electron-icon-builder": "^2.0.1",
+    "electron-log": "^5.0.0",
+    "electron-updater": "^6.1.4",
     "eslint": "8.49.0",
     "lint-staged": "14.0.1",
     "rimraf": "5.0.1",
@@ -67,7 +74,7 @@
     "pre-commit": "npx lint-staged"
   },
   "lint-staged": {
-    "*.{js,ts,tsx,vue,md,json,yml}": [
+    "*.{js,ts,tsx,vue,md,json}": [
       "eslint --fix"
     ]
   }

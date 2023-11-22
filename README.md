@@ -4,19 +4,17 @@
 
 ## What it is ?
 
-> Under Development!! It is just a simple self-use tool software and cannot be used universally so far.
+> Under Development!!
 
-ICXOR (Illust Complexor) is a tool built by electron to manage illusts at both local and remote.
+ICXOR (Illust Complexor) is a native tool built by electron to manage illusts at Pixiv or any picture bed.
 
 ## What it can do ?
 
-You can keep your images scattered on a file server or local hard drive and have them managed by it. Ability to freely aggregate, filter, batch process, etc. Remote API support is also available for images such as Pixiv.
-
-Since v0.5, it has been refactored into a purely native version that does not require api support.
+You can keep your images scattered on a file server such as Nginx and have them managed by it. Ability to freely aggregate, filter, batch process, etc. Remote API support is also available for images such as Pixiv.
 
 ## How to install ?
 
-Currently, the development version installation package for MacOS and Windows is provided, but automatic updates are not supported yet. You can choose to download it in RELEASES.
+Currently, the development version installation package for MacOS and Windows is provided in RELEASES.
 
 ## How to build ?
 

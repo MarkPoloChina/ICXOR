@@ -6,7 +6,7 @@ import { PathHelper } from '@render/ts/util/path'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UtilDate } from '@render/ts/util/date'
 
-const { ipcInvoke } = window.electron
+const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
   username: '',
   localIHS: '',
@@ -90,6 +90,10 @@ async function exportFile(filename: string) {
     ElMessage.error('导出失败')
   }
 }
+async function openDir(filename: string) {
+  const dir = PathHelper.getBaseUrl()
+  ipcSend('app:openInFolder', PathHelper.joinFilenamePath(dir, filename))
+}
 </script>
 
 <template>
@@ -114,15 +118,13 @@ async function exportFile(filename: string) {
         </div>
         <div class="form-block">
           <el-form :model="configForm" label-width="100px" style="width: 100%">
-            <el-form-item label="本地路径">
-              <span>{{ PathHelper.getBaseUrl() }}</span>
+            <el-form-item label="配置文件">
               <el-button
                 type="primary"
                 size="small"
-                style="margin-left: 20px"
-                @click="exportFile('main.db')"
+                @click="openDir('config.json')"
               >
-                导出DB
+                在{{ ipcSendSync('app:getOS') === 'darwin' ? 'Finder' : 'Explorer' }}中打开
               </el-button>
               <el-button
                 type="primary"
@@ -130,7 +132,24 @@ async function exportFile(filename: string) {
                 style="margin-left: 20px"
                 @click="exportFile('config.json')"
               >
-                导出Config
+                导出
+              </el-button>
+            </el-form-item>
+            <el-form-item label="数据库">
+              <el-button
+                type="primary"
+                size="small"
+                @click="openDir('main.db')"
+              >
+                在{{ ipcSendSync('app:getOS') === 'darwin' ? 'Finder' : 'Explorer' }}中打开
+              </el-button>
+              <el-button
+                type="primary"
+                size="small"
+                style="margin-left: 20px"
+                @click="exportFile('main.db')"
+              >
+                导出
               </el-button>
             </el-form-item>
             <el-form-item label="缓存大小">
