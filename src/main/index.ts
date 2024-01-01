@@ -19,6 +19,7 @@ import { AppModule } from '@main/app.module'
 import { ConfigDB } from '@main/node-processor/DBService'
 import { FS } from '@main/node-processor/FSService'
 import { DS } from './node-processor/DownloadService'
+import { PS } from './node-processor/PathService'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -303,6 +304,16 @@ function prepareEnv() {
   })
   ipcMain.handle('ds:downloadUgoira', async (event, illustObj, dir, meta) => {
     await DS.downloadFromUgoira(illustObj, dir, meta)
+  })
+
+  ipcMain.on('ps:basename', (event, _path) => {
+    event.returnValue = PS.basename(_path)
+  })
+  ipcMain.on('ps:join', (event, ...paths) => {
+    event.returnValue = PS.join(...paths)
+  })
+  ipcMain.on('ps:extname', (event, _path) => {
+    event.returnValue = PS.extname(_path)
   })
 
   log.transports.file.level = 'debug'

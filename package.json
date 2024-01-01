@@ -37,7 +37,6 @@
     "get-pixels": "^3.3.3",
     "gif-encoder": "^0.7.2",
     "image-size": "^1.0.2",
-    "path-browserify": "^1.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "sqlite3": "^5.1.6",

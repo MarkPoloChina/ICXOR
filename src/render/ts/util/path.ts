@@ -1,4 +1,3 @@
-import path from 'path-browserify'
 import store from '@render/store/index'
 import type { IllustObj } from '../interface/illustObj'
 
@@ -16,20 +15,20 @@ export class PathHelper {
     return STORE_PATH
   }
 
-  static joinFilenamePath = (...paths) => {
-    return path.join(...paths)
+  static joinFilenamePath = (...paths: string[]) => {
+    return ipcSendSync('ps:join', ...paths) as string
   }
 
-  static getExtNameWithDot = (_path) => {
-    return path.extname(_path)
+  static getExtNameWithDot = (_path: string) => {
+    return ipcSendSync('ps:extname', _path) as string
   }
 
-  static getBasename = (_path) => {
-    return path.basename(_path)
+  static getBasename = (_path: string) => {
+    return ipcSendSync('ps:basename', _path) as string
   }
 
-  static getPrefixName = (_path) => {
-    const basename = path.basename(_path)
+  static getPrefixName = (_path: string) => {
+    const basename = this.getBasename(_path)
     return basename.substring(0, basename.lastIndexOf('.'))
   }
 }
