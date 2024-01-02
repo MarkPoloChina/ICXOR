@@ -20,6 +20,7 @@ import { ConfigDB } from '@main/node-processor/DBService'
 import { FS } from '@main/node-processor/FSService'
 import { DS } from './node-processor/DownloadService'
 import { PS } from './node-processor/PathService'
+import { CS } from './node-processor/CloudService'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -314,6 +315,13 @@ function prepareEnv() {
   })
   ipcMain.on('ps:extname', (event, _path) => {
     event.returnValue = PS.extname(_path)
+  })
+
+  ipcMain.handle('cs:upload', async () => {
+    await CS.uploadFile()
+  })
+  ipcMain.handle('cs:download', async () => {
+    await CS.downloadFile()
   })
 
   log.transports.file.level = 'debug'

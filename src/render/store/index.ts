@@ -11,6 +11,10 @@ const defaultSetting = {
   pixivUserId: '',
   pixivToken: '',
   pixivProxy: '',
+  cosSecretId: '',
+  cosSecretKey: '',
+  cosBucket: '',
+  cosRegion: '',
 }
 
 export default createStore({
@@ -23,6 +27,10 @@ export default createStore({
     pixivUserId: '',
     pixivToken: '',
     pixivProxy: '',
+    cosSecretId: '',
+    cosSecretKey: '',
+    cosBucket: '',
+    cosRegion: '',
   },
   getters: {},
   mutations: {

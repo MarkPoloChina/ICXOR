@@ -16,6 +16,10 @@ const configForm = reactive({
   pixivToken: '',
   pixivUserId: '',
   pixivProxy: '',
+  cosSecretId: '',
+  cosSecretKey: '',
+  cosBucket: '',
+  cosRegion: '',
 })
 const store = useStore()
 onMounted(() => {
@@ -94,6 +98,40 @@ async function openDir(filename: string) {
   const dir = PathHelper.getBaseUrl()
   ipcSend('app:openInFolder', PathHelper.joinFilenamePath(dir, filename))
 }
+async function upload() {
+  ElMessageBox.confirm('上传将覆盖云端版本, 无法恢复旧版本, 确认?', 'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    }).then(async () => {
+    try {
+      ElMessage.info('上传中, 请勿关闭窗口')
+      await ipcInvoke('cs:upload')
+      ElMessage.success('上传成功')
+    }
+    catch {
+      ElMessage.error('上传失败, 检查配置和网络')
+    }
+  }).catch(() => {})
+}
+async function download() {
+  ElMessageBox.confirm('下载将覆盖本地版本, 无法恢复旧版本, 确认?', 'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    }).then(async () => {
+    try {
+      ElMessage.info('下载中, 请勿关闭窗口')
+      await ipcInvoke('cs:download')
+      ElMessage.success('下载成功')
+    }
+    catch {
+      ElMessage.error('下载失败, 检查配置和网络, 或云端无记录')
+    }
+  }).catch(() => {})
+}
 </script>
 
 <template>
@@ -161,6 +199,51 @@ async function openDir(filename: string) {
                 @click="clearCache"
               >
                 清空
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="title-block">
+          COS云存储
+        </div>
+        <div class="form-block">
+          <el-form :model="configForm" label-width="100px" style="width: 100%">
+            <el-form-item label="SecretId">
+              <el-input
+                v-model="configForm.cosSecretId"
+                placeholder="请输入SID"
+              />
+            </el-form-item>
+            <el-form-item label="SecretKey">
+              <el-input
+                v-model="configForm.cosSecretKey"
+                placeholder="请输入Skey"
+              />
+            </el-form-item>
+            <el-form-item label="储存桶">
+              <el-input v-model="configForm.cosBucket" placeholder="请输入储存桶名" />
+            </el-form-item>
+            <el-form-item label="区域">
+              <el-input
+                v-model="configForm.cosRegion"
+                placeholder="请输入区域"
+              />
+            </el-form-item>
+            <el-form-item label="同步">
+              <el-button
+                type="primary"
+                size="small"
+                @click="upload"
+              >
+                上传
+              </el-button>
+              <el-button
+                type="primary"
+                size="small"
+                style="margin-left: 20px"
+                @click="download"
+              >
+                下载
               </el-button>
             </el-form-item>
           </el-form>
