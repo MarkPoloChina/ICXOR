@@ -43,7 +43,8 @@ watch(
 function handleCurrentChange(val) {
   emits('selectChange', val)
 }
-function handleContextDeteched(row) {
+function handleContextDeteched(row, column, event: Event) {
+  event.preventDefault()
   emits('popupContext', row)
 }
 function handleSelect(selection, row) {

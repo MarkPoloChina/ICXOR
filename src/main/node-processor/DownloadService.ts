@@ -54,7 +54,8 @@ export class DS {
     filename: string,
     dir: string,
   ): Promise<void> {
-    await FS.saveArrayBufferTo(await this.downloadFromUrl(url), filename, dir)
+    if (!await FS.isExists(path.join(dir, filename)))
+      await FS.saveArrayBufferTo(await this.downloadFromUrl(url), filename, dir)
   }
 
   public static async downloadFromIllustObj(
