@@ -33,7 +33,7 @@ jobs:
         run: yarn
 
       - name: Build app
-        run: yarn build
+        run: yarn release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
