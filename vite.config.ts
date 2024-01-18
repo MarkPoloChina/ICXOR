@@ -48,13 +48,13 @@ export default defineConfig({
               createStartMenuShortcut: true,
             },
             mac: {
-              // notarize: {
-              //   teamId: process.env.NOTARIZE_TEAM_ID,
-              // },
+              notarize: {
+                teamId: process.env.DEVELOPER_TEAM_ID,
+              },
               darkModeSupport: true,
               icon: 'build/mac/icons/icon.icns',
-              // entitlements: 'build/mac/entitlements.mac.plist',
-              // entitlementsInherit: 'build/mac/entitlements.mac.plist',
+              entitlements: 'build/mac/entitlements.mac.plist',
+              entitlementsInherit: 'build/mac/entitlements.mac.plist',
               target: [{
                 target: 'default',
                 arch: ['universal'],

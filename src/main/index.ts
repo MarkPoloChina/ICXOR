@@ -100,28 +100,8 @@ function prepareEnv() {
         },
         {
           label: '检查更新',
-          click: async () => {
-            autoUpdater.on('error', (err) => {
-              const currentWin = BrowserWindow.getAllWindows()[0]
-              if (!currentWin)
-                return
-              currentWin.webContents.send('app:message', 'error', `检查更新错误:${String(err)}`)
-            })
-            autoUpdater.on('update-not-available', (info) => {
-              const currentWin = BrowserWindow.getAllWindows()[0]
-              if (!currentWin)
-                return
-              currentWin.webContents.send('app:message', 'success', `当前(${info.version})已是最新版本`)
-            })
-            autoUpdater.on('checking-for-update', () => {
-              const currentWin = BrowserWindow.getAllWindows()[0]
-              if (!currentWin)
-                return
-              currentWin.webContents.send('app:message', 'info', '检查更新中...')
-            })
-            autoUpdater.checkForUpdatesAndNotify().finally(() => {
-              autoUpdater.removeAllListeners()
-            })
+          click: () => {
+            autoUpdater.checkForUpdates()
           },
         },
         {
@@ -324,8 +304,45 @@ function prepareEnv() {
     await CS.downloadFile()
   })
 
+  autoUpdater.on('error', (err) => {
+    const currentWin = BrowserWindow.getAllWindows()[0]
+    if (!currentWin)
+      return
+    currentWin.webContents.send('app:message', 'error', `检查更新错误:${String(err)}`)
+  })
+  autoUpdater.on('update-not-available', (info) => {
+    const currentWin = BrowserWindow.getAllWindows()[0]
+    if (!currentWin)
+      return
+    currentWin.webContents.send('app:message', 'success', `当前(${info.version})已是最新版本`)
+  })
+  autoUpdater.on('checking-for-update', () => {
+    const currentWin = BrowserWindow.getAllWindows()[0]
+    if (!currentWin)
+      return
+    currentWin.webContents.send('app:message', 'info', '检查更新中...')
+  })
+  autoUpdater.on('update-downloaded', () => {
+    const currentWin = BrowserWindow.getAllWindows()[0]
+    if (!currentWin)
+      return
+    currentWin.webContents.send('app:message', 'success', '更新下载完成, 将在下次退出应用后更新')
+    autoUpdater.autoInstallOnAppQuit = true
+  })
+  autoUpdater.on('update-available', async (info) => {
+    const { response } = await dialog.showMessageBox({
+      type: 'question',
+      buttons: ['确定', '取消'],
+      defaultId: 0,
+      title: '发现新版本',
+      message: `发现新版本(${info.version}), 是否更新?`,
+    })
+    if (response === 0)
+      autoUpdater.downloadUpdate()
+  })
   log.transports.file.level = 'debug'
   autoUpdater.logger = log
+  autoUpdater.autoDownload = false
 }
 
 async function electronAppInit() {
