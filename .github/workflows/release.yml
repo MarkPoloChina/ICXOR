@@ -1,22 +1,20 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # push:
+  #   tags:
+  #     - 'v*'
 
   workflow_dispatch:
 
 jobs:
-  release:
-    name: Build and Release
+  release1:
+    name: Build macOS and Release
 
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest]
 
     permissions:
       contents: write
@@ -29,6 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16'
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn
@@ -43,31 +42,31 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.DEVELOPER_APPLE_PASSWORD }}
           DEVELOPER_TEAM_ID: ${{ secrets.DEVELOPER_TEAM_ID }}
 
-      - name: Copy target files
-        if: matrix.os == 'macos-latest'
-        run: |
-          rsync -av --include="*.dmg" --exclude="*" "dist/electron/" "dist_p/"
-          rsync -av --include="*.zip" --exclude="*" "dist/electron/" "dist_p/"
-          rsync -av --include="*.blockmap" --exclude="*" "dist/electron/" "dist_p/"
-          rsync -av --include="latest-mac.yml" --exclude="*" "dist/electron/" "dist_p/"
+  release2:
+    name: Build Windows and Release
 
-      - name: Copy target files for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          robocopy "dist/electron" "dist_p" *.exe
-          robocopy "dist/electron" "dist_p" *.blockmap
-          robocopy "dist/electron" "dist_p" latest.yml
-          return 0
+    runs-on: windows-latest
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+    strategy:
+      fail-fast: false
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: dist_electron
-          path: dist_p
+          node-version: '16'
+          cache: 'yarn'
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: 'dist_p/**'
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build app
+        run: yarn build
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
