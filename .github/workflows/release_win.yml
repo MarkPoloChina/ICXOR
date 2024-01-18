@@ -1,0 +1,38 @@
+name: Release Windows
+
+on:
+  # push:
+  #   tags:
+  #     - 'v*'
+
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build Windows and Release
+
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build app
+        run: yarn build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

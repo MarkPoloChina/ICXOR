@@ -1,4 +1,4 @@
-name: Release
+name: Release macOS
 
 on:
   # push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release1:
+  release:
     name: Build macOS and Release
 
     runs-on: macos-latest
@@ -41,32 +41,3 @@ jobs:
           APPLE_ID: ${{ secrets.DEVELOPER_APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.DEVELOPER_APPLE_PASSWORD }}
           DEVELOPER_TEAM_ID: ${{ secrets.DEVELOPER_TEAM_ID }}
-
-  release2:
-    name: Build Windows and Release
-
-    runs-on: windows-latest
-
-    strategy:
-      fail-fast: false
-
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '16'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn
-
-      - name: Build app
-        run: yarn build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
