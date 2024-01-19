@@ -8,6 +8,8 @@ import {
   dialog,
   ipcMain,
   nativeTheme,
+  net,
+  protocol,
   session,
   shell,
 } from 'electron'
@@ -16,7 +18,7 @@ import log from 'electron-log'
 import type { MicroserviceOptions } from '@nestjs/microservices'
 import { ElectronIpcTransport } from '@doubleshot/nest-electron'
 import { AppModule } from '@main/app.module'
-import { ConfigDB } from '@main/node-processor/DBService'
+import { ConfigDB, LocalDiskDB } from '@main/node-processor/DBService'
 import { FS } from '@main/node-processor/FSService'
 import { DS } from './node-processor/DownloadService'
 import { PS } from './node-processor/PathService'
@@ -77,7 +79,20 @@ async function createWindow() {
   return { win }
 }
 
-function prepareEnv() {
+function beforeReady() {
+  protocol.registerSchemesAsPrivileged([
+    {
+      scheme: 'icxorimg',
+      privileges: {
+        supportFetchAPI: true,
+        secure: true,
+        standard: true,
+      },
+    },
+  ])
+}
+
+function afterReady() {
   // 设置菜单模块
   const menu = Menu.buildFromTemplate([
     {
@@ -259,12 +274,28 @@ function prepareEnv() {
 
   ipcMain.handle('db:init', () => {
     ConfigDB.initDB()
+    LocalDiskDB.initDB()
   })
   ipcMain.handle('db:get', (event, key) => {
     return ConfigDB.getByKey(key)
   })
   ipcMain.handle('db:set', (event, key, value) => {
     ConfigDB.setByKey(key, value)
+  })
+  ipcMain.handle('db:getMap', () => {
+    return LocalDiskDB.getByKey('localBase')
+  })
+  ipcMain.handle('db:getOriginal', (event, key) => {
+    return LocalDiskDB.getLocalBaseOriginalByName(key)
+  })
+  ipcMain.handle('db:setOriginal', (event, key, value) => {
+    LocalDiskDB.setLocalBaseOriginalByName(key, value)
+  })
+  ipcMain.handle('db:getThumb', (event, key) => {
+    return LocalDiskDB.getLocalBaseThumbnailByName(key)
+  })
+  ipcMain.handle('db:setThumb', (event, key, value) => {
+    LocalDiskDB.setLocalBaseThumbnailByName(key, value)
   })
 
   ipcMain.handle('fs:save', async (event, ab, filename, dir) => {
@@ -343,6 +374,9 @@ function prepareEnv() {
   log.transports.file.level = 'debug'
   autoUpdater.logger = log
   autoUpdater.autoDownload = false
+
+  protocol.handle('icxorimg', request =>
+    net.fetch(`file://${request.url.slice('icxorimg://'.length - 1)}`))
 }
 
 async function electronAppInit() {
@@ -371,8 +405,9 @@ async function electronAppInit() {
     }
   }
 
+  beforeReady()
   await app.whenReady()
-  prepareEnv()
+  afterReady()
 }
 
 async function bootstrap() {

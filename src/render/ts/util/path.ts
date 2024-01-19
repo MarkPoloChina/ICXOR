@@ -10,6 +10,12 @@ const ihs_base = store.state.useLocal
 
 const useLocal = store.state.useLocal
 
+const local_base = store.state.localDiskRoot
+
+const serverMode = store.state.modeServer
+
+const local_base_map = store.state.localDiskMap
+
 export class PathHelper {
   static getBaseUrl = () => {
     return STORE_PATH
@@ -35,6 +41,8 @@ export class PathHelper {
 
 export class UrlGenerator {
   static getBlobUrl(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {
+    if (!serverMode && obj.remote_base.type !== 'cos')
+      return this.getBlobUrlLocal(obj, type)
     if (obj.remote_base.type === 'pixiv') {
       if (type === 'original' || type === 's_large') {
         if (useLocal) {
@@ -87,6 +95,32 @@ export class UrlGenerator {
           obj.remote_base.origin_url
         }/${encodeURIComponent(obj.remote_endpoint)}`
       }
+    }
+  }
+
+  static getBlobUrlLocal(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {
+    if (obj.remote_base.type === 'pixiv') {
+      if (type === 'original' || type === 's_large') {
+        if (obj.remote_endpoint && local_base_map[obj.remote_base.name]?.original)
+          return `icxorimg://${local_base}${local_base_map[obj.remote_base.name].original}/${obj.remote_endpoint}`
+        else if (obj.meta.original_url)
+          return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
+        else
+          return this.getPixivUrlCat(obj.meta.pid, obj.meta.page)
+      }
+      else {
+        if (obj.thumb_endpoint && local_base_map[obj.remote_base.name]?.thumbnail)
+          return `icxorimg://${local_base}${local_base_map[obj.remote_base.name].thumbnail}/${obj.thumb_endpoint}`
+        else if (obj.meta.original_url)
+          return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
+        else return this.getBlobUrlLocal(obj, 'original')
+      }
+    }
+    else {
+      if (type !== 'original' && type !== 's_large' && local_base_map[obj.remote_base.name]?.thumbnail && obj.thumb_endpoint)
+        return `icxorimg://${local_base}${local_base_map[obj.remote_base.name]?.thumbnail}/${obj.thumb_endpoint}`
+      else
+        return `icxorimg://${local_base}${local_base_map[obj.remote_base.name]?.original}/${obj.remote_endpoint}`
     }
   }
 

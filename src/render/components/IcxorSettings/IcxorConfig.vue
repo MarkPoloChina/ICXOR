@@ -9,8 +9,10 @@ import { UtilDate } from '@render/ts/util/date'
 const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
   username: '',
+  modeServer: true,
   localIHS: '',
   remoteIHS: '',
+  localDiskRoot: '',
   useLocal: false,
   cos: '',
   pixivToken: '',
@@ -204,7 +206,7 @@ async function download() {
           </el-form>
         </div>
         <div class="title-block">
-          COS云存储
+          COS云同步
         </div>
         <div class="form-block">
           <el-form :model="configForm" label-width="100px" style="width: 100%">
@@ -253,25 +255,37 @@ async function download() {
         </div>
         <div class="form-block">
           <el-form :model="configForm" label-width="100px" style="width: 100%">
-            <el-form-item label="IHS模式">
+            <el-form-item label="主模式">
               <el-switch
-                v-model="configForm.useLocal"
-                active-text="内网"
-                inactive-text="公网"
+                v-model="configForm.modeServer"
+                active-text="IHS文件服务器"
+                inactive-text="磁盘"
               />
             </el-form-item>
-            <el-form-item label="公网IHS路径">
-              <el-input
-                v-model="configForm.remoteIHS"
-                placeholder="请输入路径"
-              />
+            <el-form-item v-if="!configForm.modeServer" label="磁盘访问路径">
+              <el-input v-model="configForm.localDiskRoot" placeholder="请输入路径" />
             </el-form-item>
-            <el-form-item label="内网IHS路径">
-              <el-input
-                v-model="configForm.localIHS"
-                placeholder="请输入路径"
-              />
-            </el-form-item>
+            <template v-else>
+              <el-form-item label="IHS模式">
+                <el-switch
+                  v-model="configForm.useLocal"
+                  active-text="内网"
+                  inactive-text="公网"
+                />
+              </el-form-item>
+              <el-form-item label="公网IHS路径">
+                <el-input
+                  v-model="configForm.remoteIHS"
+                  placeholder="请输入路径"
+                />
+              </el-form-item>
+              <el-form-item label="内网IHS路径">
+                <el-input
+                  v-model="configForm.localIHS"
+                  placeholder="请输入路径"
+                />
+              </el-form-item>
+            </template>
             <el-form-item label="COS路径">
               <el-input v-model="configForm.cos" placeholder="请输入路径" />
             </el-form-item>
