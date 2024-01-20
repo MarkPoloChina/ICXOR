@@ -38,7 +38,8 @@ export default createStore({
             ipcInvoke('db:get', key).then((value) => {
               if (value === null || value === undefined)
                 ipcInvoke('db:set', key, state[key])
-              state[key] = value
+              else
+                state[key] = value
             })
           }
           else {
