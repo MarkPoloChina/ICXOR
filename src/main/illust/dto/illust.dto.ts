@@ -24,7 +24,7 @@ export interface IllustDto {
     tags_str?: string
   }
   remote_base?: {
-    id: number | undefined
+    id?: number | undefined
     name: string | undefined
   } | null
 }
