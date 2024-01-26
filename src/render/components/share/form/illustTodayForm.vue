@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { API } from '@render/ts/api'
 import type { IllustObj } from '@render/ts/interface/illustObj'
 import { ElMessage } from 'element-plus'
@@ -40,7 +39,7 @@ function handleConfirm() {
 watch(() => props.currentOperating, async (val: IllustObj) => {
   if (val && val.meta) {
     baseInfo.tags.length = 0
-    const info: PixivIllust = await API.getPixivInfo(val.meta.pid)
+    const info = await API.getPixivInfo(val.meta.pid)
     baseInfo.tags = info.tags.map(item => item.name)
   }
 })

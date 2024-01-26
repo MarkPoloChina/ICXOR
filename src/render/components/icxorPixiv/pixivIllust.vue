@@ -4,7 +4,7 @@ import { Download, Picture, Search, Star } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
-import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
@@ -36,7 +36,7 @@ async function handleDownload() {
     return
   try {
     if (illustObj.value.type === 'ugoira') {
-      const meta: UgoiraMetaData = await API.getPixivUgoiraJson(illustObj.value.id)
+      const meta = await API.getPixivUgoiraJson(illustObj.value.id)
       await downloadPixivUgoiraTo(toRaw(illustObj.value), dir, meta)
     }
     else { await downloadPixivTo(toRaw(illustObj.value), dir, page.value) }

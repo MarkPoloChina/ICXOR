@@ -5,6 +5,12 @@ import { isReactive, toRaw } from 'vue'
 import type { IllustObj } from '@render/ts/interface/illustObj'
 import type { BatchDto } from '@render/ts/dto/batch'
 import type { Tag } from '@main/illust/entities/tag.entities'
+import type { Illust } from '@main/illust/entities/illust.entities'
+import type { RespListObjDto } from '@main/illust/dto/resp_list_obj.dto'
+import type { DeleteResult } from 'typeorm'
+import type { Poly } from '@main/illust/entities/poly.entities'
+import type { PixivIllust, PixivUserDetail, UgoiraMetaData } from '@markpolochina/pixiv.ts'
+import type { RemoteBase } from '@main/illust/entities/remote_base.entities'
 
 const { apiAdapter } = window.electron
 const ax = {
@@ -100,7 +106,7 @@ export class API {
         desc: true,
       },
     })
-    return resp.data
+    return resp.data as any[]
   }
 
   static async getEnumPolyParent(requiredType: string) {
@@ -111,7 +117,7 @@ export class API {
         desc: false,
       },
     })
-    return resp.data
+    return resp.data as any[]
   }
 
   static async getIllusts(
@@ -128,7 +134,7 @@ export class API {
         conditionJson,
       },
     })
-    return resp.data
+    return resp.data as Illust[]
   }
 
   static async getIllustsCount(conditionJson?: FilterConditionObj) {
@@ -137,17 +143,17 @@ export class API {
         conditionJson,
       },
     })
-    return resp.data
+    return resp.data as { count: number }
   }
 
   static async updateIllusts(illustList: BatchDto) {
     const resp = await ax.post('/illust/bases', illustList)
-    return resp.data
+    return resp.data as RespListObjDto[]
   }
 
   static async updateIllust(illust: IllustObj) {
     const resp = await ax.put('/illust/base', illust)
-    return resp.data
+    return resp.data as Illust
   }
 
   static async deleteIllusts(illustIds: number[]) {
@@ -156,35 +162,35 @@ export class API {
         illustIds,
       },
     })
-    return resp.data
+    return resp.data as RespListObjDto[]
   }
 
   static async getTags() {
     const resp = await ax.get('/illust/tag/list', {
       params: {},
     })
-    return resp.data
+    return resp.data as Tag[]
   }
 
   static async updateTag(tag: Tag) {
     const resp = await ax.put('/illust/tag', tag, {
       params: {},
     })
-    return resp.data
+    return resp.data as Tag
   }
 
   static async deleteTag(tagId: number) {
     const resp = await ax.delete('/illust/tag', {
       params: { tagId },
     })
-    return resp.data
+    return resp.data as DeleteResult
   }
 
   static async addAuthorTag(tag: string) {
     const resp = await ax.post('/illust/tag/author', null, {
       params: { tag },
     })
-    return resp.data
+    return resp.data as Tag
   }
 
   static async getPoly(type: string) {
@@ -194,7 +200,7 @@ export class API {
         type,
       },
     })
-    return resp.data
+    return resp.data as Poly[]
   }
 
   static async getPolyWithIllust(type: string) {
@@ -204,12 +210,12 @@ export class API {
         type,
       },
     })
-    return resp.data
+    return resp.data as Poly[]
   }
 
   static async addPoly(illustList: BatchDto) {
     const resp = await ax.post('/illust/poly/bases', illustList)
-    return resp.data
+    return resp.data as RespListObjDto[]
   }
 
   static async removePolyById(polyId: number, illustList: number[]) {
@@ -219,7 +225,7 @@ export class API {
         illustList,
       },
     })
-    return resp.data
+    return resp.data as RespListObjDto[]
   }
 
   static async deletePoly(polyId: number) {
@@ -228,7 +234,7 @@ export class API {
         polyId,
       },
     })
-    return resp.data
+    return resp.data as DeleteResult
   }
 
   static async getBookmark(isPrivate: boolean) {
@@ -237,7 +243,7 @@ export class API {
         isPrivate,
       },
     })
-    return resp.data
+    return resp.data as PixivIllust[]
   }
 
   static async getPixivImageUrl(pid: number, page: number, type: string) {
@@ -248,7 +254,7 @@ export class API {
         type,
       },
     })
-    return resp.data
+    return resp.data as string
   }
 
   static async getRemoteBase() {
@@ -257,12 +263,12 @@ export class API {
         withIllust: false,
       },
     })
-    return resp.data
+    return resp.data as RemoteBase[]
   }
 
   static async coverRemoteBase(rb) {
     const resp = await ax.post('/illust/remote-base', rb)
-    return resp.data
+    return resp.data as RemoteBase
   }
 
   static async coverIllustToday(date: string, itdto: IllustTodayDto) {
@@ -278,7 +284,7 @@ export class API {
         pid,
       },
     })
-    return resp.data
+    return resp.data as PixivIllust
   }
 
   static async getPixivUserInfo(uid: number) {
@@ -287,7 +293,7 @@ export class API {
         uid,
       },
     })
-    return resp.data
+    return resp.data as PixivUserDetail
   }
 
   static async getPixivUserIllusts(uid: number) {
@@ -296,7 +302,7 @@ export class API {
         uid,
       },
     })
-    return resp.data
+    return resp.data as { illusts: PixivIllust[]; nextUrl: string }
   }
 
   static async getPixivNextRequest(nextUrl: string) {
@@ -314,16 +320,15 @@ export class API {
         pid,
       },
     })
-    return resp.data
+    return resp.data as UgoiraMetaData
   }
 
   static async togglePixivBookmark(pid: number, op: boolean) {
-    const resp = await ax.post('/pixiv-api/bookmark', null, {
+    await ax.post('/pixiv-api/bookmark', null, {
       params: {
         pid,
         op,
       },
     })
-    return resp.data
   }
 }

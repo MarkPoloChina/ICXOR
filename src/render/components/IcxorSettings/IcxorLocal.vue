@@ -12,9 +12,9 @@ onMounted(() => {
 const tableData = ref([])
 async function initForm() {
   tableData.value = (await API.getRemoteBase()).sort((a, b) => a.id - b.id).map((item) => {
-    item.origin_url_local = store.state.localDiskMap[item.name]?.original
-    item.thum_url_local = store.state.localDiskMap[item.name]?.thumbnail
-    return item
+    const origin_url_local = store.state.localDiskMap[item.name]?.original
+    const thum_url_local = store.state.localDiskMap[item.name]?.thumbnail
+    return { ...item, origin_url_local, thum_url_local }
   })
 }
 function revoke() {

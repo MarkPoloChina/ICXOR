@@ -20,7 +20,7 @@ async function getAuthors() {
   author.length = 0
   author.push(...tags.filter(ele => ele.type === 'author').map((ele) => {
     return {
-      author: ele.name.replace(/^\[\d+\]/, '').trim(),
+      author: ele.name.replace(/^\[\d+\]/, '').trim().split('@')[0],
       author_id: /^\[(\d+)\]/.exec(ele.name)[1],
       list: [],
     }
