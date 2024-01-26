@@ -416,7 +416,7 @@ export class IllustService {
 
   async deleteIllusts(illustIds: number[]) {
     const resp_list: RespListObjDto[] = []
-    for (const [illustId, index] of illustIds.entries()) {
+    for (const [index, illustId] of illustIds.entries()) {
       try {
         await this.illustRepository.delete(illustId)
         resp_list.push({
@@ -445,7 +445,7 @@ export class IllustService {
       },
     })
     const resp_list: RespListObjDto[] = []
-    for (const [id, index] of ids.entries()) {
+    for (const [index, id] of ids.entries()) {
       const idx = targetPoly.illusts.findIndex((value) => {
         return value.id === id
       })
