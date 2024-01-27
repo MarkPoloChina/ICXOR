@@ -16,6 +16,8 @@ const serverMode = store.state.modeServer
 
 const local_base_map = store.state.localDiskMap
 
+const hasProxy = !!store.state.pixivProxy
+
 export class PathHelper {
   static getBaseUrl = () => {
     return STORE_PATH
@@ -125,7 +127,9 @@ export class UrlGenerator {
   }
 
   static getPixivUrlProxy(url: string) {
-    return url.replace('i.pximg.net', 'i.pixiv.re')
+    if (hasProxy)
+      return url
+    else return url.replace('i.pximg.net', 'i.pixiv.re')
   }
 
   static getPixivUrlSized(url: string, size: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {

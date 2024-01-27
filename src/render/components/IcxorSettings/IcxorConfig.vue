@@ -109,11 +109,15 @@ async function upload() {
     }).then(async () => {
     try {
       ElMessage.info('上传中, 请勿关闭窗口')
-      await ipcInvoke('cs:upload')
-      ElMessage.success('上传成功')
+      const result = await ipcInvoke('cs:upload')
+      if (result === false)
+        ElMessage.warning('请求忽略, 本地数据库不比云端更新')
+      else if (result === true)
+        ElMessage.success('上传成功')
+      else ElMessage.info('操作完成')
     }
-    catch {
-      ElMessage.error('上传失败, 检查配置和网络')
+    catch (error) {
+      ElMessage.error(`上传失败: ${error}`)
     }
   }).catch(() => {})
 }
@@ -126,11 +130,15 @@ async function download() {
     }).then(async () => {
     try {
       ElMessage.info('下载中, 请勿关闭窗口')
-      await ipcInvoke('cs:download')
-      ElMessage.success('下载成功')
+      const result = await ipcInvoke('cs:download')
+      if (result === false)
+        ElMessage.warning('请求忽略, 云端数据库不比本地更新')
+      else if (result === true)
+        ElMessage.success('下载成功')
+      else ElMessage.info('操作完成')
     }
-    catch {
-      ElMessage.error('下载失败, 检查配置和网络, 或云端无记录')
+    catch (error) {
+      ElMessage.error(`下载失败: ${error}`)
     }
   }).catch(() => {})
 }

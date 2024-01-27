@@ -67,6 +67,11 @@ async function createWindow() {
     })
   })
 
+  win.webContents.session.webRequest.onBeforeSendHeaders({ urls: ['https://i.pximg.net/*'] }, (details, callback) => {
+    details.requestHeaders['Referer'] = 'https://www.pixiv.net/'
+    callback({ requestHeaders: details.requestHeaders })
+  })
+
   const URL = isDev
     ? process.env.DS_RENDERER_URL
     : `file://${join(app.getAppPath(), 'dist/render/index.html')}`
@@ -329,10 +334,10 @@ function afterReady() {
   })
 
   ipcMain.handle('cs:upload', async () => {
-    await CS.uploadFile()
+    return await CS.uploadFile()
   })
   ipcMain.handle('cs:download', async () => {
-    await CS.downloadFile()
+    return await CS.downloadFile()
   })
 
   autoUpdater.on('error', (err) => {
