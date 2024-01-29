@@ -215,10 +215,10 @@ function afterReady() {
   })
 
   // activate dialog ipc
-  ipcMain.handle('dialog:openFile', async () => {
+  ipcMain.handle('dialog:openFile', async (event, filters) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       properties: ['openFile', 'multiSelections'],
-      filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }],
+      filters,
     })
     if (!canceled)
       return filePaths
@@ -311,6 +311,9 @@ function afterReady() {
   })
   ipcMain.handle('fs:copy', async (event, src, dest) => {
     await FS.localCopy(src, dest)
+  })
+  ipcMain.handle('fs:getStringFromFile', async (event, filename) => {
+    return await FS.loadStringFromFile(filename)
   })
 
   ipcMain.handle('ds:download', async (event, url, filename, dir) => {

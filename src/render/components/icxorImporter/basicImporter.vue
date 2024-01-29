@@ -74,7 +74,7 @@ async function startAction() {
     )))
   }
   else {
-    const files: string[] = await ipcInvoke('dialog:openFile')
+    const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }])
     if (!files)
       return
     ElMessage.info('开始收集信息')

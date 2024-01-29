@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PixivBatch from '@render/components/icxorPixiv/pixivBatch.vue'
 import PixivBookmark from '@render/components/icxorPixiv/pixivBookmark.vue'
 import PixivIllust from '@render/components/icxorPixiv/pixivIllust.vue'
 import PixivUser from '@render/components/icxorPixiv/pixivUser.vue'
@@ -50,6 +51,14 @@ onActivated(() => {
       </el-tab-pane>
       <el-tab-pane label="收藏" name="bookmark">
         <PixivBookmark
+          @to-illust="($event) => {
+            currentTab = 'illust'
+            illust.handleSearchByLink($event.pid, $event.page)
+          }"
+        />
+      </el-tab-pane>
+      <el-tab-pane label="批处理" name="batch">
+        <PixivBatch
           @to-illust="($event) => {
             currentTab = 'illust'
             illust.handleSearchByLink($event.pid, $event.page)

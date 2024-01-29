@@ -20,4 +20,8 @@ export class FS {
   static async isExists(path: string) {
     return await fs.pathExists(path)
   }
+
+  static async loadStringFromFile(path: string) {
+    return await fs.readFile(path, 'utf8')
+  }
 }
