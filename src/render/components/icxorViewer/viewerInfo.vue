@@ -11,10 +11,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:info', 'upload'])
 const showInfo = ref(false)
-watch(() => props.info, (v, oldV) => {
-  if (!oldV && v)
-    showInfo.value = true
-})
 const writableInfo = computed({
   get: () => {
     return props.info
@@ -115,8 +111,8 @@ defineExpose({ handleStarChange })
               v-if="writableInfo.remote_endpoint"
               label="末端"
             >
-              <div v-if="!editable">
-                {{ writableInfo.remote_endpoint }}
+              <div v-if="!editable" style="max-width: 180px;">
+                <span style="word-wrap: break-word;">{{ writableInfo.remote_endpoint }}</span>
               </div>
               <div v-else>
                 <el-input v-model="writableInfo.remote_endpoint">

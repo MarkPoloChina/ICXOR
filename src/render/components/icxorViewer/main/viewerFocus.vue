@@ -19,9 +19,8 @@ const currentIndex = ref(0)
 const table = ref()
 watch(
   () => props.tableData,
-  (val) => {
+  () => {
     table.value.setScrollTop(0)
-    handleSelect(val[0], 0)
   },
   {
     deep: false,

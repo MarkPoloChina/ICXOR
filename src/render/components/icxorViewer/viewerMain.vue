@@ -100,6 +100,8 @@ async function getIllusts() {
   isLoading.value = false
   if (list)
     illustList.value = list
+  if (list[0])
+    currentSelected.value = list[0]
 }
 async function getIllustsAndCount() {
   isLoading.value = true

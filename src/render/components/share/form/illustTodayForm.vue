@@ -37,8 +37,8 @@ function handleConfirm() {
   emit('confirm', baseInfo)
 }
 watch(() => props.currentOperating, async (val: IllustObj) => {
+  baseInfo.tags.length = 0
   if (val && val.meta) {
-    baseInfo.tags.length = 0
     const info = await API.getPixivInfo(val.meta.pid)
     baseInfo.tags = info.tags.map(item => item.name)
   }
