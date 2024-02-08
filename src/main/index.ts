@@ -316,8 +316,8 @@ function afterReady() {
     return await FS.loadStringFromFile(filename)
   })
 
-  ipcMain.handle('ds:download', async (event, url, filename, dir) => {
-    await DS.downloadAndSave(url, filename, dir)
+  ipcMain.handle('ds:download', async (event, url, filename, dir, isPixiv) => {
+    await DS.downloadAndSave(url, filename, dir, isPixiv)
   })
   ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
     await DS.downloadFromIllustObj(illustObj, dir, page)

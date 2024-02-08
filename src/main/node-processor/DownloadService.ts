@@ -53,9 +53,10 @@ export class DS {
     url: string,
     filename: string,
     dir: string,
+    isPixiv?: boolean,
   ): Promise<void> {
     if (!await FS.isExists(path.join(dir, filename)))
-      await FS.saveArrayBufferTo(await this.downloadFromUrl(url), filename, dir)
+      await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir)
   }
 
   public static async downloadFromIllustObj(

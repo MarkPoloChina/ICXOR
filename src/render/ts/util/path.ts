@@ -42,7 +42,7 @@ export class PathHelper {
 }
 
 export class UrlGenerator {
-  static getBlobUrl(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {
+  static getBlobUrl(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original'): string {
     if (!serverMode && obj.remote_base.type !== 'cos')
       return this.getBlobUrlLocal(obj, type)
     if (obj.remote_base.type === 'pixiv') {
@@ -100,7 +100,7 @@ export class UrlGenerator {
     }
   }
 
-  static getBlobUrlLocal(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {
+  static getBlobUrlLocal(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original'): string {
     if (obj.remote_base.type === 'pixiv') {
       if (type === 'original' || type === 's_large') {
         if (obj.remote_endpoint && local_base_map[obj.remote_base.name]?.original)

@@ -291,6 +291,7 @@ async function handleDownload() {
         ? PathHelper.getBasename(url)
         : currentOperating.value.remote_endpoint,
       dir,
+      url.includes('i.pximg.net'),
     )
     ElMessage.success('下载完成')
   }
@@ -328,6 +329,7 @@ async function handleDownloadBatch() {
           ? PathHelper.getBasename(url)
           : obj.remote_endpoint,
         dir,
+        url.includes('i.pximg.net'),
       )
     }
     catch (err) {

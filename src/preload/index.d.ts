@@ -17,7 +17,7 @@ declare global {
         params: any,
         body: any
       ): Promise<any>;
-      downloadTo(url: string, rename: string, dir: string): Promise<void>;
+      downloadTo(url: string, rename: string, dir: string, isPixiv?: boolean): Promise<void>;
       downloadPixivTo(illustObj: PixivIllust, dir: string, page?: number): Promise<void>;
       downloadPixivUgoiraTo(illustObj: PixivIllust, dir: string, meta: UgoiraMetaData): Promise<void>;
     };
