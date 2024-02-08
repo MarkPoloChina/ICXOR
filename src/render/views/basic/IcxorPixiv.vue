@@ -21,6 +21,12 @@ onActivated(() => {
       currentTab.value = 'user'
       user.value.handleSearchByLink(route.query.uid)
       break
+    case 'bookmark':
+      currentTab.value = 'bookmark'
+      break
+    case 'batch':
+      currentTab.value = 'batch'
+      break
     default:
       break
   }

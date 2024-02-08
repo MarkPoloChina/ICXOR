@@ -22,6 +22,7 @@ const configForm = reactive({
   cosSecretKey: '',
   cosBucket: '',
   cosRegion: '',
+  sauceNAOToken: '',
 })
 const store = useStore()
 onMounted(() => {
@@ -324,6 +325,17 @@ async function download() {
             </el-form-item>
           </el-form>
         </div>
+        <div class="title-block">
+          SauceNAO API
+        </div>
+        <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form-item label="Token">
+            <el-input
+              v-model="configForm.sauceNAOToken"
+              placeholder="请输入Token"
+            />
+          </el-form-item>
+        </el-form>
       </el-scrollbar>
     </div>
     <div class="btn-block">

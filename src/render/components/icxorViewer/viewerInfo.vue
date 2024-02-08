@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { Check } from '@element-plus/icons-vue'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
+import { UrlGenerator } from '@render/ts/util/path'
+import type { IllustObj } from '@render/ts/interface/illustObj'
 
 const props = defineProps({
   info: Object,
@@ -105,7 +107,9 @@ defineExpose({ handleStarChange })
               {{ writableInfo.remote_base.name }}
             </el-descriptions-item>
             <el-descriptions-item label="URL">
-              {{ writableInfo.link ?? '-' }}
+              <div style="max-width: 180px;">
+                <span style="word-wrap: break-word;">{{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo as IllustObj) || ' - ' }}</span>
+              </div>
             </el-descriptions-item>
             <el-descriptions-item
               v-if="writableInfo.remote_endpoint"

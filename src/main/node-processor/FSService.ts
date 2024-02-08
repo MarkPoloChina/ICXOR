@@ -24,4 +24,8 @@ export class FS {
   static async loadStringFromFile(path: string) {
     return await fs.readFile(path, 'utf8')
   }
+
+  static async saveStringToFile(path: string, content: string) {
+    return await fs.outputFile(path, content)
+  }
 }

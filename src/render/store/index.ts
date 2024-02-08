@@ -18,6 +18,7 @@ export default createStore({
     cosSecretKey: '',
     cosBucket: '',
     cosRegion: '',
+    sauceNAOToken: '',
     localDiskMap: {},
   },
   getters: {},

@@ -5,6 +5,7 @@ import {
   MessageBox,
   PictureRounded,
   Setting,
+  SuitcaseLine,
   Upload,
 } from '@element-plus/icons-vue'
 import { useStore } from 'vuex'
@@ -72,6 +73,12 @@ onMounted(() => {
           </el-icon>
           <template #title>
             Pixiv
+          </template>
+        </el-menu-item>
+        <el-menu-item index="/tool">
+          <el-icon><SuitcaseLine /></el-icon>
+          <template #title>
+            工具
           </template>
         </el-menu-item>
         <div style="flex-grow: 1" />

@@ -454,15 +454,17 @@ function handleIT(info: { date: string; char: string; tags: string[] }) {
     type: 'warning',
   })
     .then(() => {
+      if (!currentOperating.value.remote_endpoint) {
+        ElMessage.error('无法为此项目建立IT')
+        return
+      }
       const dto: IllustTodayDto = {
         char: info.char,
         tags: info.tags,
-        type: currentOperating.value.remote_base.type,
-        target: currentOperating.value.meta
-          ? `${currentOperating.value.meta.pid}${
-          currentOperating.value.meta.page ? `-${currentOperating.value.meta.page + 1}` : ''
-          }`
-          : `${currentOperating.value.remote_base.origin_url}/${currentOperating.value.remote_endpoint}`,
+        type: currentOperating.value.remote_base.name,
+        base: currentOperating.value.remote_base.origin_url,
+        target: currentOperating.value.remote_endpoint,
+        source: currentOperating.value.link || UrlGenerator.getSourceLink(currentOperating.value) || null,
       }
       API.coverIllustToday(info.date, dto)
         .then(() => {

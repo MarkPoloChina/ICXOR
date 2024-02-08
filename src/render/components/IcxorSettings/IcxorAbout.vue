@@ -172,6 +172,18 @@ function linkClick(url) {
             </div>
           </div>
           <div class="cpr">
+            <el-link
+              type="info"
+              href=""
+              style="
+                vertical-align: baseline;
+              "
+              @click="linkClick('https://saucenao.com/')"
+            >
+              SauceNAO
+            </el-link>&nbsp;is a reverse image search engine.
+          </div>
+          <div class="cpr">
             "pixiv"和"p"图标是日本ピクシブ株式会社持有的商标,
             不代表本产品由其提供或支持
             <br>

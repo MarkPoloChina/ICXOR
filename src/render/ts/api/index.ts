@@ -331,4 +331,31 @@ export class API {
       },
     })
   }
+
+  static async getDuplicateByPixivId(pixiv_id: string) {
+    const resp = await ax.get('/known-duplicate/pixiv', {
+      params: {
+        pixiv_id,
+      },
+    })
+    return resp.data as { target: string } | undefined
+  }
+
+  static async getDuplicateByTwitterStatusId(twitter_status_id: string) {
+    const resp = await ax.get('/known-duplicate/twitter', {
+      params: {
+        twitter_status_id,
+      },
+    })
+    return resp.data as { target: string } | undefined
+  }
+
+  static async addDuplicate(pixiv_id: string, twitter_status_id: string) {
+    await ax.post('/known-duplicate/twitter', null, {
+      params: {
+        pixiv_id,
+        twitter_status_id,
+      },
+    })
+  }
 }

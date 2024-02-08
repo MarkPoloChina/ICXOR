@@ -23,6 +23,8 @@ import { FS } from '@main/node-processor/FSService'
 import { DS } from './node-processor/DownloadService'
 import { PS } from './node-processor/PathService'
 import { CS } from './node-processor/CloudService'
+import { SS } from './node-processor/SagiriService'
+import { GifCoverter } from './node-processor/MediaService'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -315,6 +317,9 @@ function afterReady() {
   ipcMain.handle('fs:getStringFromFile', async (event, filename) => {
     return await FS.loadStringFromFile(filename)
   })
+  ipcMain.handle('fs:saveStringToFile', async (event, filename, content) => {
+    await FS.saveStringToFile(filename, content)
+  })
 
   ipcMain.handle('ds:download', async (event, url, filename, dir, isPixiv) => {
     await DS.downloadAndSave(url, filename, dir, isPixiv)
@@ -341,6 +346,17 @@ function afterReady() {
   })
   ipcMain.handle('cs:download', async () => {
     return await CS.downloadFile()
+  })
+
+  ipcMain.handle('ss:run', async (event, filePath) => {
+    return await SS.runAndProcess(filePath)
+  })
+  ipcMain.handle('ss:runJson', async (event, filePath) => {
+    return SS.parseJsonResult(filePath)
+  })
+
+  ipcMain.handle('ms:convertGif', async (event, input, output, delay) => {
+    await GifCoverter.zipToGif(input, output, delay)
   })
 
   autoUpdater.on('error', (err) => {

@@ -38,6 +38,11 @@ const routes: RouteRecordRaw[] = [
         name: 'pixiv',
         component: () => import('@render/views/basic/IcxorPixiv.vue'),
       },
+      {
+        path: 'tool',
+        name: 'tool',
+        component: () => import('@render/views/basic/IcxorTool.vue'),
+      },
     ],
   }]
 

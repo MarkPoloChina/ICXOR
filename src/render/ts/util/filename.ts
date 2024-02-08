@@ -1,3 +1,4 @@
+import { API } from '../api'
 import { PathHelper } from './path'
 
 function getExt(filename: string) {
@@ -7,7 +8,7 @@ function getExt(filename: string) {
 }
 
 const possibleMatch = {
-  web: (basename) => {
+  web: (basename: string) => {
     if (/^\d+_p\d+$/.test(basename)) {
       return {
         title: null,
@@ -31,7 +32,7 @@ const possibleMatch = {
       return null
     }
   },
-  pxderMultiple: (basename) => {
+  pxderMultiple: (basename: string) => {
     if (/^\(\d+\)/.test(basename) && /_p\d+$/.test(basename)) {
       return {
         title: /^\(\d+\)(.*)?_p\d+$/.exec(basename)[1] || '',
@@ -43,7 +44,7 @@ const possibleMatch = {
       return null
     }
   },
-  pxderSingle: (basename) => {
+  pxderSingle: (basename: string) => {
     if (/^\(\d+\)/.test(basename)) {
       return {
         title: /^\(\d+\)(.*)?$/.exec(basename)[1] || '',
@@ -55,7 +56,7 @@ const possibleMatch = {
       return null
     }
   },
-  webWithBookmark: (basename) => {
+  webWithBookmark: (basename: string) => {
     if (/^\d+ - \d+_p\d+$/.test(basename)) {
       return {
         title: null,
@@ -67,7 +68,7 @@ const possibleMatch = {
       return null
     }
   },
-  webWithBookmarkRank: (basename) => {
+  webWithBookmarkRank: (basename: string) => {
     if (/^\d+ - \d+ - \d+_p\d+$/.test(basename)) {
       return {
         title: null,
@@ -79,7 +80,7 @@ const possibleMatch = {
       return null
     }
   },
-  Bilibili: (basename) => {
+  Bilibili: (basename: string) => {
     if (basename.startsWith('bili_')) {
       return {
         coreId: /^bili_(\S+)$/.exec(basename)[1],
@@ -89,7 +90,7 @@ const possibleMatch = {
       return null
     }
   },
-  Arknights_Char: (basename) => {
+  Arknights_Char: (basename: string) => {
     if (basename.startsWith('char_')) {
       return {
         coreId: basename,
@@ -99,7 +100,7 @@ const possibleMatch = {
       return null
     }
   },
-  BA: (basename) => {
+  BA: (basename: string) => {
     if (basename.startsWith('BA_')) {
       return {
         coreId: basename,
@@ -109,10 +110,22 @@ const possibleMatch = {
       return null
     }
   },
+  Twitter: (basename: string) => {
+    if (/\d+@[\d\w_]+/.test(basename)) {
+      return {
+        coreId: basename,
+        statusId: /(\d+)@[\d\w_]+/.exec(basename)[1],
+        authorId: /\d+@([\d\w_]+)/.exec(basename)[1],
+      }
+    }
+    else {
+      return null
+    }
+  },
 }
 
 export class FilenameResolver {
-  static getObjFromFilename(filename) {
+  static getObjFromFilename(filename: string) {
     const extname = getExt(filename)
     if (!extname)
       return
@@ -223,6 +236,27 @@ export class FilenameAdapter {
         }
         if (autoInject.remoteEndpointForPixiv)
           log.dto.remote_endpoint = `${filename}`
+      }
+      else if (reso.statusId && reso.authorId) {
+        const duplicate = await API.getDuplicateByTwitterStatusId(reso.statusId)
+        if (!duplicate) {
+          log.message = 'Twitter Target Unknown Duplicate'
+          log.status = 'ignore'
+        }
+        else if (duplicate.target) {
+          log.message = `Twitter Target Found Duplicate with pixiv-id ${duplicate.target}`
+          log.status = 'ignore'
+        }
+        else {
+          log.message = 'Twitter Target OK'
+          log.dto = {
+            remote_endpoint: `${reso.coreId}.${reso.extname}`,
+            remote_base: {
+              name: reso.match,
+            },
+            link: `https://twitter.com/${reso.authorId}/status/${reso.statusId}`,
+          }
+        }
       }
       else {
         log.message = `Other Target OK with ${reso.match}`

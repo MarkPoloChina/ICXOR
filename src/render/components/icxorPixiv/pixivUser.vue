@@ -45,19 +45,19 @@ async function handleDownloadAll() {
     if (hasError)
       break
   }
-  const promises = userIllusts.value.map((ele) => {
-    if (ele.type === 'ugoira') {
-      const process = async () => {
+  for (const ele of userIllusts.value) {
+    try {
+      if (ele.type === 'ugoira') {
         const meta = await API.getPixivUgoiraJson(ele.id)
-        return downloadPixivUgoiraTo(toRaw(ele), dir, meta)
+        await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
       }
-      return process()
+      else { await downloadPixivTo(toRaw(ele), dir) }
     }
-    else { return downloadPixivTo(toRaw(ele), dir) }
-  })
-  Promise.all(promises).then(() => {
-    ElMessage.success('下载完成')
-  })
+    catch (err) {
+      ElMessage.error(`Failed for ${ele.id}: ${err}`)
+    }
+  }
+  ElMessage.success('下载完成')
 }
 function handleSearchByBtn() {
   if (!form.uid || !/[1-9]+[0-9]*]*/.test(form.uid)) {

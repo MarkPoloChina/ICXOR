@@ -8,11 +8,13 @@ import { AppService } from '@main/app.service'
 import { IllustModule } from '@main/illust/illust.module'
 import { PixivApiModule } from '@main/pixiv-api/pixiv-api.module'
 import { createWindow } from '@main/index'
+import { KnownDuplicateModule } from './known-duplicate/known-duplicate.module'
 
 @Module({
   imports: [
     IllustModule,
     PixivApiModule,
+    KnownDuplicateModule,
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: path.join(app.getPath('userData'), 'main.db'),

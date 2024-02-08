@@ -13,7 +13,6 @@ const form = reactive({
 const isLoading = ref(false)
 const illusts = ref<PixivIllust[]>([])
 const success = ref<number[]>([])
-const retrys = ref<Record<number, number>>({})
 async function handleDownload(illustObj: PixivIllust) {
   const dir = await ipcInvoke('dialog:openDirectory')
   if (!dir)
@@ -43,18 +42,20 @@ function tableRowClassName({
     return 'success-row'
   return ''
 }
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 async function handleDownloadAll() {
   const dir = await ipcInvoke('dialog:openDirectory')
   if (!dir)
     return
   const invisable: number[] = []
-  const promises = illusts.value
-    .filter((ele) => {
-      if (!ele.visible)
-        invisable.push(ele.id)
-      return ele.visible
-    })
-    .map((ele) => {
+  for (const ele of illusts.value) {
+    if (!ele.visible) {
+      invisable.push(ele.id)
+    }
+    else {
+      let retrys = 0
       const process = async () => {
         try {
           if (ele.type === 'ugoira') {
@@ -62,33 +63,22 @@ async function handleDownloadAll() {
             await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
           }
           else { await downloadPixivTo(toRaw(ele), dir) }
+          success.value.push(ele.id)
         }
         catch (err) {
-          if (!retrys.value[ele.id])
-            retrys.value[ele.id] = 0
-          if (retrys.value[ele.id] >= 3) {
-            throw new Error('Too much retry')
+          if (retrys++ >= 3) {
+            ElMessage.error(`Too much retry in ${ele.id}`)
           }
           else {
-            ElMessage.error(`下载失败${err}。3s秒后自动重试`)
-            retrys.value[ele.id] += 1
-            setTimeout(process, 3000)
+            await sleep(2000)
+            return await process()
           }
         }
-        success.value.push(ele.id)
       }
-      return process()
-    })
-  Promise.all(promises).then(() => {
-    ElMessage.success('下载完成')
-    if (invisable.length !== 0) {
-      ElMessage.warning(
-        `忽略了${invisable.length}个不可访问项目: ${invisable.toString()}`,
-      )
+      await process()
     }
-  }).catch((err) => {
-    ElMessage.error(`下载失败: ${err}`)
-  })
+  }
+  ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目}`)
 }
 async function handleSearch() {
   isLoading.value = true

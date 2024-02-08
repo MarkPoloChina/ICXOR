@@ -1,5 +1,6 @@
 import store from '@render/store/index'
 import type { IllustObj } from '../interface/illustObj'
+import { FilenameResolver } from './filename'
 
 const { ipcSendSync } = window.electron
 const STORE_PATH = ipcSendSync('app:getPath', null)
@@ -147,10 +148,21 @@ export class UrlGenerator {
 
   static getPixivUrlCat(pid: number, page: number, ext?: string) {
     const url = new URL(
-      `https://pixiv.re/${pid}${page === 0 ? '' : `-${page + 1}`}${
+      `https://pixiv.cat/${pid}${page === 0 ? '' : `-${page + 1}`}${
         ext ?? '.jpg'
       }`,
     )
     return url.href
+  }
+
+  static getSourceLink(obj: IllustObj) {
+    if (obj.remote_base.type === 'pixiv')
+      return `https://www.pixiv.net/artworks/${obj.meta.pid}`
+    if (obj.remote_base.name === 'Twitter' && obj.remote_endpoint) {
+      const parser = FilenameResolver.getObjFromFilename(obj.remote_endpoint)
+      if (parser?.statusId && parser?.authorId)
+        return `https://twitter.com/${parser.authorId}/status/${parser.statusId}`
+    }
+    return ''
   }
 }
