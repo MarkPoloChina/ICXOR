@@ -154,7 +154,9 @@ defineExpose({ handleSearchByLink })
         <el-scrollbar style="height: 100%; width: 100%; border-radius: 5px">
           <el-row
             v-infinite-scroll="handleLoadNext"
-            infinite-scroll-delay="100"
+            :infinite-scroll-delay="100"
+            :infinite-scroll-immediate="false"
+            :infinite-scroll-distance="50"
           >
             <el-col
               v-for="(obj, index) in userIllusts"

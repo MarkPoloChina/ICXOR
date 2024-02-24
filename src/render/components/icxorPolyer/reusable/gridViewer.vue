@@ -69,7 +69,9 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
               emit('loadMore');
             }
           "
-          infinite-scroll-delay="100"
+          :infinite-scroll-delay="100"
+          :infinite-scroll-immediate="false"
+          :infinite-scroll-distance="50"
         >
           <el-col
             v-for="(obj, index) in list"
