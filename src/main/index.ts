@@ -347,6 +347,9 @@ function afterReady() {
   ipcMain.handle('cs:download', async () => {
     return await CS.downloadFile()
   })
+  ipcMain.handle('cs:getTimestamp', async () => {
+    return await CS.getDoubleTimestamp()
+  })
 
   ipcMain.handle('ss:run', async (event, filePath) => {
     return await SS.runAndProcess(filePath)

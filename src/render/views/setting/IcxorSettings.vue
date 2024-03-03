@@ -6,8 +6,9 @@ import { onActivated, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import IcxorTag from '@render/components/IcxorSettings/IcxorTag.vue'
 import IcxorLocal from '@render/components/IcxorSettings/IcxorLocal.vue'
+import IcxorPreference from '@render/components/IcxorSettings/IcxorPreference.vue'
 
-const currentTab = ref('config')
+const currentTab = ref('preference')
 const route = useRoute()
 onActivated(() => {
   if (route.query.redirect === 'about')
@@ -21,6 +22,9 @@ onActivated(() => {
       设置
     </div>
     <el-tabs v-model="currentTab" class="tabs">
+      <el-tab-pane label="偏好设置" name="preference" lazy>
+        <IcxorPreference />
+      </el-tab-pane>
       <el-tab-pane label="配置信息" name="config" lazy>
         <IcxorConfig />
       </el-tab-pane>

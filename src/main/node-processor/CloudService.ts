@@ -14,6 +14,7 @@ const cosParam = {
 }
 
 const localFilePath = path.join(app.getPath('userData'), 'main.db')
+const localBackupPath = path.join(app.getPath('userData'), 'main.db.bak')
 const cloudFilePath = 'icxor/main.db'
 const cloudRecordPath = 'icxor/latest.json'
 
@@ -33,8 +34,8 @@ function checkParam() {
   return true
 }
 
-function compareLatest(isDownload: boolean): Promise<boolean> {
-  return new Promise((resolve, reject) => {
+function getCloudTimestamp() {
+  return new Promise<number>((resolve, reject) => {
     cos.getObject(
       {
         Bucket: ConfigDB.getByKey('cosBucket'),
@@ -43,18 +44,11 @@ function compareLatest(isDownload: boolean): Promise<boolean> {
       },
       (err, data) => {
         if (err) {
-          if (!isDownload && err.statusCode === 404)
-            resolve(true)
-          else
-            reject(err)
+          reject(err)
         }
         else {
-          const local_timestamp = fs.statSync(localFilePath).mtimeMs
           const cloud_timestamp = JSON.parse(data.Body.toString()).timestamp
-          if (isDownload)
-            resolve(cloud_timestamp > local_timestamp)
-          else
-            resolve(cloud_timestamp < local_timestamp)
+          resolve(Number(cloud_timestamp))
         }
       },
     )
@@ -69,7 +63,7 @@ function updateCloudRecord() {
         Region: ConfigDB.getByKey('cosRegion'),
         Key: cloudRecordPath,
         Body: JSON.stringify({
-          timestamp: fs.statSync(localFilePath).mtimeMs,
+          timestamp: Number(fs.statSync(localFilePath).mtime),
         }),
       },
       (err) => {
@@ -123,32 +117,43 @@ function downloadCloudFile() {
   })
 }
 
+function backupLocalFile() {
+  fs.copyFileSync(localFilePath, localBackupPath)
+}
+
 export class CS {
   static async uploadFile() {
     if (!checkParam())
       throw new Error('invalid config')
 
-    const shouldUpload = await compareLatest(false)
-    if (shouldUpload) {
-      await updateCloudFile()
-      await updateCloudRecord()
-      return true
-    }
-    else {
-      return false
-    }
+    await updateCloudFile()
+    await updateCloudRecord()
   }
 
   static async downloadFile() {
     if (!checkParam())
       throw new Error('invalid config')
 
-    const shouldDownload = await compareLatest(true)
-    if (shouldDownload) {
-      await downloadCloudFile()
-      return true
-    }
+    backupLocalFile()
+    await downloadCloudFile()
+    const currentStats = fs.statSync(localFilePath)
+    fs.utimesSync(localFilePath, currentStats.atime, (await getCloudTimestamp()) / 1000)
+  }
 
-    else { return false }
+  static async getDoubleTimestamp() {
+    if (!checkParam())
+      throw new Error('invalid config')
+    let cloudTimestamp = -1
+    try {
+      cloudTimestamp = await getCloudTimestamp()
+    }
+    catch (err) {
+      if (err.statusCode !== 404)
+        throw err
+    }
+    return {
+      local: Number(fs.statSync(localFilePath).mtime),
+      cloud: cloudTimestamp,
+    }
   }
 }

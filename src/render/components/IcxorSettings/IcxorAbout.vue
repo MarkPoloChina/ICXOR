@@ -187,10 +187,10 @@ function linkClick(url) {
             "pixiv"和"p"图标是日本ピクシブ株式会社持有的商标,
             不代表本产品由其提供或支持
             <br>
-            The "pixiv" and "p" icons are trademarks held by pixiv Inc.
+            The "pixiv" and "p" logos are trademarks of pixiv Inc.
           </div>
           <div class="cpr">
-            © Copyright 2020-2023 MarkPolo Studio, all rights reserved.
+            © Copyright 2020-2024 MarkPolo Studio, all rights reserved.
           </div>
         </div>
       </div>
