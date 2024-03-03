@@ -111,12 +111,9 @@ defineExpose({ handleStarChange })
                 <span style="word-wrap: break-word;">{{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo as IllustObj) || ' - ' }}</span>
               </div>
             </el-descriptions-item>
-            <el-descriptions-item
-              v-if="writableInfo.remote_endpoint"
-              label="末端"
-            >
+            <el-descriptions-item label="末端">
               <div v-if="!editable" style="max-width: 180px;">
-                <span style="word-wrap: break-word;">{{ writableInfo.remote_endpoint }}</span>
+                <span style="word-wrap: break-word;">{{ writableInfo.remote_endpoint || "-" }}</span>
               </div>
               <div v-else>
                 <el-input v-model="writableInfo.remote_endpoint">

@@ -135,13 +135,13 @@ export class UrlGenerator {
 
   static getPixivUrlSized(url: string, size: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {
     if (size === 'medium')
-      return url.replace('img-original', 'c/540x540_70/img-master').replace(/\.[^.]*$/, '_master1200.jpg')
+      return url.replace('_ugoira0', '').replace('img-original', 'c/540x540_70/img-master').replace(/\.[^.]*$/, '_master1200.jpg')
     else if (size === 'large')
-      return url.replace('img-original', 'c/600x1200_90/img-master').replace(/\.[^.]*$/, '_master1200.jpg')
+      return url.replace('_ugoira0', '').replace('img-original', 'c/600x1200_90/img-master').replace(/\.[^.]*$/, '_master1200.jpg')
     else if (size === 'square_medium')
-      return url.replace('img-original', 'c/360x360_70/img-master').replace(/\.[^.]*$/, '_square1200.jpg')
+      return url.replace('_ugoira0', '').replace('img-original', 'c/360x360_70/img-master').replace(/\.[^.]*$/, '_square1200.jpg')
     else if (size === 's_large')
-      return url.replace('img-original', 'img-master').replace(/\.[^.]*$/, '_master1200.jpg')
+      return url.replace('_ugoira0', '').replace('img-original', 'img-master').replace(/\.[^.]*$/, '_master1200.jpg')
     else
       return url
   }
