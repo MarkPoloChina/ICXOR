@@ -50,7 +50,7 @@ export class PixivApiService {
     return url
   }
 
-  async getLatestIllusts(isPrivate: boolean) {
+  async getLatestIllusts(isPrivate: boolean, existFilenames?: string[]) {
     checkIfAvailable()
     const list = []
     const queryAsync = (pid: number, index: number) => {
@@ -76,17 +76,27 @@ export class PixivApiService {
       else {
         json = await pixivApi.api.request(url)
       }
-      const promises = []
-      json.illusts.forEach((illust, index) => {
-        promises.push(queryAsync(illust.id, index))
-      })
-      const values = await Promise.all(promises)
-      values.forEach((value) => {
-        if (!value.data) {
-          list.push({ ...json.illusts[value.index], caption: null })
-          flag = true
-        }
-      })
+      if (existFilenames) {
+        json.illusts.forEach((illust) => {
+          if (!existFilenames.find(value => value.startsWith(`${illust.id}_`) || value.startsWith(`${illust.id}.`))) {
+            list.push({ ...illust, caption: null })
+            flag = true
+          }
+        })
+      }
+      else {
+        const promises = []
+        json.illusts.forEach((illust, index) => {
+          promises.push(queryAsync(illust.id, index))
+        })
+        const values = await Promise.all(promises)
+        values.forEach((value) => {
+          if (!value.data) {
+            list.push({ ...json.illusts[value.index], caption: null })
+            flag = true
+          }
+        })
+      }
       if (flag)
         return await check(json.next_url)
       else return list

@@ -9,6 +9,7 @@ const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
 const form = reactive({
   type: 'public',
+  limit: 'lib',
 })
 const isLoading = ref(false)
 const illusts = ref<PixivIllust[]>([])
@@ -81,9 +82,23 @@ async function handleDownloadAll() {
   ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目}`)
 }
 async function handleSearch() {
+  let existFilenames: string[] | undefined
+  if (form.limit === 'file') {
+    ElMessage.info('选择用于确定截断信息的文件夹')
+    const dir = await ipcInvoke('dialog:openDirectory')
+    if (!dir)
+      return
+    existFilenames = await ipcInvoke(
+      'fs:getFilenames',
+      dir,
+    )
+  }
+  else if (form.limit === 'none') {
+    existFilenames = []
+  }
   isLoading.value = true
   try {
-    const resp = await API.getBookmark(form.type === 'private')
+    const resp = await API.getBookmark(form.type === 'private', existFilenames)
     illusts.value.length = 0
     illusts.value.push(...resp)
   }
@@ -144,6 +159,21 @@ function handleRightClick(obj: PixivIllust) {
             </el-col>
           </el-row>
         </el-form-item>
+        <el-form-item label="截断">
+          <el-row style="width: 100%" justify="space-between">
+            <el-radio-group v-model="form.limit">
+              <el-radio label="lib">
+                基准
+              </el-radio>
+              <el-radio label="file">
+                文件
+              </el-radio>
+              <el-radio label="none">
+                无
+              </el-radio>
+            </el-radio-group>
+          </el-row>
+        </el-form-item>
       </el-form>
     </div>
     <div class="illust-result">
@@ -185,7 +215,7 @@ function handleRightClick(obj: PixivIllust) {
   width: 100%;
   margin-top: 20px;
   margin-bottom: 20px;
-  height: calc(100% - 80px);
+  height: calc(100% - 120px);
 }
 :deep(.warning-row) {
   background-color: var(--el-color-warning-light-9);

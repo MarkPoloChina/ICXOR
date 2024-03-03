@@ -16,8 +16,8 @@ export class PixivApiController {
   }
 
   @IpcHandle('api:GET/pixiv-api/pixiv-json/latest')
-  async getJsonLatest(@Payload() [{ isPrivate }]: [{ isPrivate: boolean }]) {
-    const json = await this.pixivApiService.getLatestIllusts(isPrivate)
+  async getJsonLatest(@Payload() [{ isPrivate, existFilenames }]: [{ isPrivate: boolean;existFilenames?: string[] }]) {
+    const json = await this.pixivApiService.getLatestIllusts(isPrivate, existFilenames)
     return json
   }
 

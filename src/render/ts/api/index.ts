@@ -237,10 +237,11 @@ export class API {
     return resp.data as DeleteResult
   }
 
-  static async getBookmark(isPrivate: boolean) {
+  static async getBookmark(isPrivate: boolean, existFilenames?: string[]) {
     const resp = await ax.get('/pixiv-api/pixiv-json/latest', {
       params: {
         isPrivate,
+        existFilenames,
       },
     })
     return resp.data as PixivIllust[]
