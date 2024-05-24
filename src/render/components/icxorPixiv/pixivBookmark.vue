@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, toRaw } from 'vue'
-import { Download, Search } from '@element-plus/icons-vue'
+import { Download, RefreshLeft, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
@@ -12,8 +12,11 @@ const form = reactive({
   limit: 'lib',
 })
 const isLoading = ref(false)
+const isDownloading = ref(false)
 const illusts = ref<PixivIllust[]>([])
 const success = ref<number[]>([])
+const failed = ref<number[]>([])
+const stat = ref('就绪')
 async function handleDownload(illustObj: PixivIllust) {
   const dir = await ipcInvoke('dialog:openDirectory')
   if (!dir)
@@ -41,6 +44,8 @@ function tableRowClassName({
 }) {
   if (success.value.includes(row.id))
     return 'success-row'
+  else if (failed.value.includes(row.id))
+    return 'danger-row'
   return ''
 }
 function sleep(ms: number) {
@@ -51,6 +56,10 @@ async function handleDownloadAll() {
   if (!dir)
     return
   const invisable: number[] = []
+  success.value.length = 0
+  failed.value.length = 0
+  isDownloading.value = true
+  stat.value = `下载S+I+F/T 0 + 0 + 0 / ${illusts.value.length} 个项目`
   for (const ele of illusts.value) {
     if (!ele.visible) {
       invisable.push(ele.id)
@@ -69,6 +78,7 @@ async function handleDownloadAll() {
         catch (err) {
           if (retrys++ >= 3) {
             ElMessage.error(`Too much retry in ${ele.id}`)
+            failed.value.push(ele.id)
           }
           else {
             await sleep(2000)
@@ -78,7 +88,9 @@ async function handleDownloadAll() {
       }
       await process()
     }
+    stat.value = `下载S+I+F/T ${success.value.length} + ${invisable.length} + ${failed.value.length} / ${illusts.value.length} 个项目`
   }
+  isDownloading.value = false
   ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目}`)
 }
 async function handleSearch() {
@@ -100,7 +112,10 @@ async function handleSearch() {
   try {
     const resp = await API.getBookmark(form.type === 'private', existFilenames)
     illusts.value.length = 0
+    success.value.length = 0
+    failed.value.length = 0
     illusts.value.push(...resp)
+    stat.value = `${illusts.value.length}个项目`
   }
   catch (err) {
     ElMessage.error(`错误:${err}`)
@@ -108,6 +123,47 @@ async function handleSearch() {
   finally {
     isLoading.value = false
   }
+}
+async function handleRetry() {
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  const failedIds = failed.value
+  failed.value.length = 0
+  stat.value = `重试 0 / ${failedIds.length}`
+  let idx = 0
+  isDownloading.value = true
+  for (const id of failedIds) {
+    const ele = illusts.value.find(ele => ele.id === id)
+    if (!ele)
+      continue
+    let retrys = 0
+    const process = async () => {
+      try {
+        if (ele.type === 'ugoira') {
+          const meta = await API.getPixivUgoiraJson(ele.id)
+          await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
+        }
+        else { await downloadPixivTo(toRaw(ele), dir) }
+        success.value.push(ele.id)
+      }
+      catch (err) {
+        if (retrys++ >= 3) {
+          ElMessage.error(`Too much retry in ${ele.id}`)
+          failed.value.push(ele.id)
+        }
+        else {
+          await sleep(2000)
+          return await process()
+        }
+      }
+    }
+    await process()
+    stat.value = `重试 ${++idx} / ${failedIds.length}`
+  }
+  stat.value += ' - 已完成'
+  isDownloading.value = false
+  ElMessage.success('重试完成')
 }
 function handleRightClick(obj: PixivIllust) {
   ipcRemoveAll('context:click')
@@ -148,12 +204,21 @@ function handleRightClick(obj: PixivIllust) {
                   v-if="illusts.length !== 0"
                   :icon="Download"
                   type="primary"
+                  :disabled="isLoading || isDownloading"
                   @click="handleDownloadAll"
                 />
                 <el-button
                   :icon="Search"
                   type="primary"
+                  :disabled="isLoading || isDownloading"
                   @click="handleSearch"
+                />
+                <el-button
+                  v-if="failed.length !== 0"
+                  :icon="RefreshLeft"
+                  type="primary"
+                  :disabled="isLoading || isDownloading"
+                  @click="handleRetry"
                 />
               </el-row>
             </el-col>
@@ -205,6 +270,9 @@ function handleRightClick(obj: PixivIllust) {
         <el-table-column prop="title" label="标题" show-overflow-tooltip />
       </el-table>
     </div>
+    <div class="illust-stat">
+      {{ stat }}
+    </div>
   </div>
 </template>
 
@@ -215,7 +283,10 @@ function handleRightClick(obj: PixivIllust) {
   width: 100%;
   margin-top: 20px;
   margin-bottom: 20px;
-  height: calc(100% - 120px);
+  height: calc(100% - 150px);
+}
+.illust-stat {
+  color: $color-greengray-3;
 }
 :deep(.warning-row) {
   background-color: var(--el-color-warning-light-9);

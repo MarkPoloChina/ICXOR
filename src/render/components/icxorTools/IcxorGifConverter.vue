@@ -7,6 +7,7 @@ import { PathHelper } from '@render/ts/util/path'
 const { ipcInvoke } = window.electron
 const isLoading = ref(false)
 const illusts = ref([])
+const stat = ref('就绪')
 async function handleConvertGif() {
   const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Zip', extensions: ['zip'] }])
   if (!files || files.length === 0)
@@ -14,6 +15,7 @@ async function handleConvertGif() {
   isLoading.value = true
   illusts.value.length = 0
   ElMessage.info(`正在转换${files.length}个文件...`)
+  stat.value = `0 / ${files.length}`
   for (const file of files) {
     const filename = PathHelper.getBasename(file)
     const output = file.replace(/\@\d+ms\.zip$/, '.gif')
@@ -30,8 +32,10 @@ async function handleConvertGif() {
     else {
       illusts.value.push({ filename, status: 'ignored' })
     }
+    stat.value = `${illusts.value.length} / ${files.length}`
   }
   ElMessage.success('转换完成')
+  stat.value += ' - 已完成'
   isLoading.value = false
 }
 </script>
@@ -99,6 +103,9 @@ async function handleConvertGif() {
         </el-table-column>
       </el-table>
     </div>
+    <div class="illust-stat">
+      {{ stat }}
+    </div>
   </div>
 </template>
 
@@ -109,7 +116,10 @@ async function handleConvertGif() {
   width: 100%;
   margin-top: 20px;
   margin-bottom: 20px;
-  height: calc(100% - 120px);
+  height: calc(100% - 150px);
+}
+.illust-stat {
+  color: $color-greengray-3;
 }
 :deep(.warning-row) {
   background-color: var(--el-color-warning-light-9);
