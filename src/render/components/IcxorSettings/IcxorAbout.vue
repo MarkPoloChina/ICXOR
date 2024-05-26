@@ -6,6 +6,9 @@ const { ipcSend } = window.electron
 function linkClick(url) {
   ipcSend('app:openLink', url)
 }
+function checkUpdate() {
+  ipcSend('app:checkUpdate')
+}
 </script>
 
 <template>
@@ -16,8 +19,11 @@ function linkClick(url) {
         ICXOR
       </div>
       <div class="version">
-        Ver. Beta {{ packageJson.version }}
+        Ver. {{ packageJson.version }}
       </div>
+      <el-button type="text" @click="checkUpdate">
+        检查更新
+      </el-button>
       <div class="home-title-2">
         Powered by MPSTO
       </div>
@@ -37,7 +43,7 @@ function linkClick(url) {
             "
             @click="linkClick('https://github.com/MarkPoloChina')"
           >
-            Mark Polo
+            MarkPoloChauvet
           </el-link>
         </div>
         <div class="title">
@@ -185,7 +191,7 @@ function linkClick(url) {
           </div>
           <div class="cpr">
             "pixiv"和"p"图标是日本ピクシブ株式会社持有的商标,
-            不代表本产品由其提供或支持
+            不代表本软件由其提供或支持
             <br>
             The "pixiv" and "p" logos are trademarks of pixiv Inc.
           </div>

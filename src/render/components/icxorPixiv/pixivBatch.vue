@@ -54,7 +54,7 @@ async function handleDownloadAll() {
   success.value.length = 0
   failed.value.length = 0
   isLoading.value = true
-  stat.value = `下载S+I+F/T 0 + 0 + 0 / ${illusts.value.length} 个项目`
+  stat.value = `下载[S+I+F/T]  0 + 0 + 0 / ${illusts.value.length} 个项目`
   for (const ele of illusts.value) {
     if (!ele.visible) {
       invisable.push(ele.id)
@@ -83,10 +83,10 @@ async function handleDownloadAll() {
       }
       await process()
     }
-    stat.value = `下载S+I+F/T ${success.value.length} + ${invisable.length} + ${failed.value.length} / ${illusts.value.length} 个项目`
+    stat.value = `下载[S+I+F/T]  ${success.value.length} + ${invisable.length} + ${failed.value.length} / ${illusts.value.length} 个项目`
   }
   isLoading.value = false
-  ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目}`)
+  ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目`)
 }
 async function handleBookmarkAll() {
   isLoading.value = true

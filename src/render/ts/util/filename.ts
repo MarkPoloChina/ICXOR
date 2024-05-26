@@ -240,8 +240,14 @@ export class FilenameAdapter {
       else if (reso.statusId && reso.authorId) {
         const duplicate = await API.getDuplicateByTwitterStatusId(reso.statusId)
         if (!duplicate) {
-          log.message = 'Twitter Target Unknown Duplicate'
-          log.status = 'ignore'
+          log.message = 'Twitter Target OK with Unknown Duplicate'
+          log.dto = {
+            remote_endpoint: `${reso.coreId}.${reso.extname}`,
+            remote_base: {
+              name: reso.match,
+            },
+            link: `https://twitter.com/${reso.authorId}/status/${reso.statusId}`,
+          }
         }
         else if (duplicate.target) {
           log.message = `Twitter Target Found Duplicate with pixiv-id ${duplicate.target}`

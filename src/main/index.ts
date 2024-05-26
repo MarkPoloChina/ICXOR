@@ -279,6 +279,10 @@ function afterReady() {
     shell.showItemInFolder(path)
   })
 
+  ipcMain.on('app:checkUpdate', () => {
+    autoUpdater.checkForUpdates()
+  })
+
   ipcMain.handle('db:init', () => {
     ConfigDB.initDB()
     LocalDiskDB.initDB()

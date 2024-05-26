@@ -4,7 +4,7 @@ const { ipcInvoke } = window.electron
 
 export default createStore({
   state: {
-    username: 'MarkPolo',
+    username: 'MarkPoloChauvet',
     modeServer: true,
     localIHS: '',
     remoteIHS: '',
