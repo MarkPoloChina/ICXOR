@@ -1,9 +1,9 @@
 name: Release Windows
 
 on:
-  # push:
-  #   tags:
-  #     - 'v*'
+  push:
+    branches:
+      - 'main'
 
   workflow_dispatch:
 
