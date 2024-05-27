@@ -17,6 +17,8 @@ const emit = defineEmits([
 ])
 const currentIndex = ref(0)
 const table = ref()
+const image404s = ref({})
+
 watch(
   () => props.tableData,
   () => {
@@ -107,9 +109,11 @@ defineExpose({ handleIndexChange })
         v-if="tableData[currentIndex]"
         class="viewer-img"
         :src="
-          UrlGenerator.getBlobUrl(
-            tableData[currentIndex], 's_large',
-          )
+          image404s[tableData[currentIndex].id]
+            ? UrlGenerator.getBlobUrl(tableData[currentIndex], 'original')
+            : UrlGenerator.getBlobUrl(
+              tableData[currentIndex], 's_large',
+            )
         "
         :preview-src-list="[
           UrlGenerator.getBlobUrl(tableData[currentIndex], 'original'),
@@ -133,9 +137,12 @@ defineExpose({ handleIndexChange })
         <el-image
           class="viewer-img"
           :class="obj.checked ? 'with-border' : ''"
-          :src="UrlGenerator.getBlobUrl(obj, 'square_medium')"
+          :src="image404s[obj.id]
+            ? UrlGenerator.getBlobUrl(obj, 'original')
+            : UrlGenerator.getBlobUrl(obj, 'square_medium')"
           fit="cover"
           lazy
+          @error="image404s[obj.id] = true"
           @click="handleSelect(obj, index)"
           @contextmenu.prevent="handleRightClick($event, obj)"
         >

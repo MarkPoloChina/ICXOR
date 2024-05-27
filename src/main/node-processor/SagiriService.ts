@@ -22,7 +22,7 @@ class ProcessCore {
       if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://i.pximg.net'))
         return result.raw?.data?.source?.split('/')[result.raw?.data?.source?.split('/').length - 1]
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://www.pixiv.net/artworks'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://www.pixiv.net'))
         return result.raw?.data?.source?.split('/')[result.raw?.data?.source?.split('/').length - 1]
     }
   }
@@ -45,7 +45,7 @@ class ProcessCore {
       if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://i.pximg.net'))
         return
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://www.pixiv.net/artworks'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://www.pixiv.net'))
         return
     }
     return this.twiiterAllFilter(json_obj)

@@ -120,6 +120,7 @@ async function getTypeOptions() {
   options['remote_base.id'] = data
 }
 async function getDateOptions() {
+  options['illust.date'].length = 0
   const data = await API.getEnumTimeline()
   data.forEach((ele) => {
     options['illust.date'].push({

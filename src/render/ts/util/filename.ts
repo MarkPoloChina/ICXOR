@@ -115,7 +115,7 @@ const possibleMatch = {
       return {
         coreId: basename,
         statusId: /(\d+)@[\d\w_]+/.exec(basename)[1],
-        authorId: /\d+@([\d\w_]+)/.exec(basename)[1],
+        authorId: /\d+@([\d\w_]+)_photo/.exec(basename)[1],
       }
     }
     else {

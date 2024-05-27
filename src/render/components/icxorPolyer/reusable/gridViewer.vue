@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -13,6 +14,8 @@ const emit = defineEmits(['showInfo', 'remove', 'loadMore'])
 
 const { ipcRemoveAll, ipcOnce, ipcSend } = window.electron
 const router = useRouter()
+
+const image404s = ref({})
 
 function handleRightClick(event, obj, supportToPixiv?: boolean) {
   if (event.stopPropagation)
@@ -82,10 +85,11 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
             <div class="expo" />
             <el-image
               class="viewer-img"
-              :src="UrlGenerator.getBlobUrl(obj, 'square_medium')"
-              :preview-src-list="[UrlGenerator.getBlobUrl(obj, 's_large')]"
+              :src="image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 'square_medium')"
+              :preview-src-list="[image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 's_large')]"
               fit="cover"
               lazy
+              @error="image404s[obj.id] = true"
               @contextmenu.prevent="handleRightClick($event, obj, !!obj.meta)"
             />
             <template #error>

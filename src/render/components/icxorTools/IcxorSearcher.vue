@@ -48,6 +48,7 @@ async function handleRetry() {
   stat.value = `重试 0 / ${failed.length}`
   for (const illust of failed) {
     const result: SagiriResultDto = await ipcInvoke('ss:run', illust.filename)
+    illust.error = undefined
     Object.assign(illust, result)
     if (result.twitter && result.twitter.match(/status\/([\d]+)/))
       API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/([\d]+)/)[1])
@@ -97,6 +98,16 @@ async function handleDownload() {
   await ipcInvoke('fs:saveStringToFile', PathHelper.joinFilenamePath(dir, 'pixiv_ids.json'), JSON.stringify(pixiv_ids))
   await ipcInvoke('fs:saveStringToFile', PathHelper.joinFilenamePath(dir, 'twitter_urls.json'), JSON.stringify(twitter_urls))
   ElMessage.success('保存完成')
+}
+function filterHandler(value: string, row, _column) {
+  if (value === 'both')
+    return row.pixiv && row.twitter
+  if (value === 'not')
+    return !row.pixiv && !row.twitter
+  if (value === 'twitter')
+    return row.twitter && !row.pixiv
+  if (value === 'pixiv')
+    return row.pixiv && !row.twitter
 }
 </script>
 
@@ -173,6 +184,13 @@ async function handleDownload() {
         <el-table-column
           label="状态"
           show-overflow-tooltip
+          :filters="[
+            { text: '未找到', value: 'not' },
+            { text: '仅pixiv', value: 'pixiv' },
+            { text: '仅twitter', value: 'twitter' },
+            { text: '两者都', value: 'both' },
+          ]"
+          :filter-method="filterHandler"
         >
           <template #default="{ row }">
             <el-tag

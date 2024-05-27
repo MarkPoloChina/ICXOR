@@ -11,6 +11,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:selections', 'popupContext'])
 const table = ref()
+const image404s = ref({})
 
 watch(
   () => props.tableData,
@@ -44,10 +45,11 @@ function handleRightClick(event, obj) {
               ? 'bigger'
               : ''
           }`"
-          :src="UrlGenerator.getBlobUrl(obj, 'large')"
-          :preview-src-list="[UrlGenerator.getBlobUrl(obj, 's_large')]"
+          :src="image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 'large')"
+          :preview-src-list="[image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 's_large')]"
           fit="cover"
           lazy
+          @error="image404s[obj.id] = true"
           @contextmenu="handleRightClick($event, obj)"
         >
           <template #error>

@@ -230,7 +230,11 @@ defineExpose({ handleStarChange })
             </el-descriptions-item>
             <el-descriptions-item label="pixiv标签">
               <div v-if="writableInfo.meta.tags_str">
-                <el-tag v-for="tag in writableInfo.meta.tags_str.split(',')" :key="tag">
+                <el-tag
+                  v-for="tag in writableInfo.meta.tags_str.split(',')"
+                  :key="tag"
+                  style="max-width: 180px;"
+                >
                   {{ tag }}
                 </el-tag>
               </div>
@@ -295,6 +299,11 @@ defineExpose({ handleStarChange })
       .info {
         :deep(.el-descriptions__body table) {
           border-radius: 5px;
+        }
+        :deep(.el-tag span) {
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
         }
       }
     }
