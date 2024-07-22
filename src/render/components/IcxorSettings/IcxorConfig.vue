@@ -12,6 +12,7 @@ const configForm = reactive({
   localDiskRoot: '',
   useLocal: false,
   cos: '',
+  mpsApiUrl: '',
   pixivToken: '',
   pixivUserId: '',
   pixivProxy: '',
@@ -108,6 +109,16 @@ function revoke() {
             </el-form-item>
             <el-form-item label="COS路径">
               <el-input v-model="configForm.cos" placeholder="请输入路径" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="title-block">
+          MPS API
+        </div>
+        <div class="form-block">
+          <el-form :model="configForm" label-width="100px" style="width: 100%">
+            <el-form-item label="API路径">
+              <el-input v-model="configForm.mpsApiUrl" placeholder="请输入路径" />
             </el-form-item>
           </el-form>
         </div>

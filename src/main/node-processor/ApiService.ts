@@ -1,8 +1,9 @@
 import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
 import axios from 'axios'
+import { ConfigDB } from './DBService'
 
-axios.defaults.baseURL = 'https://api.markpolo.cn/v1'
-// axios.defaults.baseURL = 'http://localhost:3000/v1'
+axios.defaults.baseURL = ConfigDB.getByKey('mpsApiUrl') || ''
+
 export class MPAPI {
   static async getIllustToday(date: string) {
     const resp = await axios.get(`/illust-today/${date}`)

@@ -10,6 +10,7 @@ export default createStore({
     remoteIHS: '',
     localDiskRoot: '',
     cos: '',
+    mpsApiUrl: '',
     useLocal: false,
     pixivUserId: '',
     pixivToken: '',
