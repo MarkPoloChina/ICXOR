@@ -66,7 +66,7 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
   <div class="viewer-main">
     <div class="scrollbar-container">
       <el-scrollbar style="height: 100%; border-radius: 5px">
-        <el-row
+        <div
           v-infinite-scroll="
             () => {
               emit('loadMore');
@@ -75,11 +75,11 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
           :infinite-scroll-delay="100"
           :infinite-scroll-immediate="false"
           :infinite-scroll-distance="50"
+          class="viewer-img-group"
         >
-          <el-col
+          <div
             v-for="(obj, index) in list"
             :key="index"
-            :span="6"
             class="viewer-img-container"
           >
             <div class="expo" />
@@ -91,14 +91,15 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
               lazy
               @error="image404s[obj.id] = true"
               @contextmenu.prevent="handleRightClick($event, obj, !!obj.meta)"
-            />
-            <template #error>
-              <div class="image-slot">
-                <el-icon><Picture /></el-icon>
-              </div>
-            </template>
-          </el-col>
-        </el-row>
+            >
+              <template #error>
+                <div class="image-slot">
+                  <el-icon><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
+          </div>
+        </div>
       </el-scrollbar>
     </div>
     <div class="viewer-info">
@@ -114,6 +115,11 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
   .scrollbar-container {
     flex: auto;
     overflow: hidden;
+    .viewer-img-group {
+      display: grid;
+      justify-content: space-around;
+      grid-template-columns: repeat(auto-fill, 220px);
+    }
     .viewer-img-container {
       position: relative;
       .expo {
@@ -130,6 +136,8 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
         right: 10px;
         bottom: 10px;
         left: 10px;
+        width: 200px;
+        height: 200px;
         .image-slot {
           display: flex;
           justify-content: center;

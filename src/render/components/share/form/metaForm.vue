@@ -77,7 +77,7 @@ defineExpose({ clearForm })
             v-model="addition.date"
             value-format="YYYY-MM-DD"
             type="date"
-            placeholder="Pick a day"
+            placeholder="选择入库时间"
             :disabled="notChange.date"
           />
           <el-checkbox

@@ -21,9 +21,9 @@ function checkUpdate() {
       <div class="version">
         Ver. {{ packageJson.version }}
       </div>
-      <el-button type="text" @click="checkUpdate">
+      <el-link type="primary" @click="checkUpdate">
         检查更新
-      </el-button>
+      </el-link>
       <div class="home-title-2">
         Powered by MPSTO
       </div>
@@ -38,8 +38,6 @@ function checkUpdate() {
             href=""
             style="
               vertical-align: baseline;
-              --el-link-text-color: #2e89c0;
-              --el-link-hover-text-color: #5dabdc;
             "
             @click="linkClick('https://github.com/MarkPoloChina')"
           >
@@ -167,10 +165,6 @@ function checkUpdate() {
               <el-link
                 type="primary"
                 href=""
-                style="
-                  --el-link-text-color: #2e89c0;
-                  --el-link-hover-text-color: #5dabdc;
-                "
                 @click="linkClick('https://www.markpolo.cn/')"
               >
                 Website
@@ -222,7 +216,6 @@ function checkUpdate() {
   }
   .version {
     font-size: 20px;
-    border: 1px solid var(--color-front);
     border-radius: 5px;
     padding: 2px 5px 2px 5px;
   }

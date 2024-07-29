@@ -20,6 +20,8 @@ watch(curTab, async () => {
     source[curTab.value].cnt = await getIllustsCount(source[curTab.value].type)
 })
 async function getEnum() {
+  source.length = 0
+  curTab.value = '0'
   const data = await API.getRemoteBase()
   data.forEach((ele) => {
     source.push({
@@ -63,6 +65,10 @@ async function handleLoadMore() {
     )),
   )
 }
+function reload() {
+  getEnum()
+}
+defineExpose({ reload })
 </script>
 
 <template>

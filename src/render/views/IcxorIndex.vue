@@ -18,21 +18,31 @@ const { ipcInvoke, ipcOn } = window.electron
 
 const isDark = useDark()
 const router = useRouter()
-onMounted(() => {
-  ipcInvoke('dark-mode:get').then(value => (isDark.value = value))
+const store = useStore()
+onMounted(async () => {
+  await store.dispatch('initStoreAsync')
+  const theme: 'system' | 'light' | 'dark' = store.state.theme
+  if (theme === 'system') {
+    ipcInvoke('dark-mode:get').then(value => (isDark.value = value))
+    ipcOn('dark-mode:updated', (message) => {
+      isDark.value = message
+    })
+  }
+  else if (theme === 'dark') {
+    isDark.value = true
+  }
+  else if (theme === 'light') {
+    isDark.value = false
+  }
   ipcOn('app:message', (type, message) => {
     ElMessage({
       type,
       message,
     })
   })
-  ipcOn('dark-mode:updated', (message) => {
-    isDark.value = message
-  })
   ipcOn('router:push', (message) => {
     router.push(message)
   })
-  useStore().commit('initStore')
 })
 </script>
 
@@ -43,7 +53,7 @@ onMounted(() => {
         <el-menu-item index="/home">
           <el-icon><House /></el-icon>
           <template #title>
-            主页
+            欢迎
           </template>
         </el-menu-item>
         <el-menu-item index="/view">
@@ -104,20 +114,18 @@ onMounted(() => {
   height: 100%;
   // background-image: url("@render/assets/img/avatar.jpg");
   // background-size: cover;
-  background-color: var(--color-bg);
 
   .index-menu-container {
     height: 100%;
-    background-color: $color-stdblue-1;
     flex: none;
     .index-menu {
       @include Flex-C;
       height: 100%;
       border-right: none;
-      --el-menu-bg-color: transparent;
+      --el-menu-bg-color: #{$color-stdblue-1};
       --el-menu-active-color: white;
       --el-menu-text-color: white;
-      --el-menu-hover-bg-color: #5dabdc;
+      --el-menu-hover-bg-color: #{$color-stdblue-2};
       .el-menu-item.is-active {
         background-color: var(--el-menu-hover-bg-color);
       }

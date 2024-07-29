@@ -7,28 +7,59 @@ import AuthorPolyer from '@render/components/icxorPolyer/authorPolyer.vue'
 import SourcePolyer from '@render/components/icxorPolyer/sourcePolyer.vue'
 
 const currentTab = ref('timeline')
+const timeline = ref()
+const picolt = ref()
+const lnr = ref()
+const author = ref()
+const source = ref()
+function reload() {
+  switch (currentTab.value) {
+    case 'timeline':
+      timeline.value.reload()
+      break
+    case 'picolt':
+      picolt.value.reload()
+      break
+    case 'lnr':
+      lnr.value.reload()
+      break
+    case 'author':
+      author.value.reload()
+      break
+    case 'source':
+      source.value.reload()
+      break
+  }
+}
 </script>
 
 <template>
   <div class="viewer-container">
     <div class="title">
-      聚合
+      <div>
+        聚合
+      </div>
+      <div>
+        <el-button @click="reload">
+          刷新
+        </el-button>
+      </div>
     </div>
     <el-tabs v-model="currentTab" class="tabs">
       <el-tab-pane label="时间线" name="timeline" lazy>
-        <TimelinePolyer />
+        <TimelinePolyer ref="timeline" />
       </el-tab-pane>
       <el-tab-pane label="PICOLT聚合" name="picolt" lazy>
-        <PicoltPolyer />
+        <PicoltPolyer ref="picolt" />
       </el-tab-pane>
       <el-tab-pane label="LNR聚合" name="lnr" lazy>
-        <LnrPolyer />
+        <LnrPolyer ref="lnr" />
       </el-tab-pane>
       <el-tab-pane label="作者专题聚合" name="author" lazy>
-        <AuthorPolyer />
+        <AuthorPolyer ref="author" />
       </el-tab-pane>
       <el-tab-pane label="图源聚合" name="source" lazy>
-        <SourcePolyer />
+        <SourcePolyer ref="source" />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -39,6 +70,8 @@ const currentTab = ref('timeline')
   @include Uni-Main-Container;
   .title {
     @include Uni-Main-Title;
+    display: flex;
+    justify-content: space-between;
   }
   .tabs {
     padding: 0 10px 0 10px;

@@ -10,6 +10,7 @@ const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
   modeServer: true,
   useLocal: false,
+  theme: 'system',
 })
 const store = useStore()
 onMounted(() => {
@@ -152,6 +153,26 @@ async function download() {
   <div class="config">
     <div class="form-container">
       <el-scrollbar style="width: 100%">
+        <div class="title-block">
+          外观
+        </div>
+        <div class="form-block">
+          <el-form :model="configForm" label-width="100px" style="width: 100%">
+            <el-form-item label="主题">
+              <el-radio-group v-model="configForm.theme">
+                <el-radio label="system">
+                  系统跟随
+                </el-radio>
+                <el-radio label="light">
+                  明亮
+                </el-radio>
+                <el-radio label="dark">
+                  黑暗
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+        </div>
         <div class="title-block">
           本地存储
         </div>

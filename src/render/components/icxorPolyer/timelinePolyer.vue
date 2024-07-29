@@ -18,6 +18,8 @@ watch(curTab, async () => {
     timeline[curTab.value].list = await getIllusts(timeline[curTab.value].time)
 })
 async function getEnum() {
+  timeline.length = 0
+  curTab.value = '0'
   const data = await API.getEnumTimeline()
   data.forEach((ele) => {
     timeline.push({
@@ -48,6 +50,10 @@ function getInfo(obj) {
   if (currentInfo.value)
     dialogVisible.value = true
 }
+function reload() {
+  getEnum()
+}
+defineExpose({ reload })
 </script>
 
 <template>

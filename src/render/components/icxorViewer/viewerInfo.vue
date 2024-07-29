@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Check } from '@element-plus/icons-vue'
+import { ArrowLeftBold, ArrowRightBold, Check } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { UrlGenerator } from '@render/ts/util/path'
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import { FilenameResolver } from '@render/ts/util/filename'
 
 const props = defineProps({
   info: Object,
@@ -81,9 +82,11 @@ defineExpose({ handleStarChange })
 <template>
   <div class="info-container-block">
     <div class="arrow">
-      <span @click="if (writableInfo) showInfo = !showInfo;">{{
-        showInfo ? ">" : "<"
-      }}</span>
+      <el-button
+        :icon="showInfo ? ArrowRightBold : ArrowLeftBold"
+        circle
+        @click="if (writableInfo) showInfo = !showInfo;"
+      />
     </div>
     <div class="main">
       <transition name="el-zoom-in-center">
@@ -110,6 +113,14 @@ defineExpose({ handleStarChange })
               <div style="max-width: 180px;">
                 <span style="word-wrap: break-word;">{{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo as IllustObj) || ' - ' }}</span>
               </div>
+              <el-button
+                v-if="writableInfo.remote_endpoint && writableInfo.remote_base.name === 'Twitter'"
+                type="primary"
+                size="small"
+                @click="handleAddAuthorTag(`@${FilenameResolver.getObjFromFilename(writableInfo.remote_endpoint).authorId}`)"
+              >
+                添加标签
+              </el-button>
             </el-descriptions-item>
             <el-descriptions-item label="末端">
               <div v-if="!editable" style="max-width: 180px;">
@@ -140,7 +151,7 @@ defineExpose({ handleStarChange })
                 style="width: 180px"
                 value-format="YYYY-MM-DD"
                 type="date"
-                placeholder="Pick a day"
+                placeholder="选择入库时间"
                 :disabled="!editable"
                 @change="emit('upload', writableInfo)"
               />
@@ -206,15 +217,16 @@ defineExpose({ handleStarChange })
                   "-"
                 }}
               </span>
-              <el-button
-                v-if="writableInfo.meta.author_id && writableInfo.meta.author"
-                type="primary"
-                size="small"
-                style="margin-left: 20px;"
-                @click="handleAddAuthorTag(`[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`)"
-              >
-                添加标签
-              </el-button>
+              <div>
+                <el-button
+                  v-if="writableInfo.meta.author_id && writableInfo.meta.author"
+                  type="primary"
+                  size="small"
+                  @click="handleAddAuthorTag(`[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`)"
+                >
+                  添加标签
+                </el-button>
+              </div>
             </el-descriptions-item>
             <el-descriptions-item label="收藏数">
               {{ writableInfo.meta.book_cnt ?? "-" }}
@@ -279,18 +291,15 @@ defineExpose({ handleStarChange })
   padding: 10px 10px 10px 10px;
   height: calc(100% - 20px);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   .arrow {
-    height: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    span {
-      cursor: pointer;
-    }
+    margin: 10px 0 5px 0;
   }
   .main {
-    height: 100%;
+    height: calc(100% - 50px);
     .info-container {
       margin-left: 10px;
       position: relative;

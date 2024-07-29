@@ -38,7 +38,7 @@ const emit = defineEmits(['update:modelValue'])
           style="width: 180px"
           value-format="YYYY-MM-DD"
           type="date"
-          placeholder="Pick a day"
+          placeholder="选择入库时间"
           :disabled="true"
         />
       </el-descriptions-item>

@@ -55,7 +55,7 @@ defineExpose({ initForm })
             v-model="baseInfo.date"
             value-format="YYYY-MM-DD"
             type="date"
-            placeholder="Pick a day"
+            placeholder="选择日期"
           />
         </el-form-item>
         <el-form-item label="角色">

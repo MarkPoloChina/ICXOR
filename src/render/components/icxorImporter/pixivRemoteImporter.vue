@@ -142,7 +142,7 @@ function handleSelectionChange(val) {
               v-model="importOption.addition.date"
               value-format="YYYY-MM-DD"
               type="date"
-              placeholder="Pick a day"
+              placeholder="选择入库时间"
             />
           </el-form-item>
         </el-form>

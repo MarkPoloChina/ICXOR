@@ -18,6 +18,7 @@ watch(currentKey, async () => {
 async function getTags() {
   const tags = await API.getTags()
   lnr.length = 0
+  currentKey.value = '0'
   lnr.push(...tags.filter(ele => ele.type !== 'author').map((ele) => {
     return {
       name: ele.name,
@@ -43,6 +44,10 @@ function getInfo(obj) {
   if (currentInfo.value)
     dialogVisible.value = true
 }
+function reload() {
+  getTags()
+}
+defineExpose({ reload })
 </script>
 
 <template>

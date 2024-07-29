@@ -14,6 +14,8 @@ onMounted(() => {
   getData()
 })
 async function getData() {
+  picolt.length = 0
+  currentKey.value = '0'
   const data = await API.getPolyWithIllust('picolt')
   data.forEach((item) => {
     item.illusts.sort((a, b) => {
@@ -71,6 +73,10 @@ function handleRemove(obj) {
     })
     .catch(() => {})
 }
+function reload() {
+  getData()
+}
+defineExpose({ reload })
 </script>
 
 <template>

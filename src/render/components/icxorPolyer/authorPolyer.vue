@@ -18,7 +18,8 @@ watch(currentKey, async () => {
 async function getAuthors() {
   const tags = await API.getTags()
   author.length = 0
-  author.push(...tags.filter(ele => ele.type === 'author').map((ele) => {
+  currentKey.value = '0'
+  author.push(...tags.filter(ele => ele.type === 'author' && !ele.name.startsWith('@')).map((ele) => {
     return {
       author: ele.name.replace(/^\[\d+\]/, '').trim().split('@')[0],
       author_id: /^\[(\d+)\]/.exec(ele.name)[1],
@@ -44,6 +45,10 @@ function getInfo(obj) {
   if (currentInfo.value)
     dialogVisible.value = true
 }
+function reload() {
+  getAuthors()
+}
+defineExpose({ reload })
 </script>
 
 <template>

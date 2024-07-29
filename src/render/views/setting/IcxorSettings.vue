@@ -69,15 +69,6 @@ onActivated(() => {
     :deep(.el-tabs__content) {
       height: calc(100% - 55px);
     }
-    :deep(.el-tabs__item.is-active) {
-      color: $color-stdblue-1;
-    }
-    :deep(.el-tabs__item:hover) {
-      color: $color-stdblue-1;
-    }
-    :deep(.el-tabs__active-bar) {
-      background-color: $color-stdblue-1;
-    }
   }
 }
 </style>

@@ -35,11 +35,12 @@ const filterSort = computed<FilterSortObj>(() => {
   obj[filterSortKey.value] = filterSortDesc.value
   return obj
 })
-const options = {
+const options = reactive({
   'tag.name': [],
   'meta.author_id': [],
   'remote_base.id': [],
   'illust.date': [],
+  'illust.remote_endpoint': [],
   'poly.type': [
     {
       value: 'picolt',
@@ -92,7 +93,7 @@ const options = {
       label: '倒序',
     },
   ],
-}
+})
 const polyOptions = ref([])
 const polyValue = ref()
 watch(filterCondition, (val) => {
@@ -112,7 +113,10 @@ async function getTagsOptions() {
     return val.type !== 'author'
   })
   options['meta.author_id'] = data.filter((val) => {
-    return val.type === 'author'
+    return val.type === 'author' && /^\[\d+\]/.test(val.name)
+  })
+  options['illust.remote_endpoint'] = data.filter((val) => {
+    return val.type === 'author' && /^\@/.test(val.name)
   })
 }
 async function getTypeOptions() {
@@ -279,7 +283,13 @@ async function handleClear() {
               </el-option>
             </el-select>
           </div>
-          <div>
+          <div
+            style="
+              margin-top: 25px;
+              padding-top: 25px;
+              border-top: 1px solid rgba(0, 0, 0, 0.1);
+            "
+          >
             <el-select v-model="filterCondition.AR" placeholder="选择纵横比">
               <el-option
                 v-for="item in options.AR"
@@ -299,6 +309,7 @@ async function handleClear() {
               v-model="filterCondition['meta.author_id']"
               filterable
               allow-create
+              clearable
               placeholder="UID"
             >
               <el-option
@@ -313,19 +324,37 @@ async function handleClear() {
             <el-input
               v-model="filterCondition['meta.author']"
               placeholder="模糊作者名"
+              clearable
             />
           </div>
           <div>
             <el-input
               v-model="filterCondition['meta.tags_str']"
               placeholder="模糊Pixiv标签"
+              clearable
             />
           </div>
-          <div>
-            <el-input
+          <div
+            style="
+              margin-top: 25px;
+              padding-top: 25px;
+              border-top: 1px solid rgba(0, 0, 0, 0.1);
+            "
+          >
+            <el-select
               v-model="filterCondition['illust.remote_endpoint']"
+              filterable
+              allow-create
+              clearable
               placeholder="模糊末端"
-            />
+            >
+              <el-option
+                v-for="item in options['illust.remote_endpoint']"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name"
+              />
+            </el-select>
           </div>
           <div
             style="

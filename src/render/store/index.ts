@@ -5,6 +5,7 @@ const { ipcInvoke } = window.electron
 export default createStore({
   state: {
     username: 'MarkPoloChauvet',
+    theme: 'system',
     modeServer: true,
     localIHS: '',
     remoteIHS: '',
@@ -33,27 +34,28 @@ export default createStore({
       ipcInvoke('db:setOriginal', name, original)
       ipcInvoke('db:setThumb', name, thumbnail)
     },
-    initStore(state) {
-      ipcInvoke('db:init').then(() => {
-        Object.keys(state).forEach((key) => {
-          if (key !== 'localDiskMap') {
-            ipcInvoke('db:get', key).then((value) => {
-              if (value === null || value === undefined)
-                ipcInvoke('db:set', key, state[key])
-              else
-                state[key] = value
-            })
-          }
-          else {
-            ipcInvoke('db:getMap').then((value) => {
-              if (typeof value === 'object' && value !== null)
-                state[key] = value
-            })
-          }
-        })
-      })
+    setByKey(state, { key, value }) {
+      state[key] = value
     },
   },
-  actions: {},
+  actions: {
+    async initStoreAsync({ commit, state }) {
+      await ipcInvoke('db:init')
+      for (const key of Object.keys(state)) {
+        if (key !== 'localDiskMap') {
+          const value = await ipcInvoke('db:get', key)
+          if (value === null || value === undefined)
+            ipcInvoke('db:set', key, state[key])
+          else
+            commit('setByKey', { key, value })
+        }
+        else {
+          const value = await ipcInvoke('db:getMap')
+          if (typeof value === 'object' && value !== null)
+            commit('setByKey', { key, value })
+        }
+      }
+    },
+  },
   modules: {},
 })

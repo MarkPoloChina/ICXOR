@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Picture } from '@element-plus/icons-vue'
+import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { onActivated, onDeactivated, ref, watch } from 'vue'
 
@@ -134,9 +134,11 @@ defineExpose({ handleIndexChange })
         class="viewer-flow-container"
       >
         <div class="expo" />
+        <div v-if="obj.checked" class="selected-mask">
+          <CircleCheck />
+        </div>
         <el-image
           class="viewer-img"
-          :class="obj.checked ? 'with-border' : ''"
           :src="image404s[obj.id]
             ? UrlGenerator.getBlobUrl(obj, 'original')
             : UrlGenerator.getBlobUrl(obj, 'square_medium')"
@@ -182,11 +184,6 @@ defineExpose({ handleIndexChange })
         color: var(--el-text-color-secondary);
         font-size: 30px;
       }
-      &.with-border {
-        border: 3px solid $color-stdblue-1;
-        width: calc(100% - 6px);
-        height: calc(100% - 6px);
-      }
     }
   }
   .flow-container {
@@ -205,6 +202,19 @@ defineExpose({ handleIndexChange })
         padding: 0;
         padding-bottom: 100%;
       }
+      .selected-mask {
+        border-radius: 5px;
+        position: absolute;
+        width: calc(100% - 10px);
+        height: calc(100% - 10px);
+        top: 5px;
+        left: 5px;
+        padding: 0;
+        background: rgba(255, 255, 255, 0.6);
+        color: $color-stdblue-1;
+        z-index: 1;
+        pointer-events: none;
+      }
       .viewer-img {
         border-radius: 5px;
         position: absolute;
@@ -212,6 +222,7 @@ defineExpose({ handleIndexChange })
         right: 5px;
         bottom: 5px;
         left: 5px;
+        cursor: pointer;
         .image-slot {
           display: flex;
           justify-content: center;
@@ -221,9 +232,6 @@ defineExpose({ handleIndexChange })
           background: var(--el-fill-color-light);
           color: var(--el-text-color-secondary);
           font-size: 30px;
-        }
-        &.with-border {
-          border: 3px solid $color-stdblue-1;
         }
       }
     }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { Download, RefreshLeft, Search, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { SagiriResultDto } from '@render/ts/dto/sagiriResult'
@@ -17,6 +17,9 @@ async function getIllusts() {
   const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Image', extensions: ['jpg', 'jpeg', 'png'] }])
   if (!files || files.length === 0)
     return
+  await handleGetIlluts(files)
+}
+async function handleGetIlluts(files: string[]) {
   isLoading.value = true
   illusts.value.length = 0
   ElMessage.info(`正在获取${files.length}张图像信息...`)
@@ -109,6 +112,26 @@ function filterHandler(value: string, row, _column) {
   if (value === 'pixiv')
     return row.pixiv && !row.twitter
 }
+function dropInit() {
+  const dragWrapper = document.getElementById('dropArea')
+  dragWrapper.addEventListener('drop', async (e) => {
+    e.preventDefault()
+    const files = e.dataTransfer.files
+    if (files && files.length > 0)
+      await handleGetIlluts(Array.from(files).map(file => file.path))
+  })
+  dragWrapper.addEventListener('dragover', (e) => {
+    e.preventDefault()
+  })
+}
+onMounted(() => {
+  dropInit()
+})
+onUnmounted(() => {
+  const dragWrapper = document.getElementById('dropArea')
+  dragWrapper.removeEventListener('drop', () => {})
+  dragWrapper.removeEventListener('dragover', () => {})
+})
 </script>
 
 <template>
@@ -122,6 +145,7 @@ function filterHandler(value: string, row, _column) {
       <el-form label-width="80px" style="width: 100%" label-position="left">
         <el-form-item label="操作">
           <el-button
+            id="dropArea"
             :icon="Search"
             type="primary"
             :disabled="isLoading"

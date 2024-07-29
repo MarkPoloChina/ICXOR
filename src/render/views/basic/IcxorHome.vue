@@ -11,7 +11,7 @@ const username = computed(() => {
 <template>
   <div class="home-container">
     <div class="title">
-      主页
+      欢迎
     </div>
     <div class="home-main">
       <div class="home-welcome">
@@ -49,6 +49,7 @@ const username = computed(() => {
     .home-img {
       width: 40%;
       margin-bottom: 20px;
+      border-radius: 20px;
     }
     .home-title {
       font-size: 40px;
