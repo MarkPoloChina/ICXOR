@@ -46,34 +46,15 @@ defineExpose({ clearForm })
 
 <template>
   <div>
-    <el-dialog v-model="dialogVisible" title="聚合表单" width="60%">
+    <el-dialog v-model="dialogVisible" title="PICOLT聚合表单" width="60%">
       <el-form :model="polyInfo" label-width="100px" style="width: 100%">
-        <el-form-item label="聚合类型">
-          <el-select
-            v-model="polyInfo.type"
-            placeholder="选择聚合类型"
-            @change="getPolyParentEnum"
-          >
-            <el-option
-              v-for="item in [
-                {
-                  value: 'picolt',
-                  label: 'PICOLT',
-                },
-              ]"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="聚合簇">
+        <el-form-item label="PICOLT簇">
           <el-select
             v-model="polyInfo.parent"
             style="width: 100%"
             filterable
             allow-create
-            placeholder="选择或填写聚合簇,可以留空"
+            placeholder="选择或填写PICOLT簇,可以留空"
           >
             <el-option
               v-for="item in polyParentEnum"
@@ -83,18 +64,18 @@ defineExpose({ clearForm })
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="聚合名">
-          <el-input v-model="polyInfo.name" placeholder="输入聚合名" />
+        <el-form-item label="PICOLT名">
+          <el-input v-model="polyInfo.name" placeholder="输入PICOLT名" />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
+          <el-button @click="dialogVisible = false">取消</el-button>
           <el-button
             type="primary"
             @click="handleConfirm"
           >
-            Confirm
+            确定
           </el-button>
         </span>
       </template>

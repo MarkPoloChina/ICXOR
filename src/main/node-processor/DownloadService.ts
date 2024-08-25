@@ -64,7 +64,7 @@ export class DS {
     dir: string,
     page?: number,
   ) {
-    const urls = []
+    const urls: string[] = []
     if (!illustObj.visible)
       throw new Error('Visit Deny.')
     if (illustObj.type === 'ugoira')
@@ -89,14 +89,12 @@ export class DS {
           : illustObj.meta_pages.map(ele => ele.image_urls.original)),
       )
     }
-    const process = async (url: string) => {
+    for (const url of urls) {
       if (!await FS.isExists(path.join(dir, path.basename(url)))) {
         const ab = await this.downloadFromUrl(url, true)
         await FS.saveArrayBufferTo(ab, path.basename(url), dir)
       }
     }
-    const promises = urls.map(url => process(url))
-    await Promise.all(promises)
   }
 
   public static async downloadFromUgoira(illustObj: PixivIllust, dir: string, meta: UgoiraMetaData) {

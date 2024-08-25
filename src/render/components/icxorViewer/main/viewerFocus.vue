@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { CircleCheck, Picture } from '@element-plus/icons-vue'
+import type { IllustObj } from '@render/ts/interface/illustObj'
 import { UrlGenerator } from '@render/ts/util/path'
 import { onActivated, onDeactivated, ref, watch } from 'vue'
 
 const props = defineProps({
-  tableData: Array<any>,
+  tableData: Array as () => IllustObj[],
   loading: Boolean,
-  currentSelected: Object,
+  currentSelected: Object as () => IllustObj | null,
 })
 
 const emit = defineEmits([
@@ -39,15 +40,25 @@ watch(
     immediate: true,
   },
 )
-function handleRightClick(event, obj) {
+watch(
+  () => currentIndex.value,
+  () => {
+    emit('selectChange', props.tableData[currentIndex.value])
+    scrollToCurrent()
+  },
+  {
+    deep: false,
+  },
+)
+function handleRightClick(event: MouseEvent, obj: IllustObj) {
   event.preventDefault()
   emit('popupContext', obj)
 }
-function handleSelect(obj, index) {
+function handleSelect(obj: IllustObj, index: number) {
   currentIndex.value = index
   emit('selectChange', obj)
 }
-function handleIndexChange(action) {
+function handleIndexChange(action: 'up' | 'down') {
   if (action === 'up') {
     if (currentIndex.value < props.tableData.length - 1)
       currentIndex.value++
@@ -56,7 +67,12 @@ function handleIndexChange(action) {
     if (currentIndex.value > 0)
       currentIndex.value--
   }
-  emit('selectChange', props.tableData[currentIndex.value])
+}
+function scrollToCurrent() {
+  try {
+    document.getElementById(`img-focus-${currentIndex.value}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+  catch {}
 }
 onActivated(() => {
   addKeyboardListener()
@@ -130,6 +146,7 @@ defineExpose({ handleIndexChange })
     <el-scrollbar ref="table" class="flow-container">
       <div
         v-for="(obj, index) in tableData"
+        :id="`img-focus-${index}`"
         :key="index"
         class="viewer-flow-container"
       >

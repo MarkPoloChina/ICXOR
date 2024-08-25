@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Picture } from '@element-plus/icons-vue'
-import { UrlGenerator } from '@render/ts/util/path'
+import type { IllustObj } from '@render/ts/interface/illustObj'
+import { PathHelper, UrlGenerator } from '@render/ts/util/path'
+import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
-  list: Array<any>,
+  list: Array as () => IllustObj[],
   totalCnt: Number,
   supportRemove: Boolean,
 })
@@ -17,7 +19,30 @@ const router = useRouter()
 
 const image404s = ref({})
 
-function handleRightClick(event, obj, supportToPixiv?: boolean) {
+async function handleDownload(obj: IllustObj) {
+  const { ipcInvoke, downloadTo } = window.electron
+
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  const url = UrlGenerator.getBlobUrl(obj, 'original')
+  try {
+    await downloadTo(
+      url,
+      obj.remote_base.type === 'pixiv'
+        ? PathHelper.getBasename(url)
+        : obj.remote_endpoint,
+      dir,
+      url.includes('i.pximg.net'),
+    )
+    ElMessage.success('下载完成')
+  }
+  catch (err) {
+    ElMessage.error('下载失败')
+  }
+}
+
+function handleRightClick(event: MouseEvent, obj: IllustObj, supportToPixiv?: boolean) {
   if (event.stopPropagation)
     event.stopPropagation()
 
@@ -26,6 +51,9 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
     switch (item) {
       case '详情':
         emit('showInfo', obj)
+        break
+      case '下载':
+        handleDownload(obj)
         break
       case '移除':
         emit('remove', obj)
@@ -53,11 +81,11 @@ function handleRightClick(event, obj, supportToPixiv?: boolean) {
         break
     }
   })
-  const popupTemplate = [{ label: '详情' }]
+  const popupTemplate: { type?: string; label?: string }[] = [{ label: '详情' }, { label: '下载' }]
   if (props.supportRemove)
     popupTemplate.push({ label: '移除' })
   if (supportToPixiv)
-    popupTemplate.push({ label: '在Pixiv中打开' }, { label: '在Pixiv中打开作者' })
+    popupTemplate.push({ type: 'separator' }, { label: '在Pixiv中打开' }, { label: '在Pixiv中打开作者' })
   ipcSend('context:popup', popupTemplate)
 }
 </script>

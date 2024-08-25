@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { IllustObj } from '@render/ts/interface/illustObj'
+
 defineProps({
   modelValue: Boolean,
-  info: Object,
+  info: Object as () => IllustObj,
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -62,7 +64,30 @@ const emit = defineEmits(['update:modelValue'])
         {{ info.meta.page }}
       </el-descriptions-item>
       <el-descriptions-item label="限制级">
-        {{ info.meta.limit ?? "-" }}
+        <el-tag
+          v-if="info.meta.limit === 'R-18G'"
+          type="danger"
+        >
+          {{ info.meta.limit }}
+        </el-tag>
+        <el-tag
+          v-else-if="info.meta.limit === 'R-18'"
+          type="warning"
+        >
+          {{ info.meta.limit }}
+        </el-tag>
+        <el-tag
+          v-else-if="info.meta.limit === 'normal'"
+          type="success"
+        >
+          全年龄
+        </el-tag>
+        <el-tag
+          v-else
+          type="info"
+        >
+          未知
+        </el-tag>
       </el-descriptions-item>
       <el-descriptions-item label="作者">
         {{
@@ -83,15 +108,20 @@ const emit = defineEmits(['update:modelValue'])
       <el-descriptions-item label="高度">
         {{ info.meta.height ?? "-" }}
       </el-descriptions-item>
+      <el-descriptions-item label="pixiv标签">
+        <div v-if="info.meta.tags_str">
+          <el-tag
+            v-for="tag in info.meta.tags_str.split(',')"
+            :key="tag"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
+        <div v-else>
+          -
+        </div>
+      </el-descriptions-item>
     </el-descriptions>
-    <!-- <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="emit('update:modelValue', false)">Cancel</el-button>
-        <el-button type="primary" @click="emit('update:modelValue', false)"
-          >Confirm</el-button
-        >
-      </span>
-    </template> -->
   </el-dialog>
 </template>
 

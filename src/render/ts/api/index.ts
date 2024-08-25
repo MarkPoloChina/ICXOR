@@ -324,11 +324,12 @@ export class API {
     return resp.data as UgoiraMetaData
   }
 
-  static async togglePixivBookmark(pid: number, op: boolean) {
+  static async togglePixivBookmark(pid: number, op: boolean, isPrivate: boolean) {
     await ax.post('/pixiv-api/bookmark', null, {
       params: {
         pid,
         op,
+        isPrivate,
       },
     })
   }

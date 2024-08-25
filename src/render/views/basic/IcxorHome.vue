@@ -47,7 +47,8 @@ const username = computed(() => {
       }
     }
     .home-img {
-      width: 40%;
+      width: min(50vh, 50vw) ;
+      height: min(50vh, 50vw);
       margin-bottom: 20px;
       border-radius: 20px;
     }

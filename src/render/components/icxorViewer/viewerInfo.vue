@@ -7,9 +7,10 @@ import { ElMessage } from 'element-plus'
 import { UrlGenerator } from '@render/ts/util/path'
 import type { IllustObj } from '@render/ts/interface/illustObj'
 import { FilenameResolver } from '@render/ts/util/filename'
+import { UtilDate } from '@render/ts/util/date'
 
 const props = defineProps({
-  info: Object,
+  info: Object as () => IllustObj | null,
 })
 
 const emit = defineEmits(['update:info', 'upload'])
@@ -111,7 +112,7 @@ defineExpose({ handleStarChange })
             </el-descriptions-item>
             <el-descriptions-item label="URL">
               <div style="max-width: 180px;">
-                <span style="word-wrap: break-word;">{{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo as IllustObj) || ' - ' }}</span>
+                <span style="word-wrap: break-word;">{{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo) || ' - ' }}</span>
               </div>
               <el-button
                 v-if="writableInfo.remote_endpoint && writableInfo.remote_base.name === 'Twitter'"
@@ -147,14 +148,21 @@ defineExpose({ handleStarChange })
             </el-descriptions-item>
             <el-descriptions-item label="入库时间">
               <el-date-picker
+                v-if="editable"
                 v-model="writableInfo.date"
                 style="width: 180px"
                 value-format="YYYY-MM-DD"
                 type="date"
                 placeholder="选择入库时间"
-                :disabled="!editable"
                 @change="emit('upload', writableInfo)"
               />
+              <span v-else>{{ writableInfo.date ?? '-' }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="创建时间">
+              {{ UtilDate.getDateCST(writableInfo.createDate, '-') }}
+            </el-descriptions-item>
+            <el-descriptions-item label="修改时间">
+              {{ UtilDate.getDateCST(writableInfo.updateDate, '-') }}
             </el-descriptions-item>
             <el-descriptions-item label="标签">
               <div v-if="!editable">
@@ -199,7 +207,30 @@ defineExpose({ handleStarChange })
               {{ writableInfo.meta.page }}
             </el-descriptions-item>
             <el-descriptions-item label="限制级">
-              {{ writableInfo.meta.limit ?? "-" }}
+              <el-tag
+                v-if="writableInfo.meta.limit === 'R-18G'"
+                type="danger"
+              >
+                {{ writableInfo.meta.limit }}
+              </el-tag>
+              <el-tag
+                v-else-if="writableInfo.meta.limit === 'R-18'"
+                type="warning"
+              >
+                {{ writableInfo.meta.limit }}
+              </el-tag>
+              <el-tag
+                v-else-if="writableInfo.meta.limit === 'normal'"
+                type="success"
+              >
+                全年龄
+              </el-tag>
+              <el-tag
+                v-else
+                type="info"
+              >
+                未知
+              </el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="作者">
               <el-link
@@ -256,29 +287,24 @@ defineExpose({ handleStarChange })
             </el-descriptions-item>
           </el-descriptions>
           <el-descriptions
-            v-if="
-              writableInfo
-                && writableInfo.poly
-                && writableInfo.poly.length !== 0
+            v-for="
+              (poly, index) in writableInfo?.poly
             "
+            :key="poly.id"
             class="info"
-            title="聚合数据"
+            style="margin-bottom: 10px"
+            :title="`PICOLT数据#${index + 1}`"
             :column="1"
             border
             direction="vertical"
           >
             <template #extra />
-            <template v-for="poly in writableInfo.poly" :key="poly.id">
-              <el-descriptions-item label="聚合类型">
-                {{ poly.type ?? "-" }}
-              </el-descriptions-item>
-              <el-descriptions-item label="聚合簇">
-                {{ poly.parent ?? "-" }}
-              </el-descriptions-item>
-              <el-descriptions-item label="聚合名">
-                {{ poly.name ?? "-" }}
-              </el-descriptions-item>
-            </template>
+            <el-descriptions-item label="PICOLT簇">
+              {{ poly.parent ?? "-" }}
+            </el-descriptions-item>
+            <el-descriptions-item label="PICOLT名">
+              {{ poly.name ?? "-" }}
+            </el-descriptions-item>
           </el-descriptions>
         </el-scrollbar>
       </transition>
@@ -306,6 +332,7 @@ defineExpose({ handleStarChange })
       max-height: 100%;
 
       .info {
+        min-width: 220px;
         :deep(.el-descriptions__body table) {
           border-radius: 5px;
         }

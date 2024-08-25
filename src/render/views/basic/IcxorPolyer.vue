@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { CloseBold, Refresh } from '@element-plus/icons-vue'
 import TimelinePolyer from '@render/components/icxorPolyer/timelinePolyer.vue'
 import PicoltPolyer from '@render/components/icxorPolyer/picoltPolyer.vue'
 import LnrPolyer from '@render/components/icxorPolyer/lnrPolyer.vue'
@@ -31,6 +32,9 @@ function reload() {
       break
   }
 }
+function deletePicolt() {
+  picolt.value.removePoly()
+}
 </script>
 
 <template>
@@ -40,9 +44,8 @@ function reload() {
         聚合
       </div>
       <div>
-        <el-button @click="reload">
-          刷新
-        </el-button>
+        <el-button :icon="Refresh" circle @click="reload" />
+        <el-button v-if="currentTab === 'picolt'" type="danger" plain :icon="CloseBold" circle @click="deletePicolt" />
       </div>
     </div>
     <el-tabs v-model="currentTab" class="tabs">

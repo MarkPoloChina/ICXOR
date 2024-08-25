@@ -2,10 +2,11 @@
 import { Filter } from '@element-plus/icons-vue'
 import { computed, reactive, ref } from 'vue'
 import { ElButton, ElCheckbox, ElIcon, ElPopover } from 'element-plus'
+import type { BatchLog } from '@render/ts/interface/batchLog'
 
 const props = defineProps({
   loading: Boolean,
-  list: Array<any>,
+  list: Array as () => BatchLog[],
   selected: Array,
 })
 const pageSize = 100

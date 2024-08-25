@@ -47,9 +47,9 @@ export class PixivApiController {
   }
 
   @IpcHandle('api:POST/pixiv-api/bookmark')
-  async togglePixivBookmark(@Payload() [{ pid, op }]: [{ pid: number; op: boolean }]) {
+  async togglePixivBookmark(@Payload() [{ pid, op, isPrivate }]: [{ pid: number; op: boolean; isPrivate: boolean }]) {
     if (op)
-      return this.pixivApiService.bookmarkIllust(pid)
+      return this.pixivApiService.bookmarkIllust(pid, isPrivate)
     else return this.pixivApiService.unbookmarkIllust(pid)
   }
 }

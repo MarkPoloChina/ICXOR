@@ -72,26 +72,13 @@ export class IllustService {
     return results
   }
 
-  /**
-   * Illust类经过queryBuilder的标准查询
-   * @param conditionObj 形如"类.字段:[值1,值2]"的对象
-   * @param limit 分页大小, 不分页则输入-1, 默认为100
-   * @param offset 页偏移, 仅当limit不为-1时有效, 默认为0
-   * @param orderAs 形如"类.字段:正逆序"的对象
-   * @returns Illust标准查询结果
-   */
-  async getIllusts(
-    conditionObj: FilterConditionObj = {},
-    limit: number = 100,
-    offset: number = 0,
-    orderAs: FilterSortObj = {},
-  ) {
-    let querybuilder: SelectQueryBuilder<Illust> = this.illustRepository
-      .createQueryBuilder()
-      .leftJoinAndSelect('Illust.meta', 'meta')
-      .leftJoinAndSelect('Illust.poly', 'poly')
-      .leftJoinAndSelect('Illust.tag', 'tag')
-      .leftJoinAndSelect('Illust.remote_base', 'remote_base')
+  private buildIllustQueryChain(conditionObj: FilterConditionObj = {}, inputQuerybuilder: SelectQueryBuilder<Illust>) {
+    let querybuilder = inputQuerybuilder
+      .leftJoin('Illust.meta', 'meta')
+      .leftJoin('Illust.poly', 'poly')
+      .leftJoin('Illust.tag', 'tag')
+      .leftJoin('Illust.remote_base', 'remote_base')
+
     let firstCause = true
     Object.keys(conditionObj)
       .forEach((colName, index) => {
@@ -131,7 +118,39 @@ export class IllustService {
           }
         }
       })
-    firstCause = true
+
+    return querybuilder
+  }
+
+  /**
+   * Illust类经过queryBuilder的标准查询
+   * @param conditionObj 形如"类.字段:[值1,值2]"的对象
+   * @param limit 分页大小, 不分页则输入-1, 默认为100
+   * @param offset 页偏移, 仅当limit不为-1时有效, 默认为0
+   * @param orderAs 形如"类.字段:正逆序"的对象
+   * @returns Illust标准查询结果
+   */
+  async getIllusts(
+    conditionObj: FilterConditionObj = {},
+    limit: number = 100,
+    offset: number = 0,
+    orderAs: FilterSortObj = {},
+  ) {
+    let querybuilder: SelectQueryBuilder<Illust> = this.illustRepository
+      .createQueryBuilder()
+      .leftJoinAndSelect('Illust.meta', 'meta')
+      .leftJoinAndSelect('Illust.poly', 'poly')
+      .leftJoinAndSelect('Illust.tag', 'tag')
+      .leftJoinAndSelect('Illust.remote_base', 'remote_base')
+      .where((qb) => {
+        const querybuilder = this.buildIllustQueryChain(conditionObj,
+          qb.subQuery()
+            .select('Illust.id')
+            .from(Illust, 'Illust'))
+
+        return `Illust.id IN ${querybuilder.getQuery()}`
+      })
+    let firstCause = true
     Object.keys(orderAs).forEach((colName) => {
       if (firstCause) {
         querybuilder = querybuilder.orderBy(colName, orderAs[colName])
@@ -156,52 +175,11 @@ export class IllustService {
    * @returns Illust标准计数结果, 可从count中解构
    */
   async getIllustsCount(conditionObj: FilterConditionObj = {}) {
-    let querybuilder: SelectQueryBuilder<Illust> = this.illustRepository
-      .createQueryBuilder()
-      .select('COUNT(DISTINCT Illust.id)', 'count')
-      .leftJoin('Illust.meta', 'meta')
-      .leftJoin('Illust.poly', 'poly')
-      .leftJoin('Illust.tag', 'tag')
-      .leftJoin('Illust.remote_base', 'remote_base')
-    let firstCause = true
-    Object.keys(conditionObj)
-      .forEach((colName, index) => {
-        let param1: string
-        let param2: object
-        if (Array.isArray(conditionObj[colName]) && conditionObj[colName].length) {
-          param1 = `(${colName} IN (:...row${index}))`
-          param2 = {
-            [`row${index}`]: conditionObj[colName],
-          }
-        }
-        else if (colName === 'AR') {
-          if (conditionObj[colName] !== 'all')
-            param1 = `meta.width ${conditionObj.AR === 'horizontal' ? '>' : '<'}= meta.height`
-        }
-        else if (colName === 'meta.pid' || colName === 'meta.author_id') {
-          if (conditionObj[colName]) {
-            param1 = `(${colName} = :row${index})`
-            param2 = {
-              [`row${index}`]: `${conditionObj[colName]}`,
-            }
-          }
-        }
-        else if (typeof conditionObj[colName] === 'string' && conditionObj[colName]) {
-          param1 = `(${colName} LIKE :row${index})`
-          param2 = {
-            [`row${index}`]: `%${conditionObj[colName]}%`,
-          }
-        }
-        if (param1) {
-          if (firstCause) {
-            querybuilder = querybuilder.where(param1, param2)
-            firstCause = false
-          }
-          else {
-            querybuilder = querybuilder.andWhere(param1, param2)
-          }
-        }
-      })
+    const querybuilder: SelectQueryBuilder<Illust> = this.buildIllustQueryChain(conditionObj,
+      this.illustRepository
+        .createQueryBuilder()
+        .select('COUNT(DISTINCT Illust.id)', 'count'),
+    )
     const results: { count: number } = await querybuilder.getRawOne()
     // dont use getCount()!! That will query and transfer all data that is too large.
     return results
@@ -508,21 +486,36 @@ export class IllustService {
     for (const illust of illusts.dtos) {
       let targetIllust: Illust
       if (illust.dto.id) {
-        targetIllust = await this.illustRepository.findOneBy({
-          id: illust.dto.id,
+        targetIllust = await this.illustRepository.findOne({
+          where: {
+            id: illust.dto.id,
+          },
+          relations: {
+            poly: true,
+          },
         })
       }
       else if (illust.dto.meta) {
-        targetIllust = await this.illustRepository.findOneBy({
-          meta: {
-            pid: illust.dto.meta.pid,
-            page: illust.dto.meta.page,
+        targetIllust = await this.illustRepository.findOne({
+          where: {
+            meta: {
+              pid: illust.dto.meta.pid,
+              page: illust.dto.meta.page,
+            },
+          },
+          relations: {
+            poly: true,
           },
         })
       }
       else if (illust.dto.remote_endpoint) {
-        targetIllust = await this.illustRepository.findOneBy({
-          remote_endpoint: illust.dto.remote_endpoint,
+        targetIllust = await this.illustRepository.findOne({
+          where: {
+            remote_endpoint: illust.dto.remote_endpoint,
+          },
+          relations: {
+            poly: true,
+          },
         })
       }
       if (!targetIllust) {
@@ -533,19 +526,26 @@ export class IllustService {
         })
       }
       else {
-        if (!targetPoly.illusts.find(value => value.id === targetIllust.id)) {
+        if (targetPoly.illusts.some(value => value.id === targetIllust.id)) {
+          resp_list.push({
+            bid: illust.bid,
+            status: 'conflict',
+            message: 'EXIST Illust.',
+          })
+        }
+        else if (targetIllust.poly && targetIllust.poly.some(value => value.parent === targetPoly.parent)) {
+          resp_list.push({
+            bid: illust.bid,
+            status: 'conflict',
+            message: 'Illust Already In Other Poly With Same Parent.',
+          })
+        }
+        else {
           targetPoly.illusts.push(targetIllust)
           resp_list.push({
             bid: illust.bid,
             status: 'success',
             message: 'OK',
-          })
-        }
-        else {
-          resp_list.push({
-            bid: illust.bid,
-            status: 'conflict',
-            message: 'EXIST Illust.',
           })
         }
       }

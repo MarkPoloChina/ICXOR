@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import type { IllustObj } from '@render/ts/interface/illustObj'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  tableData: Array<any>,
+  tableData: Array as () => IllustObj[],
   loading: Boolean,
-  currentSelected: Object,
+  currentSelected: Object as () => IllustObj | null,
 })
 
 const emits = defineEmits(['selectChange', 'popupContext'])
@@ -40,17 +41,17 @@ watch(
     deep: false,
   },
 )
-function handleCurrentChange(val) {
+function handleCurrentChange(val: IllustObj) {
   emits('selectChange', val)
 }
-function handleContextDeteched(row, column, event: Event) {
+function handleContextDeteched(row: IllustObj, _column, event: Event) {
   event.preventDefault()
   emits('popupContext', row)
 }
-function handleSelect(selection, row) {
+function handleSelect(_selection: IllustObj[], row: IllustObj) {
   row.checked = !row.checked
 }
-function handleSelectAll(selection) {
+function handleSelectAll(selection: IllustObj[]) {
   props.tableData.forEach((item) => {
     item.checked = selection.length !== 0
   })

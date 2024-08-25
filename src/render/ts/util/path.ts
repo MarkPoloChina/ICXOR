@@ -5,15 +5,13 @@ import { FilenameResolver } from './filename'
 const { ipcSendSync } = window.electron
 const STORE_PATH = ipcSendSync('app:getPath', null)
 
-const ihs_base = store.state.useLocal
-  ? store.state.localIHS
-  : store.state.remoteIHS
+const ihs_base_local = store.state.localIHS
+
+const ihs_base_remote = store.state.remoteIHS
 
 const useLocal = store.state.useLocal
 
 const local_base = store.state.localDiskRoot
-
-const serverMode = store.state.modeServer
 
 const local_base_map = store.state.localDiskMap
 
@@ -44,87 +42,58 @@ export class PathHelper {
 
 export class UrlGenerator {
   static getBlobUrl(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original'): string {
-    if (!serverMode && obj.remote_base.type !== 'cos')
-      return this.getBlobUrlLocal(obj, type)
-    if (obj.remote_base.type === 'pixiv') {
-      if (type === 'original' || type === 's_large') {
-        if (useLocal) {
-          if (obj.remote_endpoint && obj.remote_base.origin_url) {
-            return `${ihs_base}${obj.remote_base.origin_url}/${encodeURIComponent(
-          obj.remote_endpoint,
-        )}`
-          }
-          else if (obj.meta.original_url) {
-            return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
-          }
-          else {
-            return this.getPixivUrlCat(obj.meta.pid, obj.meta.page)
-          }
-        }
-        else {
-          if (obj.meta.original_url) {
-            return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
-          }
-          else if (obj.remote_endpoint && obj.remote_base.origin_url) {
-            return `${ihs_base}${obj.remote_base.origin_url}/${encodeURIComponent(
-            obj.remote_endpoint,
-          )}`
-          }
-          else {
-            return this.getPixivUrlCat(obj.meta.pid, obj.meta.page)
-          }
-        }
-      }
-      else {
-        if (obj.thumb_endpoint && obj.remote_base.thum_url) {
-          return `${ihs_base}${obj.remote_base.thum_url}/${encodeURIComponent(
-            obj.thumb_endpoint,
-          )}`
-        }
-        else if (obj.meta.original_url) {
-          return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
-        }
-        else { return this.getBlobUrl(obj, 'original') }
-      }
-    }
-    else {
-      if (type !== 'original' && type !== 's_large' && obj.remote_base.thum_url && obj.thumb_endpoint) {
-        return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
-          obj.remote_base.thum_url
-        }/${encodeURIComponent(obj.thumb_endpoint)}`
-      }
-      else {
-        return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
-          obj.remote_base.origin_url
-        }/${encodeURIComponent(obj.remote_endpoint)}`
-      }
-    }
-  }
-
-  static getBlobUrlLocal(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original'): string {
-    if (obj.remote_base.type === 'pixiv') {
-      if (type === 'original' || type === 's_large') {
+    if (type === 'original' || type === 's_large') {
+      if (useLocal) {
         if (obj.remote_endpoint && local_base_map[obj.remote_base.name]?.original)
-          return `icxorimg://${local_base}${local_base_map[obj.remote_base.name].original}/${obj.remote_endpoint}`
-        else if (obj.meta.original_url)
+          return this.getDiskOriginUrl(obj)
+        else if (ihs_base_local && obj.remote_endpoint && obj.remote_base.origin_url)
+          return this.getRemoteOriginUrl(obj, ihs_base_local)
+        else if (obj.meta?.original_url)
           return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
-        else
+        else if (obj.meta)
           return this.getPixivUrlCat(obj.meta.pid, obj.meta.page)
       }
       else {
-        if (obj.thumb_endpoint && local_base_map[obj.remote_base.name]?.thumbnail)
-          return `icxorimg://${local_base}${local_base_map[obj.remote_base.name].thumbnail}/${obj.thumb_endpoint}`
-        else if (obj.meta.original_url)
+        if (obj.meta?.original_url)
           return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
-        else return this.getBlobUrlLocal(obj, 'original')
+        else if (ihs_base_remote && obj.remote_endpoint && obj.remote_base.origin_url)
+          return this.getRemoteOriginUrl(obj, ihs_base_remote)
+        else if (obj.meta)
+          return this.getPixivUrlCat(obj.meta.pid, obj.meta.page)
       }
     }
     else {
-      if (type !== 'original' && type !== 's_large' && local_base_map[obj.remote_base.name]?.thumbnail && obj.thumb_endpoint)
-        return `icxorimg://${local_base}${local_base_map[obj.remote_base.name]?.thumbnail}/${obj.thumb_endpoint}`
-      else
-        return `icxorimg://${local_base}${local_base_map[obj.remote_base.name]?.original}/${obj.remote_endpoint}`
+      if (useLocal && obj.thumb_endpoint && local_base_map[obj.remote_base.name]?.thumbnail)
+        return this.getDiskThumbUrl(obj)
+      else if (useLocal && ihs_base_local && obj.thumb_endpoint && obj.remote_base.thum_url)
+        return this.getRemoteThumbUrl(obj, ihs_base_local)
+      else if (ihs_base_remote && obj.thumb_endpoint && obj.remote_base.thum_url)
+        return this.getRemoteThumbUrl(obj, ihs_base_remote)
+      else if (obj.meta?.original_url)
+        return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
+      else return this.getBlobUrl(obj, 'original')
     }
+    return ''
+  }
+
+  static getRemoteOriginUrl(obj: IllustObj, ihs_base: string) {
+    return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
+      obj.remote_base.origin_url
+    }/${encodeURIComponent(obj.remote_endpoint)}`
+  }
+
+  static getRemoteThumbUrl(obj: IllustObj, ihs_base: string) {
+    return `${obj.remote_base.type === 'cos' ? store.state.cos : ihs_base}${
+      obj.remote_base.thum_url
+    }/${encodeURIComponent(obj.thumb_endpoint)}`
+  }
+
+  static getDiskOriginUrl(obj: IllustObj) {
+    return `icxorimg://s/?u=${encodeURIComponent(`${local_base}${local_base_map[obj.remote_base.name]?.original}${obj.remote_endpoint}`)}`
+  }
+
+  static getDiskThumbUrl(obj: IllustObj) {
+    return `icxorimg://s/?u=${encodeURIComponent(`${local_base}${local_base_map[obj.remote_base.name]?.thumbnail}${obj.thumb_endpoint}`)}`
   }
 
   static getPixivUrlProxy(url: string) {

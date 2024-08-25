@@ -8,7 +8,6 @@ import { UtilDate } from '@render/ts/util/date'
 
 const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
-  modeServer: true,
   useLocal: false,
   theme: 'system',
 })
@@ -46,8 +45,8 @@ async function getCacheSize() {
 }
 function clearCache() {
   ElMessageBox.confirm('将清空全部缓存，确认？', 'Warning', {
-    confirmButtonText: 'OK',
-    cancelButtonText: 'Cancel',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
     type: 'warning',
   })
     .then(async () => {
@@ -98,18 +97,22 @@ async function upload() {
     }
     ElMessageBox.confirm(`确认时间戳: 本地修改时间:${new Date(timestamp.local).toLocaleString()} ; 云端修改时间:${timestamp.cloud === -1 ? ' - ' : new Date(timestamp.cloud).toLocaleString()}。${timestamp.local < timestamp.cloud ? '注意!云端比本地更新' : ''}`, 'Warning',
       {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
         type: 'warning',
       }).then(async () => {
+      const ei = ElMessage.info({
+        message: '上传中, 请勿关闭窗口',
+        duration: 0,
+      })
       try {
-        ElMessage.info('上传中, 请勿关闭窗口')
         await ipcInvoke('cs:upload')
         ElMessage.success('上传成功')
       }
       catch (error) {
         ElMessage.error(`上传失败: ${error}`)
       }
+      ei.close()
     }).catch(() => {})
   }
   catch (error) {
@@ -129,18 +132,22 @@ async function download() {
     }
     ElMessageBox.confirm(`确认时间戳: 本地修改时间:${new Date(timestamp.local).toLocaleString()} ; 云端修改时间:${new Date(timestamp.cloud).toLocaleString()}。${timestamp.local > timestamp.cloud ? '注意!本地比云端更新' : ''}`, 'Warning',
       {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
         type: 'warning',
       }).then(async () => {
+      const ei = ElMessage.info({
+        message: '下载中, 请勿关闭窗口',
+        duration: 0,
+      })
       try {
-        ElMessage.info('下载中, 请勿关闭窗口')
         await ipcInvoke('cs:download')
         ElMessage.success('下载成功')
       }
       catch (error) {
         ElMessage.error(`下载失败: ${error}`)
       }
+      ei.close()
     }).catch(() => {})
   }
   catch (error) {
@@ -254,22 +261,11 @@ async function download() {
         </div>
         <div class="form-block">
           <el-form :model="configForm" label-width="100px" style="width: 100%">
-            <el-form-item label="主模式">
+            <el-form-item label="本地模式">
               <el-switch
-                v-model="configForm.modeServer"
-                active-text="IHS文件服务器"
-                inactive-text="磁盘"
+                v-model="configForm.useLocal"
               />
             </el-form-item>
-            <template v-if="configForm.modeServer">
-              <el-form-item label="IHS模式">
-                <el-switch
-                  v-model="configForm.useLocal"
-                  active-text="内网"
-                  inactive-text="公网"
-                />
-              </el-form-item>
-            </template>
           </el-form>
         </div>
       </el-scrollbar>

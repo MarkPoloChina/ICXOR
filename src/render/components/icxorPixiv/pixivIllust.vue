@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, toRaw, watch } from 'vue'
-import { Download, Picture, Search, Star } from '@element-plus/icons-vue'
+import { Download, Lock, Picture, Search, Star, Unlock } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { API } from '@render/ts/api'
@@ -18,6 +18,7 @@ const maxpage = ref(10000)
 const isLoading = ref(false)
 const isImgLoading = ref(false)
 const illustObj = ref<PixivIllust>(null)
+const isPrivate = ref(false)
 watch(
   () => form.page,
   (v) => {
@@ -76,7 +77,7 @@ function handleSearch(_pid, _page) {
     })
 }
 function handleBookmark() {
-  API.togglePixivBookmark(illustObj.value.id, !illustObj.value.is_bookmarked)
+  API.togglePixivBookmark(illustObj.value.id, !illustObj.value.is_bookmarked, isPrivate.value)
     .then(() => {
       illustObj.value.is_bookmarked = !illustObj.value.is_bookmarked
       ElMessage.success(`${!illustObj.value.is_bookmarked ? '取消' : ''}收藏成功`)
@@ -165,6 +166,12 @@ defineExpose({ handleSearchByLink })
             direction="vertical"
           >
             <template #extra>
+              <el-switch
+                v-model="isPrivate"
+                inline-prompt
+                :active-icon="Lock"
+                :inactive-icon="Unlock"
+              />
               <el-button
                 :plain="!illustObj.is_bookmarked"
                 :icon="Star"
@@ -206,7 +213,7 @@ defineExpose({ handleSearchByLink })
             </el-descriptions-item>
             <el-descriptions-item label="限制级">
               <el-tag v-if="illustObj.x_restrict === 0" type="success">
-                普通
+                全年龄
               </el-tag>
               <el-tag v-else-if="illustObj.x_restrict === 1" type="warning">
                 R-18

@@ -103,8 +103,8 @@ function handleUpload() {
     `将${selectedList.length}个项目进行上传，确认？`,
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   )

@@ -41,12 +41,6 @@ const options = reactive({
   'remote_base.id': [],
   'illust.date': [],
   'illust.remote_endpoint': [],
-  'poly.type': [
-    {
-      value: 'picolt',
-      label: 'Picolt',
-    },
-  ],
   'AR': [
     {
       value: 'all',
@@ -106,6 +100,7 @@ onMounted(() => {
   getTypeOptions()
   getDateOptions()
   getTagsOptions()
+  getPolyOptions()
 })
 async function getTagsOptions() {
   const data = await API.getTags()
@@ -132,34 +127,30 @@ async function getDateOptions() {
     })
   })
 }
-async function getPolyOptions(val) {
+async function getPolyOptions() {
   polyOptions.value.length = 0
   filterCondition['poly.parent'] = []
   filterCondition['poly.name'] = []
-  if (!val)
-    return
-  for (const p of val) {
-    const polies = await API.getPoly(p)
-    polies.forEach((poly) => {
-      let index = polyOptions.value.findIndex((val) => {
-        return val.value === poly.parent
-      })
-      if (index === -1) {
-        polyOptions.value.push({
-          value: poly.parent,
-          label: poly.parent,
-          children: [],
-        })
-        index = polyOptions.value.length - 1
-      }
-      polyOptions.value[index].children.push({
-        value: poly.name,
-        label: poly.name,
-      })
+  const polies = await API.getPoly('picolt')
+  polies.forEach((poly) => {
+    let index = polyOptions.value.findIndex((val) => {
+      return val.value === poly.parent
     })
-  }
+    if (index === -1) {
+      polyOptions.value.push({
+        value: poly.parent,
+        label: poly.parent,
+        children: [],
+      })
+      index = polyOptions.value.length - 1
+    }
+    polyOptions.value[index].children.push({
+      value: poly.name,
+      label: poly.name,
+    })
+  })
 }
-function handlePolyChange(val) {
+function handlePolyChange(val: string[][]) {
   filterCondition['poly.parent'] = []
   filterCondition['poly.name'] = []
   val.forEach((item) => {
@@ -173,6 +164,8 @@ async function handleClear() {
   await getTypeOptions()
   await getDateOptions()
   await getTagsOptions()
+  await getPolyOptions()
+  polyValue.value = null
   filterCondition.AR = 'all'
   Object.keys(filterCondition)
     .filter(value => value !== 'AR')
@@ -213,27 +206,12 @@ async function handleClear() {
             </el-select>
           </div>
           <div>
-            <el-select
-              v-model="filterCondition['poly.type']"
-              placeholder="选择聚合类型"
-              multiple
-              @change="getPolyOptions"
-            >
-              <el-option
-                v-for="item in options['poly.type']"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </div>
-          <div v-if="filterCondition['poly.type'][0]">
             <el-cascader
               v-model="polyValue"
               :options="polyOptions"
               :props="{ multiple: true }"
               :show-all-levels="false"
-              placeholder="选择聚合"
+              placeholder="选择PICOLT"
               @change="handlePolyChange"
             />
           </div>

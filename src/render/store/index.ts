@@ -6,7 +6,6 @@ export default createStore({
   state: {
     username: 'MarkPoloChauvet',
     theme: 'system',
-    modeServer: true,
     localIHS: '',
     remoteIHS: '',
     localDiskRoot: '',

@@ -30,8 +30,8 @@ function handleDeleteTag(row) {
     '删除本标签，确认？',
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   ).then(() => {

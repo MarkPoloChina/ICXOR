@@ -137,9 +137,9 @@ export class PixivApiService {
     return await pixivApi.ugoira.metadata({ illust_id: Number(pid) })
   }
 
-  async bookmarkIllust(pid: number | string) {
+  async bookmarkIllust(pid: number | string, isPrivate = false) {
     checkIfAvailable()
-    return await pixivApi.illust.bookmarkIllust({ illust_id: Number(pid), restrict: 'public' })
+    return await pixivApi.illust.bookmarkIllust({ illust_id: Number(pid), restrict: isPrivate ? 'private' : 'public' })
   }
 
   async unbookmarkIllust(pid: number | string) {

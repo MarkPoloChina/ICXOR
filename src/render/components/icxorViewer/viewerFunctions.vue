@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ArrowLeftBold, ArrowRightBold } from '@element-plus/icons-vue'
+import { ArrowLeftBold, ArrowRightBold, Grid, List, StarFilled } from '@element-plus/icons-vue'
 import { computed, reactive, watch } from 'vue'
 
 const props = defineProps({
   illustCount: Number,
+  selectionCount: Number,
   curPage: Number,
   pageSize: Number,
 })
@@ -42,17 +43,28 @@ watch(viewerController, (val) => {
 <template>
   <div class="viewer-func">
     <div class="viewer-controller">
-      <el-radio-group v-model="viewerController.type">
-        <el-radio label="grid">
-          网格
-        </el-radio>
-        <el-radio label="table">
-          表格
-        </el-radio>
-        <el-radio label="focus">
-          聚焦
-        </el-radio>
-      </el-radio-group>
+      <el-button-group
+        style="margin-right: 5px"
+      >
+        <el-button
+          :type="viewerController.type === 'grid' ? 'primary' : 'default'"
+          :icon="Grid"
+          size="small"
+          @click="viewerController.type = 'grid'"
+        />
+        <el-button
+          :type="viewerController.type === 'table' ? 'primary' : 'default'"
+          :icon="List"
+          size="small"
+          @click="viewerController.type = 'table'"
+        />
+        <el-button
+          :type="viewerController.type === 'focus' ? 'primary' : 'default'"
+          :icon="StarFilled"
+          size="small"
+          @click="viewerController.type = 'focus'"
+        />
+      </el-button-group>
       <el-button-group
         v-if="viewerController.type === 'focus'"
         style="margin-right: 5px"
@@ -70,16 +82,21 @@ watch(viewerController, (val) => {
           @click="emit('focusUp')"
         />
       </el-button-group>
-      <el-pagination
-        v-model:current-page="writableCurPage"
-        v-model:page-size="writablePageSize"
-        background
-        layout="total, sizes, prev, pager, next"
-        :total="illustCount"
-        :pager-count="5"
-        :page-sizes="[100, 1000]"
-        small
-      />
+      <div style="display: flex;align-items: center;">
+        <div v-if="selectionCount" class="selection">
+          {{ selectionCount }} 条已选&nbsp;/&nbsp;
+        </div>
+        <el-pagination
+          v-model:current-page="writableCurPage"
+          v-model:page-size="writablePageSize"
+          background
+          layout="total, sizes, prev, pager, next"
+          :total="illustCount"
+          :pager-count="5"
+          :page-sizes="[100, 1000]"
+          small
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -95,8 +112,9 @@ watch(viewerController, (val) => {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    :deep(.el-radio) {
-      margin-right: 10px;
+    .selection {
+      font-size: 12px;
+      color: var(--el-text-color-regular);
     }
   }
 }

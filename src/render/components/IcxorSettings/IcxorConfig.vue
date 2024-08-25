@@ -6,11 +6,9 @@ import { ElMessage } from 'element-plus'
 
 const configForm = reactive({
   username: '',
-  modeServer: true,
   localIHS: '',
   remoteIHS: '',
   localDiskRoot: '',
-  useLocal: false,
   cos: '',
   mpsApiUrl: '',
   pixivToken: '',

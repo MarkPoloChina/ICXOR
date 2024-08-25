@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { NestFactory } from '@nestjs/core'
 import {
   BrowserWindow,
@@ -50,6 +51,7 @@ async function createWindow() {
     width: 1200,
     height: 800,
     minWidth: 1000,
+    minHeight: 650,
     webPreferences: {
       contextIsolation: true,
       preload: join(__dirname, '../preload/index.js'),
@@ -407,7 +409,7 @@ function afterReady() {
   autoUpdater.autoDownload = false
 
   protocol.handle('icxorimg', request =>
-    net.fetch(`file://${request.url.slice('icxorimg://'.length - 1)}`))
+    net.fetch(pathToFileURL(decodeURIComponent(request.url.slice('icxorimg://s/?u='.length))).toString()))
 }
 
 async function electronAppInit() {

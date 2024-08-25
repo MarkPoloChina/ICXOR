@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import MetaForm from '@render/components/share/form/metaForm.vue'
 import PolyForm from '@render/components/share/form/polyForm.vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
 import type { BatchLog } from '@render/ts/interface/batchLog'
@@ -12,18 +12,20 @@ import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import IllustTodayForm from '@render/components/share/form/illustTodayForm.vue'
 import type { IllustObj } from '@render/ts/interface/illustObj'
 import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
+import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
+import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 import BatchLogDrawer from '../share/drawer/batchLogDrawer.vue'
 import ViewerGrid from './main/viewerGrid.vue'
 import ViewerFocus from './main/viewerFocus.vue'
 import ViewerTable from './main/viewerTable.vue'
 
 const props = defineProps({
-  filter: Object,
-  sorter: Object,
-  viewerType: String,
+  filter: Object as () => FilterConditionObj,
+  sorter: Object as () => FilterSortObj,
+  viewerType: String as () => 'focus' | 'grid' | 'table',
   curPage: Number,
   pageSize: Number,
-  currentSelected: Object,
+  currentSelected: Object as () => IllustObj | null,
 })
 
 const emit = defineEmits([
@@ -31,6 +33,7 @@ const emit = defineEmits([
   'update:pageSize',
   'update:currentSelected',
   'update:illust-count',
+  'update:selection-count',
   'update:star',
 ])
 const { ipcRemoveAll, ipcOnce, ipcSend, ipcInvoke, downloadTo }
@@ -58,6 +61,11 @@ const writablePageSize = computed({
 })
 const isLoading = ref(false)
 const illustList = ref<IllustObj[]>([])
+watch(illustList, () => {
+  emit('update:selection-count', illustList.value.filter(v => v.checked).length)
+}, {
+  deep: true,
+})
 const illustCount = ref(0)
 watch(illustCount, (val) => {
   emit('update:illust-count', val)
@@ -148,7 +156,7 @@ function handleUpdate(addition: {
   star?: number
   tag?: Array<{ name: string; type: string }>
 }) {
-  const waitingOperateDto = []
+  const waitingOperateDto: IllustObj[] = []
   if (!chooseAll.update && currentOperating.value) {
     waitingOperateDto.push(currentOperating.value)
   }
@@ -166,8 +174,8 @@ function handleUpdate(addition: {
     `将为${waitingOperateDto.length}个项目进行更新，确认？`,
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   )
@@ -195,17 +203,24 @@ function handleUpdate(addition: {
           }
         }),
       )
+      ElMessage.info('开始批处理')
       API.updateIllusts(dto)
         .then((resp: Array<any>) => {
           batchLogs.value[idx].resp = resp
           batchLogs.value[idx].status = 'done'
-          ElMessage.success('一项置元批处理操作成功')
+          ElNotification.success({
+            message: '一项置元批处理操作成功',
+            duration: 0,
+          })
           getIllustsAndCount()
           metaForm.value.clearForm()
         })
         .catch((err) => {
           batchLogs.value[idx].status = 'reject'
-          ElMessage.error(`一项置元批处理错误: ${err}`)
+          ElNotification.error({
+            message: `一项置元批处理错误: ${err}`,
+            duration: 0,
+          })
         })
     })
     .catch(() => {})
@@ -216,7 +231,7 @@ function handlePoly(polyOption: {
   parent: string
   name: string
 }) {
-  const waitingOperateDto = []
+  const waitingOperateDto: IllustObj[] = []
   if (!chooseAll.poly && currentOperating.value) {
     waitingOperateDto.push(currentOperating.value)
   }
@@ -231,11 +246,11 @@ function handlePoly(polyOption: {
     return
   }
   ElMessageBox.confirm(
-    `将为${waitingOperateDto.length}个项目创建或添加聚合，确认？`,
+    `将为${waitingOperateDto.length}个项目创建或添加PICOLT聚合，确认？`,
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   )
@@ -259,17 +274,24 @@ function handlePoly(polyOption: {
         }),
       )
       dto.polyBase = { ...polyOption }
+      ElMessage.info('开始批处理')
       API.addPoly(dto)
         .then((resp) => {
           batchLogs.value[idx].resp = resp
           batchLogs.value[idx].status = 'done'
-          ElMessage.success('一项聚合批处理操作成功')
+          ElNotification.success({
+            message: '一项PICOLT聚合批处理操作成功',
+            duration: 0,
+          })
           getIllustsAndCount()
           polyForm.value.clearForm()
         })
         .catch((err) => {
           batchLogs.value[idx].status = 'reject'
-          ElMessage.error(`一项聚合批处理错误: ${err}`)
+          ElNotification.error({
+            message: `一项PICOLT聚合批处理错误: ${err}`,
+            duration: 0,
+          })
         })
     })
     .catch(() => {})
@@ -284,6 +306,10 @@ async function handleDownload() {
   if (!dir)
     return
   const url = UrlGenerator.getBlobUrl(currentOperating.value, 'original')
+  const ei = ElMessage.info({
+    message: '正在下载',
+    duration: 0,
+  })
   try {
     await downloadTo(
       url,
@@ -298,6 +324,7 @@ async function handleDownload() {
   catch (err) {
     ElMessage.error('下载失败')
   }
+  ei.close()
 }
 
 async function handleDownloadBatch() {
@@ -320,7 +347,7 @@ async function handleDownloadBatch() {
   const idx = batchLogs.value.length
   batchLogs.value.push(batchLog)
   ElMessage.info('开始批处理')
-  const process = async (obj, index: number) => {
+  for (const [index, obj] of waitingOperateDto.entries()) {
     const url = UrlGenerator.getBlobUrl(obj, 'original')
     try {
       await downloadTo(
@@ -343,15 +370,15 @@ async function handleDownloadBatch() {
       batchLogs.value[idx].currentIdx++
     }
   }
-  const promises = waitingOperateDto.map((obj, index) => process(obj, index))
-  Promise.all(promises).then(() => {
-    batchLogs.value[idx].status = 'done'
-    ElMessage.success(`一项下载批处理完成, 其中${batchLogs.value[idx].resp.length}项失败`)
+  batchLogs.value[idx].status = 'done'
+  ElNotification.success({
+    message: `一项下载批处理完成, 其中${batchLogs.value[idx].resp.length}项失败`,
+    duration: 0,
   })
 }
 
 function handleFetch(chooseAll: boolean) {
-  const waitingOperateDto = []
+  const waitingOperateDto: IllustObj[] = []
   if (!chooseAll && currentOperating.value) {
     waitingOperateDto.push(currentOperating.value)
   }
@@ -369,12 +396,12 @@ function handleFetch(chooseAll: boolean) {
     `将为${waitingOperateDto.length}个项目抓取元，确认？`,
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   )
-    .then(() => {
+    .then(async () => {
       const batchLog: BatchLog = {
         total: waitingOperateDto.length,
         status: 'padding',
@@ -385,7 +412,8 @@ function handleFetch(chooseAll: boolean) {
       const idx = batchLogs.value.length
       batchLogs.value.push(batchLog)
       const dto = new BatchDto()
-      const process = async (ele, index) => {
+      ElMessage.info('开始批处理')
+      for (const [index, ele] of waitingOperateDto.entries()) {
         if (ele.meta) {
           try {
             const resp: PixivIllust = await API.getPixivInfo(ele.meta.pid)
@@ -427,30 +455,31 @@ function handleFetch(chooseAll: boolean) {
           })
         }
       }
-      const promises = waitingOperateDto.map((ele, index) =>
-        process(ele, index),
-      )
-      Promise.all(promises).then(() => {
-        API.updateIllusts(dto)
-          .then((resp) => {
-            batchLogs.value[idx].resp.push(...resp)
-            batchLog.status = 'done'
-            ElMessage.success('一项抓取元批处理完成')
-            getIllustsAndCount()
+      API.updateIllusts(dto)
+        .then((resp) => {
+          batchLogs.value[idx].resp.push(...resp)
+          batchLog.status = 'done'
+          ElNotification.success({
+            message: '一项抓取元批处理操作成功',
+            duration: 0,
           })
-          .catch((err) => {
-            batchLogs.value[idx].status = 'reject'
-            ElMessage.error(`一项抓取元批处理错误: ${err}`)
+          getIllustsAndCount()
+        })
+        .catch((err) => {
+          batchLogs.value[idx].status = 'reject'
+          ElNotification.error({
+            message: `一项抓取元批处理错误: ${err}`,
+            duration: 0,
           })
-      })
+        })
     })
     .catch(() => {})
 }
 
 function handleIT(info: { date: string; char: string; tags: string[] }) {
   ElMessageBox.confirm('为当前项目建立IT, 确认?', 'Warning', {
-    confirmButtonText: 'OK',
-    cancelButtonText: 'Cancel',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
     type: 'warning',
   })
     .then(() => {
@@ -497,8 +526,8 @@ function handleDelete(chooseAll: boolean) {
     `将永久删除${waitingOperateDto.length}个项目，确认？`,
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   )
@@ -512,16 +541,23 @@ function handleDelete(chooseAll: boolean) {
       }
       const idx = batchLogs.value.length
       batchLogs.value.push(batchLog)
+      ElMessage.info('开始批处理')
       API.deleteIllusts(waitingOperateDto.map(v => v.id))
         .then((resp) => {
           batchLogs.value[idx].resp = resp
           batchLogs.value[idx].status = 'done'
-          ElMessage.success('一项删除批处理请求成功')
+          ElNotification.success({
+            message: '一项删除批处理操作成功',
+            duration: 0,
+          })
           getIllustsAndCount()
         })
         .catch((err) => {
           batchLogs.value[idx].status = 'reject'
-          ElMessage.error(`一项删除批处理错误: ${err}`)
+          ElNotification.error({
+            message: `一项删除批处理错误: ${err}`,
+            duration: 0,
+          })
         })
     })
     .catch(() => {})
@@ -540,11 +576,11 @@ function handlePopupContext(row: IllustObj) {
       case '选定':
         row.checked = !row.checked
         break
-      case '加入聚合':
+      case '加入PICOLT':
         chooseAll.poly = false
         show.poly = true
         break
-      case '选定项加入聚合':
+      case '选定项加入PICOLT':
         chooseAll.poly = true
         show.poly = true
         break
@@ -594,7 +630,7 @@ function handlePopupContext(row: IllustObj) {
     },
     { type: 'separator' },
     {
-      label: '加入聚合',
+      label: '加入PICOLT',
     },
     {
       label: '置元',
@@ -604,7 +640,7 @@ function handlePopupContext(row: IllustObj) {
     },
     { type: 'separator' },
     {
-      label: '选定项加入聚合',
+      label: '选定项加入PICOLT',
     },
     {
       label: '选定项置元',

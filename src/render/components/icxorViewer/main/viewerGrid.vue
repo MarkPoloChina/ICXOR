@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { CircleCheck, Picture } from '@element-plus/icons-vue'
+import type { IllustObj } from '@render/ts/interface/illustObj'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  tableData: Array<any>,
+  tableData: Array as () => IllustObj[],
   selections: Array,
   loading: Boolean,
-  currentSelected: Object,
+  currentSelected: Object as () => IllustObj | null,
 })
-const emit = defineEmits(['update:selections', 'popupContext'])
+const emit = defineEmits(['update:selections', 'popupContext', 'selectChange', 'starChange'])
 const table = ref()
 const image404s = ref({})
 
@@ -22,9 +23,29 @@ watch(
     deep: false,
   },
 )
-function handleRightClick(event, obj) {
+function handleRightClick(event: MouseEvent, obj: IllustObj) {
   event.preventDefault()
   emit('popupContext', obj)
+}
+function scrollToCurrent() {
+  try {
+    document.getElementById(`img-grid-${props.currentSelected.id}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+  catch {}
+}
+watch(
+  () => props.currentSelected,
+  () => {
+    if (props.currentSelected)
+      scrollToCurrent()
+  },
+  {
+    deep: false,
+    immediate: true,
+  },
+)
+function openViwer() {
+  document.getElementById('img-fixed').click()
 }
 </script>
 
@@ -33,6 +54,7 @@ function handleRightClick(event, obj) {
     <div v-loading="loading" class="grid-group">
       <div
         v-for="(obj, index) in tableData"
+        :id="`img-grid-${obj.id}`"
         :key="index"
         :span="8"
         class="viewer-grid-container"
@@ -49,11 +71,12 @@ function handleRightClick(event, obj) {
               : ''
           }`"
           :src="image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 'large')"
-          :preview-src-list="[image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 's_large')]"
           fit="cover"
           lazy
           @error="image404s[obj.id] = true"
           @contextmenu="handleRightClick($event, obj)"
+          @dblclick="openViwer"
+          @click="emit('selectChange', obj)"
         >
           <template #error>
             <div class="image-slot">
@@ -64,6 +87,21 @@ function handleRightClick(event, obj) {
       </div>
     </div>
   </el-scrollbar>
+  <div v-if="currentSelected" style="display: none;">
+    <el-image
+      id="img-fixed"
+      :src="image404s[currentSelected.id] ? UrlGenerator.getBlobUrl(currentSelected, 'original') : UrlGenerator.getBlobUrl(currentSelected, 'large')"
+      :preview-src-list="[image404s[currentSelected.id] ? UrlGenerator.getBlobUrl(currentSelected, 'original') : UrlGenerator.getBlobUrl(currentSelected, 's_large')]"
+      preview-teleported
+      fit="cover"
+    >
+      <template #error>
+        <div class="image-slot">
+          <el-icon><Picture /></el-icon>
+        </div>
+      </template>
+    </el-image>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -111,6 +149,7 @@ function handleRightClick(event, obj) {
         left: 10px;
         width: 200px;
         height: 200px;
+        cursor: pointer;
         .image-slot {
           display: flex;
           justify-content: center;

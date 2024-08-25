@@ -6,7 +6,7 @@ import { computed, reactive, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
-  currentOperating: Object,
+  currentOperating: Object as () => IllustObj | null,
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -36,7 +36,7 @@ function handleConfirm() {
   dialogVisible.value = false
   emit('confirm', baseInfo)
 }
-watch(() => props.currentOperating, async (val: IllustObj) => {
+watch(() => props.currentOperating, async (val) => {
   baseInfo.tags.length = 0
   if (val && val.meta) {
     const info = await API.getPixivInfo(val.meta.pid)
@@ -76,8 +76,8 @@ defineExpose({ initForm })
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="handleConfirm"> Confirm </el-button>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleConfirm"> 确定 </el-button>
         </span>
       </template>
     </el-dialog>

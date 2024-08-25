@@ -128,7 +128,8 @@ function handleShowTable(log: BatchLog) {
 .log-container {
   .log-block {
     padding: 10px;
-    background-color: rgba(128, 128, 128, 0.15);
+    background-color: rgba(128, 128, 128, 0.08);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     height: 150px;
     width: calc(100% - 20px);
     border-radius: 8px;

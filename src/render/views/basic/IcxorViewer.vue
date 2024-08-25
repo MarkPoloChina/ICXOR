@@ -7,11 +7,12 @@ import { ref } from 'vue'
 
 const viewerMain = ref()
 const viewerInfo = ref()
-const viewerType = ref('table')
+const viewerType = ref<'table' | 'grid' | 'focus'>('table')
 const filter = ref({})
 const sorter = ref({ 'Illust.id': 'DESC' })
 const currentSelected = ref(null)
 const illustCount = ref(0)
+const selectionCount = ref(0)
 const curPage = ref(1)
 const pageSize = ref(100)
 </script>
@@ -36,6 +37,7 @@ const pageSize = ref(100)
             :sorter="sorter"
             :viewer-type="viewerType"
             @update:illust-count="illustCount = $event"
+            @update:selection-count="selectionCount = $event"
             @update:star="viewerInfo.handleStarChange($event)"
           />
         </div>
@@ -44,6 +46,7 @@ const pageSize = ref(100)
             v-model:curPage="curPage"
             v-model:page-size="pageSize"
             :illust-count="illustCount"
+            :selection-count="selectionCount"
             @update:viewer-type="viewerType = $event"
             @focus-up="viewerMain.handleFocusIndexChange('up')"
             @focus-down="viewerMain.handleFocusIndexChange('down')"

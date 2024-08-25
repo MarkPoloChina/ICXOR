@@ -61,7 +61,7 @@ async function startAction() {
 }
 function handleUpload() {
   if (!importOption.polyOption.name) {
-    ElMessage.error('至少应当填写聚合名')
+    ElMessage.error('至少应当填写PICOLT名')
     return
   }
   const selectedList = []
@@ -77,8 +77,8 @@ function handleUpload() {
     `将${selectedList.length}个项目进行聚合，确认？`,
     'Warning',
     {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning',
     },
   )
@@ -122,7 +122,7 @@ function handleUpload() {
     <el-alert type="info" show-icon :closable="false" style="flex: none">
       <template #title>
         识别Pixiv规则的文件名, 匹配对应的PID和Page,
-        或者仅尝试匹配末端，然后生成聚合。
+        或者仅尝试匹配末端，然后生成PICOLT聚合。
       </template>
     </el-alert>
     <div class="import-area">

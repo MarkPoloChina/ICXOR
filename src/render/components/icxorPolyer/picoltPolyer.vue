@@ -39,8 +39,8 @@ function getInfo(obj) {
 }
 function handleRemove(obj) {
   ElMessageBox.confirm('将从本聚合移除该图，确认？', 'Warning', {
-    confirmButtonText: 'OK',
-    cancelButtonText: 'Cancel',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
     type: 'warning',
   })
     .then(() => {
@@ -76,7 +76,29 @@ function handleRemove(obj) {
 function reload() {
   getData()
 }
-defineExpose({ reload })
+function removePoly() {
+  if (picolt.length === 0) {
+    ElMessage.error('无聚合')
+    return
+  }
+  ElMessageBox.confirm('将从本聚合移除所有图并删除聚合，确认？', 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      API.deletePoly(picolt[currentKey.value].id)
+        .then(() => {
+          ElMessage.success('移除成功')
+          reload()
+        })
+        .catch((err) => {
+          ElMessage.error(`错误: ${err}`)
+        })
+    })
+    .catch(() => {})
+}
+defineExpose({ reload, removePoly })
 </script>
 
 <template>
