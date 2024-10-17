@@ -55,8 +55,13 @@ export class DS {
     dir: string,
     isPixiv?: boolean,
   ): Promise<void> {
-    if (!await FS.isExists(path.join(dir, filename)))
-      await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir)
+    if (!await FS.isExists(path.join(dir, filename))) {
+      if (url.startsWith('icxorimg://')) {
+        url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
+        await FS.localCopy(url, path.join(dir, path.basename(decodeURIComponent(filename))))
+      }
+      else { await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir) }
+    }
   }
 
   public static async downloadFromIllustObj(

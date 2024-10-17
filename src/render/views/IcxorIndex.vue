@@ -2,7 +2,6 @@
 import { useDark } from '@vueuse/core'
 import {
   House,
-  MessageBox,
   PictureRounded,
   Setting,
   SuitcaseLine,
@@ -60,12 +59,6 @@ onMounted(async () => {
           <el-icon><PictureRounded /></el-icon>
           <template #title>
             视图
-          </template>
-        </el-menu-item>
-        <el-menu-item index="/poly">
-          <el-icon><MessageBox /></el-icon>
-          <template #title>
-            聚合
           </template>
         </el-menu-item>
         <el-menu-item index="/importer">

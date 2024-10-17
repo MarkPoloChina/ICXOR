@@ -8,6 +8,8 @@ export default createStore({
     theme: 'system',
     localIHS: '',
     remoteIHS: '',
+    picoltRemoteBase: '',
+    picoltLocalBase: '',
     localDiskRoot: '',
     cos: '',
     mpsApiUrl: '',

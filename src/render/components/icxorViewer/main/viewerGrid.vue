@@ -47,6 +47,9 @@ watch(
 function openViwer() {
   document.getElementById('img-fixed').click()
 }
+defineExpose({
+  openViwer,
+})
 </script>
 
 <template>
@@ -72,7 +75,7 @@ function openViwer() {
           }`"
           :src="image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 'large')"
           fit="cover"
-          lazy
+          loading="lazy"
           @error="image404s[obj.id] = true"
           @contextmenu="handleRightClick($event, obj)"
           @dblclick="openViwer"

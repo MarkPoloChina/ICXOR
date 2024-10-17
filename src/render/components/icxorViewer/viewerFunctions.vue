@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeftBold, ArrowRightBold, Grid, List, StarFilled } from '@element-plus/icons-vue'
+import { ArrowLeftBold, ArrowRightBold, Grid, List, Refresh, StarFilled } from '@element-plus/icons-vue'
 import { computed, reactive, watch } from 'vue'
 
 const props = defineProps({
@@ -15,9 +15,10 @@ const emit = defineEmits([
   'update:viewer-type',
   'focusUp',
   'focusDown',
+  'refresh',
 ])
 const viewerController = reactive({
-  type: 'table',
+  type: 'grid',
 })
 const writableCurPage = computed({
   get: () => {
@@ -43,28 +44,31 @@ watch(viewerController, (val) => {
 <template>
   <div class="viewer-func">
     <div class="viewer-controller">
-      <el-button-group
-        style="margin-right: 5px"
-      >
-        <el-button
-          :type="viewerController.type === 'grid' ? 'primary' : 'default'"
-          :icon="Grid"
-          size="small"
-          @click="viewerController.type = 'grid'"
-        />
-        <el-button
-          :type="viewerController.type === 'table' ? 'primary' : 'default'"
-          :icon="List"
-          size="small"
-          @click="viewerController.type = 'table'"
-        />
-        <el-button
-          :type="viewerController.type === 'focus' ? 'primary' : 'default'"
-          :icon="StarFilled"
-          size="small"
-          @click="viewerController.type = 'focus'"
-        />
-      </el-button-group>
+      <div>
+        <el-button style="margin-right: 5px" :icon="Refresh" circle @click="emit('refresh')" />
+        <el-button-group
+          style="margin-right: 5px"
+        >
+          <el-button
+            :type="viewerController.type === 'grid' ? 'primary' : 'default'"
+            :icon="Grid"
+            size="small"
+            @click="viewerController.type = 'grid'"
+          />
+          <el-button
+            :type="viewerController.type === 'table' ? 'primary' : 'default'"
+            :icon="List"
+            size="small"
+            @click="viewerController.type = 'table'"
+          />
+          <el-button
+            :type="viewerController.type === 'focus' ? 'primary' : 'default'"
+            :icon="StarFilled"
+            size="small"
+            @click="viewerController.type = 'focus'"
+          />
+        </el-button-group>
+      </div>
       <el-button-group
         v-if="viewerController.type === 'focus'"
         style="margin-right: 5px"

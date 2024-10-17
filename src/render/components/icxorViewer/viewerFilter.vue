@@ -2,8 +2,6 @@
 import { API } from '@render/ts/api'
 import { UtilDate } from '@render/ts/util/date'
 import {
-  ArrowLeftBold,
-  ArrowRightBold,
   Refresh,
 } from '@element-plus/icons-vue'
 
@@ -12,7 +10,6 @@ import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.d
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 
 const emit = defineEmits(['update:filter', 'update:sorter'])
-const show = ref(false)
 const filterCondition = reactive<FilterConditionObj>({
   'illust.remote_endpoint': '',
   'remote_base.id': [],
@@ -176,197 +173,191 @@ async function handleClear() {
     })
   filterSortKey.value = 'Illust.id'
   filterSortDesc.value = 'DESC'
+  emit('update:filter', filterCondition)
+  emit('update:sorter', filterSort.value)
 }
+defineExpose({ handleClear })
 </script>
 
 <template>
   <div class="container">
-    <div class="item-bottom">
-      <el-button
-        :icon="show ? ArrowLeftBold : ArrowRightBold"
-        circle
-        @click="show = !show"
-      />
-    </div>
-    <transition name="el-zoom-in-center">
-      <el-scrollbar v-if="show" class="filter-container">
-        <div class="filter">
-          <div>
-            <el-select
-              v-model="filterCondition['remote_base.id']"
-              placeholder="选择类型"
-              multiple
-            >
-              <el-option
-                v-for="item in options['remote_base.id']"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
-          </div>
-          <div>
-            <el-cascader
-              v-model="polyValue"
-              :options="polyOptions"
-              :props="{ multiple: true }"
-              :show-all-levels="false"
-              placeholder="选择PICOLT"
-              @change="handlePolyChange"
-            />
-          </div>
-          <div>
-            <el-select
-              v-model="filterCondition['illust.date']"
-              placeholder="选择入库时间"
-              multiple
-            >
-              <el-option
-                v-for="item in options['illust.date']"
-                :key="item.date"
-                :label="item.date"
-                :value="item.date"
-              />
-            </el-select>
-          </div>
-          <div>
-            <el-select
-              v-model="filterCondition['tag.name']"
-              multiple
-              filterable
-              allow-create
-              placeholder="填写筛选标签"
-            >
-              <el-option
-                v-for="item in options['tag.name']"
-                :key="item.id"
-                :label="`[${item.type}]${item.name}`"
-                :value="item.name"
-              />
-            </el-select>
-          </div>
-          <div>
-            <el-select
-              v-model="filterCondition['illust.star']"
-              placeholder="选择评级"
-              multiple
-            >
-              <el-option
-                v-for="item in 6"
-                :key="item - 1"
-                :label="`${item - 1}星`"
-                :value="item - 1"
-              >
-                <el-rate :model-value="item - 1" disabled />
-              </el-option>
-            </el-select>
-          </div>
-          <div
-            style="
-              margin-top: 25px;
-              padding-top: 25px;
-              border-top: 1px solid rgba(0, 0, 0, 0.1);
-            "
+    <el-scrollbar class="filter-container">
+      <div class="filter">
+        <div>
+          <el-select
+            v-model="filterCondition['remote_base.id']"
+            placeholder="选择类型"
+            multiple
           >
-            <el-select v-model="filterCondition.AR" placeholder="选择纵横比">
-              <el-option
-                v-for="item in options.AR"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-                {{ item.label }}
-              </el-option>
-            </el-select>
-          </div>
-          <div>
-            <el-input v-model="filterCondition['meta.pid']" placeholder="PID" />
-          </div>
-          <div>
-            <el-select
-              v-model="filterCondition['meta.author_id']"
-              filterable
-              allow-create
-              clearable
-              placeholder="UID"
-            >
-              <el-option
-                v-for="item in options['meta.author_id']"
-                :key="item.id"
-                :label="item.name"
-                :value="/^\[(\d+)\]/.exec(item.name)[1]"
-              />
-            </el-select>
-          </div>
-          <div>
-            <el-input
-              v-model="filterCondition['meta.author']"
-              placeholder="模糊作者名"
-              clearable
+            <el-option
+              v-for="item in options['remote_base.id']"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
             />
-          </div>
-          <div>
-            <el-input
-              v-model="filterCondition['meta.tags_str']"
-              placeholder="模糊Pixiv标签"
-              clearable
-            />
-          </div>
-          <div
-            style="
-              margin-top: 25px;
-              padding-top: 25px;
-              border-top: 1px solid rgba(0, 0, 0, 0.1);
-            "
-          >
-            <el-select
-              v-model="filterCondition['illust.remote_endpoint']"
-              filterable
-              allow-create
-              clearable
-              placeholder="模糊末端"
-            >
-              <el-option
-                v-for="item in options['illust.remote_endpoint']"
-                :key="item.id"
-                :label="item.name"
-                :value="item.name"
-              />
-            </el-select>
-          </div>
-          <div
-            style="
-              margin-top: 25px;
-              padding-top: 25px;
-              border-top: 1px solid rgba(0, 0, 0, 0.1);
-            "
-          >
-            <el-select v-model="filterSortKey" placeholder="选择排序规则">
-              <el-option
-                v-for="item in options.sortKey"
-                :key="item.value"
-                :label="`按${item.label}排序`"
-                :value="item.value"
-              >
-                {{ `按${item.label}排序` }}
-              </el-option>
-            </el-select>
-          </div>
-          <div>
-            <el-select v-model="filterSortDesc" placeholder="选择顺序">
-              <el-option
-                v-for="item in options.sortDesc"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-                {{ item.label }}
-              </el-option>
-            </el-select>
-          </div>
+          </el-select>
         </div>
-      </el-scrollbar>
-    </transition>
+        <div>
+          <el-cascader
+            v-model="polyValue"
+            :options="polyOptions"
+            :props="{ multiple: true }"
+            :show-all-levels="false"
+            placeholder="选择PICOLT"
+            @change="handlePolyChange"
+          />
+        </div>
+        <div>
+          <el-select
+            v-model="filterCondition['illust.date']"
+            placeholder="选择入库时间"
+            multiple
+          >
+            <el-option
+              v-for="item in options['illust.date']"
+              :key="item.date"
+              :label="item.date"
+              :value="item.date"
+            />
+          </el-select>
+        </div>
+        <div>
+          <el-select
+            v-model="filterCondition['tag.name']"
+            multiple
+            filterable
+            allow-create
+            placeholder="填写筛选标签"
+          >
+            <el-option
+              v-for="item in options['tag.name']"
+              :key="item.id"
+              :label="`[${item.type}]${item.name}`"
+              :value="item.name"
+            />
+          </el-select>
+        </div>
+        <div>
+          <el-select
+            v-model="filterCondition['illust.star']"
+            placeholder="选择评级"
+            multiple
+          >
+            <el-option
+              v-for="item in 6"
+              :key="item - 1"
+              :label="`${item - 1}星`"
+              :value="item - 1"
+            >
+              <el-rate :model-value="item - 1" disabled />
+            </el-option>
+          </el-select>
+        </div>
+        <div
+          style="
+              margin-top: 25px;
+              padding-top: 25px;
+              border-top: 1px solid rgba(0, 0, 0, 0.1);
+            "
+        >
+          <el-select v-model="filterCondition.AR" placeholder="选择纵横比">
+            <el-option
+              v-for="item in options.AR"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+              {{ item.label }}
+            </el-option>
+          </el-select>
+        </div>
+        <div>
+          <el-input v-model="filterCondition['meta.pid']" placeholder="PID" />
+        </div>
+        <div>
+          <el-select
+            v-model="filterCondition['meta.author_id']"
+            filterable
+            allow-create
+            clearable
+            placeholder="UID"
+          >
+            <el-option
+              v-for="item in options['meta.author_id']"
+              :key="item.id"
+              :label="item.name"
+              :value="/^\[(\d+)\]/.exec(item.name)[1]"
+            />
+          </el-select>
+        </div>
+        <div>
+          <el-input
+            v-model="filterCondition['meta.author']"
+            placeholder="模糊作者名"
+            clearable
+          />
+        </div>
+        <div>
+          <el-input
+            v-model="filterCondition['meta.tags_str']"
+            placeholder="模糊Pixiv标签"
+            clearable
+          />
+        </div>
+        <div
+          style="
+              margin-top: 25px;
+              padding-top: 25px;
+              border-top: 1px solid rgba(0, 0, 0, 0.1);
+            "
+        >
+          <el-select
+            v-model="filterCondition['illust.remote_endpoint']"
+            filterable
+            allow-create
+            clearable
+            placeholder="模糊末端"
+          >
+            <el-option
+              v-for="item in options['illust.remote_endpoint']"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name"
+            />
+          </el-select>
+        </div>
+        <div
+          style="
+              margin-top: 25px;
+              padding-top: 25px;
+              border-top: 1px solid rgba(0, 0, 0, 0.1);
+            "
+        >
+          <el-select v-model="filterSortKey" placeholder="选择排序规则">
+            <el-option
+              v-for="item in options.sortKey"
+              :key="item.value"
+              :label="`按${item.label}排序`"
+              :value="item.value"
+            >
+              {{ `按${item.label}排序` }}
+            </el-option>
+          </el-select>
+        </div>
+        <div>
+          <el-select v-model="filterSortDesc" placeholder="选择顺序">
+            <el-option
+              v-for="item in options.sortDesc"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+              {{ item.label }}
+            </el-option>
+          </el-select>
+        </div>
+      </div>
+    </el-scrollbar>
     <div class="item-bottom">
       <el-button :icon="Refresh" circle @click="handleClear" />
     </div>
@@ -378,10 +369,11 @@ async function handleClear() {
   height: 100%;
   @include Flex-C-JSB;
   .item-bottom {
-    margin: 10px 0 10px 0;
+    margin: 10px;
     flex: none;
   }
   .filter-container {
+    margin: 10px;
     .filter {
       > div {
         margin-bottom: 10px;

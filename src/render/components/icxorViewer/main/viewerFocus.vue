@@ -160,7 +160,7 @@ defineExpose({ handleIndexChange })
             ? UrlGenerator.getBlobUrl(obj, 'original')
             : UrlGenerator.getBlobUrl(obj, 'square_medium')"
           fit="cover"
-          lazy
+          loading="lazy"
           @error="image404s[obj.id] = true"
           @click="handleSelect(obj, index)"
           @contextmenu.prevent="handleRightClick($event, obj)"

@@ -19,7 +19,6 @@ watch(
   },
   {
     deep: true,
-    immediate: true,
   },
 )
 watch(
@@ -74,7 +73,6 @@ function handleSelectAll(selection: IllustObj[]) {
       @row-contextmenu="handleContextDeteched"
     >
       <el-table-column type="selection" width="40" />
-      <el-table-column prop="id" label="ID" :min-width="70" />
       <el-table-column prop="remote_base.name" label="类型" :min-width="70" />
       <el-table-column prop="star" label="评级" :width="150">
         <template #default="scope">
@@ -94,6 +92,7 @@ function handleSelectAll(selection: IllustObj[]) {
   height: 100%;
   .table {
     border-radius: 5px;
+    user-select: none;
   }
 }
 </style>

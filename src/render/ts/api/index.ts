@@ -237,6 +237,11 @@ export class API {
     return resp.data as DeleteResult
   }
 
+  static async updateRemotePoly(rp) {
+    const resp = await ax.put('/illust/poly', rp)
+    return resp.data as Poly
+  }
+
   static async getBookmark(isPrivate: boolean, existFilenames?: string[]) {
     const resp = await ax.get('/pixiv-api/pixiv-json/latest', {
       params: {

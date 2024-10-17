@@ -8,6 +8,7 @@ import { IllustService } from './illust.service'
 import { FilterConditionObj } from './dto/filter_condition_obj.dto'
 import { IllustTodayDto } from './dto/illust_today.dto'
 import { Tag } from './entities/tag.entities'
+import { Poly } from './entities/poly.entities'
 
 @Controller()
 export class IllustController {
@@ -91,6 +92,11 @@ export class IllustController {
   @IpcHandle('api:DELETE/illust/poly')
   deletePoly(@Payload() [{ polyId }]: [{ polyId: number }]) {
     return this.illustService.deletePoly(polyId)
+  }
+
+  @IpcHandle('api:PUT/illust/poly')
+  updateRemotePoly(@Payload() [, poly]: [any, poly: Poly]) {
+    return this.illustService.updateRemotePoly(poly)
   }
 
   @IpcHandle('api:GET/illust/poly/enum')

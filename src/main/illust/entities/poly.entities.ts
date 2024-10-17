@@ -21,6 +21,12 @@ export class Poly {
   @Column({ type: 'varchar', nullable: true })
   parent: string
 
+  @Column({ type: 'varchar', nullable: true })
+  remote_base: string
+
+  @Column({ type: 'varchar', nullable: true })
+  remote2x_base: string
+
   @ManyToMany(() => Illust, illust => illust.poly, {
     onDelete: 'CASCADE',
   })

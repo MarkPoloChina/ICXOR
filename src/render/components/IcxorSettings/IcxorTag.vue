@@ -54,7 +54,6 @@ function handleDeleteTag(row) {
     </div>
     <div class="form-block">
       <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="id" label="ID" width="50" />
         <el-table-column label="类型" width="150">
           <template #default="scope">
             <el-select

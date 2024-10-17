@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router'
 import IcxorTag from '@render/components/IcxorSettings/IcxorTag.vue'
 import IcxorLocal from '@render/components/IcxorSettings/IcxorLocal.vue'
 import IcxorPreference from '@render/components/IcxorSettings/IcxorPreference.vue'
+import IcxorPoly from '@render/components/IcxorSettings/IcxorPoly.vue'
 
 const currentTab = ref('preference')
 const route = useRoute()
@@ -33,6 +34,9 @@ onActivated(() => {
       </el-tab-pane>
       <el-tab-pane label="本地磁盘基" name="local" lazy>
         <IcxorLocal />
+      </el-tab-pane>
+      <el-tab-pane label="PICOLT聚合基" name="poly" lazy>
+        <IcxorPoly />
       </el-tab-pane>
       <el-tab-pane label="标签" name="tag" lazy>
         <IcxorTag />

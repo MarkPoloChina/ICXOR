@@ -1,4 +1,5 @@
 import store from '@render/store/index'
+import type { Poly } from '@main/illust/entities/poly.entities'
 import type { IllustObj } from '../interface/illustObj'
 import { FilenameResolver } from './filename'
 
@@ -12,6 +13,10 @@ const ihs_base_remote = store.state.remoteIHS
 const useLocal = store.state.useLocal
 
 const local_base = store.state.localDiskRoot
+
+const picolt_remote_base = store.state.picoltRemoteBase
+
+const picolt_local_base = store.state.picoltLocalBase
 
 const local_base_map = store.state.localDiskMap
 
@@ -74,6 +79,18 @@ export class UrlGenerator {
       else return this.getBlobUrl(obj, 'original')
     }
     return ''
+  }
+
+  static getLocalPath(obj: IllustObj) {
+    return `${local_base}${local_base_map[obj.remote_base.name]?.original}${obj.remote_endpoint}`
+  }
+
+  static getPicoltLocalPath(obj: IllustObj, targetPoly: Poly, need2x = false) {
+    return PathHelper.joinFilenamePath(`${local_base}${picolt_local_base}${need2x ? targetPoly.remote2x_base : targetPoly.remote_base}`, obj.remote_endpoint)
+  }
+
+  static getPicoltRemotePath(obj: IllustObj, targetPoly: Poly, need2x = false) {
+    return `${useLocal ? ihs_base_local : ihs_base_remote}${picolt_remote_base}${need2x ? targetPoly.remote2x_base : targetPoly.remote_base}/${obj.remote_endpoint}`
   }
 
   static getRemoteOriginUrl(obj: IllustObj, ihs_base: string) {

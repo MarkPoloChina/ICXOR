@@ -451,6 +451,16 @@ export class IllustService {
     return await this.polyRepository.delete(polyId)
   }
 
+  async updateRemotePoly(poly: Poly) {
+    const targetPoly = await this.polyRepository.findOneByOrFail({
+      id: poly.id,
+    })
+    targetPoly.remote_base = poly.remote_base
+    targetPoly.remote2x_base = poly.remote2x_base
+    await this.polyRepository.save(targetPoly)
+    return targetPoly
+  }
+
   async addIllustsToPoly(illusts: IllustBatchDto) {
     let targetPoly: Poly
     if (illusts.polyBase.id) {

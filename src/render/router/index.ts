@@ -24,11 +24,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@render/views/basic/IcxorViewer.vue'),
       },
       {
-        path: 'poly',
-        name: 'polyer',
-        component: () => import('@render/views/basic/IcxorPolyer.vue'),
-      },
-      {
         path: 'settings',
         name: 'settings',
         component: () => import('@render/views/setting/IcxorSettings.vue'),

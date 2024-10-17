@@ -14,7 +14,6 @@ import type { IllustObj } from '@render/ts/interface/illustObj'
 import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
-import BatchLogDrawer from '../share/drawer/batchLogDrawer.vue'
 import ViewerGrid from './main/viewerGrid.vue'
 import ViewerFocus from './main/viewerFocus.vue'
 import ViewerTable from './main/viewerTable.vue'
@@ -22,10 +21,12 @@ import ViewerTable from './main/viewerTable.vue'
 const props = defineProps({
   filter: Object as () => FilterConditionObj,
   sorter: Object as () => FilterSortObj,
+  batchLogs: Array as () => BatchLog[],
   viewerType: String as () => 'focus' | 'grid' | 'table',
   curPage: Number,
   pageSize: Number,
   currentSelected: Object as () => IllustObj | null,
+  picoltId: Number,
 })
 
 const emit = defineEmits([
@@ -35,9 +36,11 @@ const emit = defineEmits([
   'update:illust-count',
   'update:selection-count',
   'update:star',
+  'update:batchLogs',
 ])
-const { ipcRemoveAll, ipcOnce, ipcSend, ipcInvoke, downloadTo }
+const { ipcRemoveAll, ipcOnce, ipcSend, ipcSendSync, ipcInvoke, downloadTo }
   = window.electron
+const osString = ipcSendSync('app:getOS') === 'darwin' ? 'Finder' : 'Explorer'
 const viewer: Ref<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable>
   = ref()
 const metaForm: Ref<typeof MetaForm> = ref()
@@ -78,6 +81,14 @@ const currentSelected = computed({
     emit('update:currentSelected', val)
   },
 })
+const batchLogs = computed({
+  get: () => {
+    return props.batchLogs
+  },
+  set: (val) => {
+    emit('update:batchLogs', val)
+  },
+})
 const currentOperating = ref<IllustObj>(null)
 const chooseAll = reactive({
   poly: false,
@@ -88,7 +99,6 @@ const show = reactive({
   poly: false,
   update: false,
   it: false,
-  drawer: false,
 })
 
 function handleFocusIndexChange(action) {
@@ -148,8 +158,6 @@ function handleSingleIllustChange(obj: IllustObj, withClear?: boolean) {
       ElMessage.error(`错误: ${err}`)
     })
 }
-
-const batchLogs = ref<BatchLog[]>([])
 
 function handleUpdate(addition: {
   date?: Date
@@ -563,17 +571,40 @@ function handleDelete(chooseAll: boolean) {
     .catch(() => {})
 }
 
+function handleRemoveFromPoly() {
+  ElMessageBox.confirm('将从本聚合移除该图，确认？', 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      API.removePolyById(props.picoltId, [currentOperating.value.id])
+        .then(async () => {
+          ElMessage.success('移除成功')
+          getIllustsAndCount()
+        })
+        .catch((err) => {
+          ElMessage.error(`错误: ${err}`)
+        })
+    })
+    .catch(() => {})
+}
+
 function handlePopupContext(row: IllustObj) {
   if (!row)
     return
   currentOperating.value = row
   ipcRemoveAll('context:click')
-  ipcOnce('context:click', (item) => {
+  ipcOnce('context:click', (item, subItem) => {
     switch (item) {
-      case '标记':
+      case '选择':
         currentSelected.value = row
         break
-      case '选定':
+      case '选择并打开':
+        currentSelected.value = row
+        viewer.value.openViwer()
+        break
+      case '勾选':
         row.checked = !row.checked
         break
       case '加入PICOLT':
@@ -607,24 +638,33 @@ function handlePopupContext(row: IllustObj) {
       case '下载选定项':
         handleDownloadBatch()
         break
+      case `在${osString}中打开`:
+        ipcSend('app:openInFolder', UrlGenerator.getLocalPath(row))
+        break
+      case `在${osString}中打开聚合`:
+        ipcSend('app:openInFolder', UrlGenerator.getPicoltLocalPath(row, row.poly.find(p => p.parent === subItem), false))
+        break
+      case `在${osString}中打开2x聚合`:
+        ipcSend('app:openInFolder', UrlGenerator.getPicoltLocalPath(row, row.poly.find(p => p.parent === subItem), true))
+        break
       case '删除基':
         handleDelete(false)
         break
       case '选定项删除基':
         handleDelete(true)
         break
-      case '打开批处理日志':
-        show.drawer = true
+      case '从当前聚合移除':
+        handleRemoveFromPoly()
         break
       default:
         break
     }
   })
   ipcSend('context:popup', [
-    { label: '标记' },
-    { type: 'separator' },
+    { label: '选择' },
+    ...(props.viewerType === 'grid' ? [{ label: '选择并打开' }] : []),
     {
-      label: '选定',
+      label: '勾选',
       type: 'checkbox',
       checked: !!row.checked,
     },
@@ -638,38 +678,71 @@ function handlePopupContext(row: IllustObj) {
     {
       label: '抓取元',
     },
-    { type: 'separator' },
-    {
-      label: '选定项加入PICOLT',
-    },
-    {
-      label: '选定项置元',
-    },
-    {
-      label: '选定项抓取元',
-    },
-    { type: 'separator' },
     {
       label: '注册为每日一图',
     },
-    { type: 'separator' },
     {
       label: '下载',
     },
     {
-      label: '下载选定项',
-    },
-    { type: 'separator' },
-    {
       label: '删除基',
     },
-    {
-      label: '选定项删除基',
-    },
     { type: 'separator' },
-    {
-      label: '打开批处理日志',
-    },
+    ...(UrlGenerator.getBlobUrl(row, 'original').startsWith('icxorimg://')
+      ? [
+          {
+            label: `在${osString}中打开`,
+          },
+        ]
+      : []),
+    ...(row.poly.filter(v => v.remote_base).length
+      ? [{
+          label: `在${osString}中打开聚合`,
+          submenu: [
+            ...row.poly.filter(v => v.remote_base).map((v) => {
+              return {
+                label: v.parent,
+              }
+            }),
+          ],
+        },
+        ]
+      : []),
+    ...(row.poly.filter(v => v.remote2x_base).length
+      ? [{
+          label: `在${osString}中打开2x聚合`,
+          submenu: [
+            ...row.poly.filter(v => v.remote2x_base).map((v) => {
+              return {
+                label: v.parent,
+              }
+            }),
+          ],
+        },
+        ]
+      : []),
+    { type: 'separator' },
+    ...(illustList.value.filter(value => value.checked).length
+      ? [
+          {
+            label: '选定项加入PICOLT',
+          },
+          {
+            label: '选定项置元',
+          },
+          {
+            label: '选定项抓取元',
+          },
+          {
+            label: '选定项下载',
+          },
+          {
+            label: '选定项删除基',
+          },
+        ]
+      : []),
+    { type: 'separator' },
+    ...(props.picoltId !== -1 ? [{ label: '从当前聚合移除' }] : []),
   ])
 }
 
@@ -710,7 +783,6 @@ defineExpose({
       @update:poly-option="handlePoly"
     />
     <IllustTodayForm ref="itForm" v-model="show.it" :current-operating="currentOperating" @confirm="handleIT" />
-    <BatchLogDrawer v-model="show.drawer" :batch-logs="batchLogs" />
   </div>
 </template>
 

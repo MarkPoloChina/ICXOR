@@ -1,5 +1,6 @@
-import { join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import fs from 'fs-extra'
 import { NestFactory } from '@nestjs/core'
 import {
   BrowserWindow,
@@ -64,11 +65,13 @@ async function createWindow() {
 
   const contextMenu = Menu.buildFromTemplate(contextMenuTemplate)
   win.webContents.on('context-menu', (event, params) => {
-    contextMenu.popup({
-      window: win,
-      x: params.x,
-      y: params.y,
-    })
+    if (params.selectionText || params.isEditable) {
+      contextMenu.popup({
+        window: win,
+        x: params.x,
+        y: params.y,
+      })
+    }
   })
 
   win.webContents.session.webRequest.onBeforeSendHeaders({ urls: ['https://i.pximg.net/*'] }, (details, callback) => {
@@ -242,13 +245,16 @@ function afterReady() {
       item.click = () => {
         event.sender.send('context:click', item.label)
       }
+      if (item.submenu) {
+        item.submenu.forEach((subItem) => {
+          subItem.click = () => {
+            event.sender.send('context:click', item.label, subItem.label)
+          }
+        })
+      }
     })
     const ctx = Menu.buildFromTemplate([
       ...templateMenu,
-      {
-        type: 'separator',
-      },
-      ...contextMenuTemplate,
     ])
     ctx.popup({
       window: BrowserWindow.fromWebContents(event.sender),
@@ -278,7 +284,9 @@ function afterReady() {
   })
 
   ipcMain.on('app:openInFolder', (event, path) => {
-    shell.showItemInFolder(path)
+    if (fs.pathExistsSync(path))
+      shell.showItemInFolder(path)
+    else shell.showItemInFolder(join(dirname(path), `${basename(path).substring(0, basename(path).lastIndexOf('.'))}.png`))
   })
 
   ipcMain.on('app:checkUpdate', () => {

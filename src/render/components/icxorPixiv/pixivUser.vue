@@ -182,7 +182,7 @@ defineExpose({ handleSearchByLink })
                     )
                 "
                 fit="cover"
-                lazy
+                loading="lazy"
                 @contextmenu.prevent="handleRightClick($event, obj)"
               />
               <template #error>
