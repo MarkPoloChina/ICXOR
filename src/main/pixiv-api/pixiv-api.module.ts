@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { Meta } from '../illust/entities/meta.entities'
 import { Illust } from '../illust/entities/illust.entities'
+import { Meta } from '../illust/entities/meta.entities'
 import { PixivApiController } from './pixiv-api.controller'
 import { PixivApiService } from './pixiv-api.service'
 

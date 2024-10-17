@@ -1,16 +1,16 @@
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
-import { isReactive, toRaw } from 'vue'
-import type { IllustObj } from '@render/ts/interface/illustObj'
-import type { BatchDto } from '@render/ts/dto/batch'
-import type { Tag } from '@main/illust/entities/tag.entities'
-import type { Illust } from '@main/illust/entities/illust.entities'
 import type { RespListObjDto } from '@main/illust/dto/resp_list_obj.dto'
-import type { DeleteResult } from 'typeorm'
+import type { Illust } from '@main/illust/entities/illust.entities'
 import type { Poly } from '@main/illust/entities/poly.entities'
-import type { PixivIllust, PixivUserDetail, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 import type { RemoteBase } from '@main/illust/entities/remote_base.entities'
+import type { Tag } from '@main/illust/entities/tag.entities'
+import type { PixivIllust, PixivUserDetail, UgoiraMetaData } from '@markpolochina/pixiv.ts'
+import type { BatchDto } from '@render/ts/dto/batch'
+import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { DeleteResult } from 'typeorm'
+import { isReactive, toRaw } from 'vue'
 
 const { apiAdapter } = window.electron
 const ax = {
@@ -308,7 +308,7 @@ export class API {
         uid,
       },
     })
-    return resp.data as { illusts: PixivIllust[]; nextUrl: string }
+    return resp.data as { illusts: PixivIllust[], nextUrl: string }
   }
 
   static async getPixivNextRequest(nextUrl: string) {

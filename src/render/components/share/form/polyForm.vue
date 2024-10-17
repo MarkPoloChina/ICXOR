@@ -46,8 +46,16 @@ defineExpose({ clearForm })
 
 <template>
   <div>
-    <el-dialog v-model="dialogVisible" title="PICOLT聚合表单" width="60%">
-      <el-form :model="polyInfo" label-width="100px" style="width: 100%">
+    <el-dialog
+      v-model="dialogVisible"
+      title="PICOLT聚合表单"
+      width="60%"
+    >
+      <el-form
+        :model="polyInfo"
+        label-width="100px"
+        style="width: 100%"
+      >
         <el-form-item label="PICOLT簇">
           <el-select
             v-model="polyInfo.parent"
@@ -65,7 +73,10 @@ defineExpose({ clearForm })
           </el-select>
         </el-form-item>
         <el-form-item label="PICOLT名">
-          <el-input v-model="polyInfo.name" placeholder="输入PICOLT名" />
+          <el-input
+            v-model="polyInfo.name"
+            placeholder="输入PICOLT名"
+          />
         </el-form-item>
       </el-form>
       <template #footer>

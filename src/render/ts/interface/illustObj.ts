@@ -10,7 +10,8 @@ export interface IllustObj {
   thumb_endpoint: string
   date: Date
   poly: Poly[]
-  tag: { id?: number
+  tag: {
+    id?: number
     type?: string
     name: string
     illusts?: IllustObj[]

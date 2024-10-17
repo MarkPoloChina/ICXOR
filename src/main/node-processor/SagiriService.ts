@@ -1,10 +1,10 @@
+import type { Buffer } from 'node:buffer'
+import type { Readable } from 'node:stream'
+import type { Options, SagiriResult } from 'sagiri'
 import fs from 'node:fs'
 import path from 'node:path'
-import type { Readable } from 'node:stream'
-import type { Buffer } from 'node:buffer'
-import sagiri from 'sagiri'
-import type { Options, SagiriResult } from 'sagiri'
 import { app } from 'electron'
+import sagiri from 'sagiri'
 import { ConfigDB } from './DBService'
 
 type File = string | Buffer | Readable
@@ -16,14 +16,20 @@ const GLOBAL_SIMILARITY_THRESHOLD = 75
 class ProcessCore {
   static pixivFilter(json_obj: SagiriResult[]) {
     for (const result of json_obj) {
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.site === 'Pixiv')
-        return new URL(result.url).searchParams.get('illust_id') ?? result.url.split('/')[result.url.split('/').length - 1]
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.site === 'Pixiv') {
+        return new URL(result.url).searchParams.get('illust_id')
+          ?? result.url.split('/')[result.url.split('/').length - 1]
+      }
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://i.pximg.net'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD
+        && result.raw?.data?.source?.startsWith('https://i.pximg.net')) {
         return result.raw?.data?.source?.split('/')[result.raw?.data?.source?.split('/').length - 1]
+      }
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://www.pixiv.net'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD
+        && result.raw?.data?.source?.startsWith('https://www.pixiv.net')) {
         return result.raw?.data?.source?.split('/')[result.raw?.data?.source?.split('/').length - 1]
+      }
     }
   }
 
@@ -32,8 +38,10 @@ class ProcessCore {
       if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.site === 'Twitter')
         return result.url
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://twitter.com'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD
+        && result.raw?.data?.source?.startsWith('https://twitter.com')) {
         return result.raw?.data?.source.split(' ')[0]
+      }
     }
   }
 
@@ -42,11 +50,15 @@ class ProcessCore {
       if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.site === 'Pixiv')
         return
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://i.pximg.net'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD
+        && result.raw?.data?.source?.startsWith('https://i.pximg.net')) {
         return
+      }
 
-      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD && result.raw?.data?.source?.startsWith('https://www.pixiv.net'))
+      if (result.similarity > GLOBAL_SIMILARITY_THRESHOLD
+        && result.raw?.data?.source?.startsWith('https://www.pixiv.net')) {
         return
+      }
     }
     return this.twiiterAllFilter(json_obj)
   }
@@ -64,7 +76,8 @@ export class SS {
   static async runBatchAndDump(dir: string) {
     if (!client)
       throw new Error('SauceNAO client not initialized')
-    const files = fs.readdirSync(dir).filter(file => ['.png', '.jpg', '.jpeg'].includes(path.extname(file).toLowerCase()))
+    const files = fs.readdirSync(dir)
+      .filter(file => ['.png', '.jpg', '.jpeg'].includes(path.extname(file).toLowerCase()))
 
     for (const file of files) {
       const prefix = path.basename(file, path.extname(file))

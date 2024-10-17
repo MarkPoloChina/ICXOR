@@ -1,6 +1,6 @@
 import path from 'node:path'
-import fs from 'fs-extra'
 import { app } from 'electron'
+import fs from 'fs-extra'
 
 const STORE_PATH = path.join(app.getPath('userData'), 'config.json')
 const LOCAL_STORE_PATH = path.join(app.getPath('userData'), 'local.json')

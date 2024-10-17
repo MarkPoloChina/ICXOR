@@ -1,19 +1,19 @@
+import { MPAPI } from '@main/node-processor/ApiService'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, SelectQueryBuilder } from 'typeorm'
-import { MPAPI } from '@main/node-processor/ApiService'
+import { FilterConditionObj } from './dto/filter_condition_obj.dto'
+import { FilterPolySortObj, FilterSortObj } from './dto/filter_sort_obj.dto'
 import { IllustDto } from './dto/illust.dto'
 import { IllustBatchDto } from './dto/illust_batch.dto'
+import { IllustTodayDto } from './dto/illust_today.dto'
 import { RemoteBaseDto } from './dto/remote_base.dto'
+import { RespListObjDto } from './dto/resp_list_obj.dto'
 import { Illust } from './entities/illust.entities'
 import { Meta } from './entities/meta.entities'
 import { Poly } from './entities/poly.entities'
 import { RemoteBase } from './entities/remote_base.entities'
 import { Tag } from './entities/tag.entities'
-import { RespListObjDto } from './dto/resp_list_obj.dto'
-import { FilterConditionObj } from './dto/filter_condition_obj.dto'
-import { FilterPolySortObj, FilterSortObj } from './dto/filter_sort_obj.dto'
-import { IllustTodayDto } from './dto/illust_today.dto'
 
 @Injectable()
 export class IllustService {
@@ -72,7 +72,10 @@ export class IllustService {
     return results
   }
 
-  private buildIllustQueryChain(conditionObj: FilterConditionObj = {}, inputQuerybuilder: SelectQueryBuilder<Illust>) {
+  private buildIllustQueryChain(
+    conditionObj: FilterConditionObj = {},
+    inputQuerybuilder: SelectQueryBuilder<Illust>,
+  ) {
     let querybuilder = inputQuerybuilder
       .leftJoin('Illust.meta', 'meta')
       .leftJoin('Illust.poly', 'poly')
@@ -143,10 +146,9 @@ export class IllustService {
       .leftJoinAndSelect('Illust.tag', 'tag')
       .leftJoinAndSelect('Illust.remote_base', 'remote_base')
       .where((qb) => {
-        const querybuilder = this.buildIllustQueryChain(conditionObj,
-          qb.subQuery()
-            .select('Illust.id')
-            .from(Illust, 'Illust'))
+        const querybuilder = this.buildIllustQueryChain(conditionObj, qb.subQuery()
+          .select('Illust.id')
+          .from(Illust, 'Illust'))
 
         return `Illust.id IN ${querybuilder.getQuery()}`
       })
@@ -175,7 +177,8 @@ export class IllustService {
    * @returns Illust标准计数结果, 可从count中解构
    */
   async getIllustsCount(conditionObj: FilterConditionObj = {}) {
-    const querybuilder: SelectQueryBuilder<Illust> = this.buildIllustQueryChain(conditionObj,
+    const querybuilder: SelectQueryBuilder<Illust> = this.buildIllustQueryChain(
+      conditionObj,
       this.illustRepository
         .createQueryBuilder()
         .select('COUNT(DISTINCT Illust.id)', 'count'),
@@ -543,7 +546,8 @@ export class IllustService {
             message: 'EXIST Illust.',
           })
         }
-        else if (targetIllust.poly && targetIllust.poly.some(value => value.parent === targetPoly.parent)) {
+        else if (targetIllust.poly
+          && targetIllust.poly.some(value => value.parent === targetPoly.parent)) {
           resp_list.push({
             bid: illust.bid,
             status: 'conflict',

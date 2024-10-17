@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 import { PathHelper } from '@render/ts/util/path'
+import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
 
 const { ipcInvoke } = window.electron
 const isLoading = ref(false)
@@ -18,9 +18,9 @@ async function handleConvertGif() {
   stat.value = `0 / ${files.length}`
   for (const file of files) {
     const filename = PathHelper.getBasename(file)
-    const output = file.replace(/\@\d+ms\.zip$/, '.gif')
-    if (filename.match(/\@\d+ms/)) {
-      const delay = Number.parseInt(filename.match(/\@(\d+)ms/)[1])
+    const output = file.replace(/@\d+ms\.zip$/, '.gif')
+    if (filename.match(/@\d+ms/)) {
+      const delay = Number.parseInt(filename.match(/@(\d+)ms/)[1])
       try {
         await ipcInvoke('ms:convertGif', file, output, delay)
         illusts.value.push({ filename, status: 'success' })
@@ -43,12 +43,21 @@ async function handleConvertGif() {
 <template>
   <div style="height: 100%">
     <div class="illust-form">
-      <el-alert type="info" show-icon :closable="false" style="flex: none;margin-bottom: 10px;">
+      <el-alert
+        type="info"
+        show-icon
+        :closable="false"
+        style="flex: none; margin-bottom: 10px"
+      >
         <template #title>
           仅支持从带delay的zip文件转换成gif。
         </template>
       </el-alert>
-      <el-form label-width="80px" style="width: 100%" label-position="left">
+      <el-form
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+      >
         <el-form-item label="操作">
           <el-button
             :icon="Search"

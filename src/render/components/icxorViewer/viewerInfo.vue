@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import type { IllustObj } from '@render/ts/interface/illustObj'
 import { Check } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
+import { UtilDate } from '@render/ts/util/date'
+import { FilenameResolver } from '@render/ts/util/filename'
+import { UrlGenerator } from '@render/ts/util/path'
+import { ElMessage } from 'element-plus'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { API } from '@render/ts/api'
-import { ElMessage } from 'element-plus'
-import { UrlGenerator } from '@render/ts/util/path'
-import type { IllustObj } from '@render/ts/interface/illustObj'
-import { FilenameResolver } from '@render/ts/util/filename'
-import { UtilDate } from '@render/ts/util/date'
 
 const props = defineProps({
   info: Object as () => IllustObj | null,
@@ -69,11 +69,13 @@ function handleStarChange(star) {
   emit('upload', writableInfo.value)
 }
 function handleAddAuthorTag(tag: string) {
-  API.addAuthorTag(tag).then(() => {
-    ElMessage.success('添加成功')
-  }).catch(() => {
-    ElMessage.error('添加失败,可能已存在')
-  })
+  API.addAuthorTag(tag)
+    .then(() => {
+      ElMessage.success('添加成功')
+    })
+    .catch(() => {
+      ElMessage.error('添加失败,可能已存在')
+    })
 }
 
 defineExpose({ handleStarChange })
@@ -81,7 +83,10 @@ defineExpose({ handleStarChange })
 
 <template>
   <div class="info-container-block">
-    <el-scrollbar v-if="writableInfo" class="info-container">
+    <el-scrollbar
+      v-if="writableInfo"
+      class="info-container"
+    >
       <el-descriptions
         v-if="writableInfo"
         class="info"
@@ -92,7 +97,8 @@ defineExpose({ handleStarChange })
         direction="vertical"
       >
         <template #extra>
-          <span style="vertical-align: middle; margin-right: 10px">可编辑</span><el-switch v-model="editable" />
+          <span style="vertical-align: middle; margin-right: 10px">可编辑</span>
+          <el-switch v-model="editable" />
         </template>
         <el-descriptions-item label="ID">
           {{ writableInfo.id }}
@@ -101,21 +107,30 @@ defineExpose({ handleStarChange })
           {{ writableInfo.remote_base.name }}
         </el-descriptions-item>
         <el-descriptions-item label="URL">
-          <div style="max-width: 180px;">
-            <span style="word-wrap: break-word;">{{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo) || ' - ' }}</span>
+          <div style="max-width: 180px">
+            <span style="word-wrap: break-word">
+              {{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo) || ' - ' }}
+            </span>
           </div>
           <el-button
             v-if="writableInfo.remote_endpoint && writableInfo.remote_base.name === 'Twitter'"
             type="primary"
             size="small"
-            @click="handleAddAuthorTag(`@${FilenameResolver.getObjFromFilename(writableInfo.remote_endpoint).authorId}`)"
+            @click="
+              handleAddAuthorTag(
+                `@${FilenameResolver.getObjFromFilename(writableInfo.remote_endpoint).authorId}`,
+              )
+            "
           >
             添加标签
           </el-button>
         </el-descriptions-item>
         <el-descriptions-item label="末端">
-          <div v-if="!editable" style="max-width: 180px;">
-            <span style="word-wrap: break-word;">{{ writableInfo.remote_endpoint || "-" }}</span>
+          <div
+            v-if="!editable"
+            style="max-width: 180px"
+          >
+            <span style="word-wrap: break-word">{{ writableInfo.remote_endpoint || '-' }}</span>
           </div>
           <div v-else>
             <el-input v-model="writableInfo.remote_endpoint">
@@ -156,12 +171,13 @@ defineExpose({ handleStarChange })
         </el-descriptions-item>
         <el-descriptions-item label="标签">
           <div v-if="!editable">
-            <el-tag v-for="tag in writableInfo.tag" :key="tag.id">
+            <el-tag
+              v-for="tag in writableInfo.tag"
+              :key="tag.id"
+            >
               {{ tag.name }}
             </el-tag>
-            {{
-              !writableInfo.tag || writableInfo.tag.length === 0 ? "-" : ""
-            }}
+            {{ !writableInfo.tag || writableInfo.tag.length === 0 ? '-' : '' }}
           </div>
           <div v-else>
             <el-select
@@ -229,44 +245,42 @@ defineExpose({ handleStarChange })
             :underline="false"
             @click="toPixivUser(writableInfo.meta.author_id)"
           >
-            {{
-              `[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`
-            }}
+            {{ `[${writableInfo.meta.author_id}] ${writableInfo.meta.author}` }}
           </el-link>
           <span v-else>
-            {{
-              "-"
-            }}
+            {{ '-' }}
           </span>
           <div>
             <el-button
               v-if="writableInfo.meta.author_id && writableInfo.meta.author"
               type="primary"
               size="small"
-              @click="handleAddAuthorTag(`[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`)"
+              @click="
+                handleAddAuthorTag(`[${writableInfo.meta.author_id}] ${writableInfo.meta.author}`)
+              "
             >
               添加标签
             </el-button>
           </div>
         </el-descriptions-item>
         <el-descriptions-item label="收藏数">
-          {{ writableInfo.meta.book_cnt ?? "-" }}
+          {{ writableInfo.meta.book_cnt ?? '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="标题">
-          {{ writableInfo.meta.title ?? "-" }}
+          {{ writableInfo.meta.title ?? '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="宽度">
-          {{ writableInfo.meta.width ?? "-" }}
+          {{ writableInfo.meta.width ?? '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="高度">
-          {{ writableInfo.meta.height ?? "-" }}
+          {{ writableInfo.meta.height ?? '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="pixiv标签">
           <div v-if="writableInfo.meta.tags_str">
             <el-tag
               v-for="tag in writableInfo.meta.tags_str.split(',')"
               :key="tag"
-              style="max-width: 180px;"
+              style="max-width: 180px"
             >
               {{ tag }}
             </el-tag>
@@ -277,9 +291,7 @@ defineExpose({ handleStarChange })
         </el-descriptions-item>
       </el-descriptions>
       <el-descriptions
-        v-for="
-          (poly, index) in writableInfo?.poly
-        "
+        v-for="(poly, index) in writableInfo?.poly"
         :key="poly.id"
         class="info"
         style="margin-bottom: 10px"
@@ -290,10 +302,10 @@ defineExpose({ handleStarChange })
       >
         <template #extra />
         <el-descriptions-item label="PICOLT簇">
-          {{ poly.parent ?? "-" }}
+          {{ poly.parent ?? '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="PICOLT名">
-          {{ poly.name ?? "-" }}
+          {{ poly.name ?? '-' }}
         </el-descriptions-item>
       </el-descriptions>
     </el-scrollbar>
@@ -306,22 +318,22 @@ defineExpose({ handleStarChange })
   display: flex;
   flex-direction: column;
 
-    .info-container {
-      margin: 10px;
-      position: relative;
-      max-height: 100%;
+  .info-container {
+    margin: 10px;
+    position: relative;
+    max-height: 100%;
 
-      .info {
-        min-width: 220px;
-        :deep(.el-descriptions__body table) {
-          border-radius: 5px;
-        }
-        :deep(.el-tag span) {
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-        }
+    .info {
+      min-width: 220px;
+      :deep(.el-descriptions__body table) {
+        border-radius: 5px;
+      }
+      :deep(.el-tag span) {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
       }
     }
+  }
 }
 </style>

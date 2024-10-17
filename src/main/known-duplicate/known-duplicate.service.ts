@@ -23,7 +23,9 @@ export class KnownDuplicateService {
   }
 
   async addDuplicate(pixiv_id: string, twitter_status_id: string) {
-    const targetDuplicate = await this.pixivTwitterRepository.findOneBy({ twitter_status_id }) || this.pixivTwitterRepository.create({ twitter_status_id })
+    const targetDuplicate = await this.pixivTwitterRepository.findOneBy(
+      { twitter_status_id },
+    ) || this.pixivTwitterRepository.create({ twitter_status_id })
     targetDuplicate.pixiv_id = pixiv_id
     await this.pixivTwitterRepository.save(targetDuplicate)
   }

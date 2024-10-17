@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue'
-import { Download, RefreshLeft, Search, Star } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import { API } from '@render/ts/api'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import { Download, RefreshLeft, Search, Star } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
+import { ElMessage } from 'element-plus'
+import { ref, toRaw } from 'vue'
 
 const emit = defineEmits(['toIllust', 'toUser'])
-const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
+const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
+  = window.electron
 const isLoading = ref(false)
 const illusts = ref<PixivIllust[]>([])
 const success = ref<number[]>([])
@@ -25,18 +26,16 @@ async function handleDownload(illustObj: PixivIllust) {
       const meta = await API.getPixivUgoiraJson(illustObj.id)
       await downloadPixivUgoiraTo(toRaw(illustObj), dir, meta)
     }
-    else { await downloadPixivTo(toRaw(illustObj), dir) }
+    else {
+      await downloadPixivTo(toRaw(illustObj), dir)
+    }
     ElMessage.success('下载完成')
   }
   catch (err) {
     ElMessage.error(`下载失败: ${err}`)
   }
 }
-function tableRowClassName({
-  row,
-}: {
-  row: PixivIllust
-}) {
+function tableRowClassName({ row }: { row: PixivIllust }) {
   if (success.value.includes(row.id))
     return 'success-row'
   else if (failed.value.includes(row.id))
@@ -67,10 +66,12 @@ async function handleDownloadAll() {
             const meta = await API.getPixivUgoiraJson(ele.id)
             await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
           }
-          else { await downloadPixivTo(toRaw(ele), dir) }
+          else {
+            await downloadPixivTo(toRaw(ele), dir)
+          }
           success.value.push(ele.id)
         }
-        catch (err) {
+        catch {
           if (retrys++ >= 3) {
             ElMessage.error(`Too much retry in ${ele.id}`)
             failed.value.push(ele.id)
@@ -86,7 +87,9 @@ async function handleDownloadAll() {
     stat.value = `下载[S+I+F/T]  ${success.value.length} + ${invisable.length} + ${failed.value.length} / ${illusts.value.length} 个项目`
   }
   isLoading.value = false
-  ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目`)
+  ElMessage.success(
+    `下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目`,
+  )
 }
 async function handleBookmarkAll() {
   isLoading.value = true
@@ -97,7 +100,7 @@ async function handleBookmarkAll() {
     if (illust.is_bookmarked || !illust.visible)
       continue
     try {
-      await API.togglePixivBookmark(illust.id, true)
+      await API.togglePixivBookmark(illust.id, true, false)
       illust.is_bookmarked = true
       await sleep(2000)
     }
@@ -111,7 +114,9 @@ async function handleBookmarkAll() {
   ElMessage.success('收藏完成')
 }
 async function getIllusts() {
-  const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Text', extensions: ['txt'] }])
+  const files: string[] = await ipcInvoke('dialog:openFile', [
+    { name: 'Text', extensions: ['txt'] },
+  ])
   if (!files || files.length === 0)
     return
   try {
@@ -163,10 +168,12 @@ async function handleRetry() {
           const meta = await API.getPixivUgoiraJson(ele.id)
           await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
         }
-        else { await downloadPixivTo(toRaw(ele), dir) }
+        else {
+          await downloadPixivTo(toRaw(ele), dir)
+        }
         success.value.push(ele.id)
       }
-      catch (err) {
+      catch {
         if (retrys++ >= 3) {
           ElMessage.error(`Too much retry in ${ele.id}`)
           failed.value.push(ele.id)
@@ -206,12 +213,21 @@ function handleRightClick(obj: PixivIllust) {
 <template>
   <div style="height: 100%">
     <div class="illust-form">
-      <el-alert type="info" show-icon :closable="false" style="flex: none;margin-bottom: 10px;">
+      <el-alert
+        type="info"
+        show-icon
+        :closable="false"
+        style="flex: none; margin-bottom: 10px"
+      >
         <template #title>
           仅支持从txt文件批处理pixiv_id, 每行一个。
         </template>
       </el-alert>
-      <el-form label-width="80px" style="width: 100%" label-position="left">
+      <el-form
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+      >
         <el-form-item label="操作">
           <el-button
             :icon="Search"
@@ -268,7 +284,11 @@ function handleRightClick(obj: PixivIllust) {
           width="150"
           show-overflow-tooltip
         />
-        <el-table-column prop="title" label="标题" show-overflow-tooltip />
+        <el-table-column
+          prop="title"
+          label="标题"
+          show-overflow-tooltip
+        />
         <el-table-column
           label="状态"
           width="200"

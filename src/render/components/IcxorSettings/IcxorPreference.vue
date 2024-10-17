@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Check, Remove } from '@element-plus/icons-vue'
-import { useStore } from 'vuex'
-import { onMounted, reactive, ref } from 'vue'
+import { UtilDate } from '@render/ts/util/date'
 import { PathHelper } from '@render/ts/util/path'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { UtilDate } from '@render/ts/util/date'
+import { onMounted, reactive, ref } from 'vue'
+import { useStore } from 'vuex'
 
 const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
@@ -54,7 +54,7 @@ function clearCache() {
         await ipcInvoke('app:clearCache')
         ElMessage.success('缓存已清空')
       }
-      catch (error) {
+      catch {
         ElMessage.error('缓存清空失败')
       }
       finally {
@@ -80,7 +80,7 @@ async function exportFile(filename: string) {
     )
     ElMessage.success('导出成功')
   }
-  catch (error) {
+  catch {
     ElMessage.error('导出失败')
   }
 }
@@ -90,30 +90,35 @@ async function openDir(filename: string) {
 }
 async function upload() {
   try {
-    const timestamp: { cloud: number;local: number } = await ipcInvoke('cs:getTimestamp')
+    const timestamp: { cloud: number, local: number } = await ipcInvoke('cs:getTimestamp')
     if (timestamp.local === timestamp.cloud) {
       ElMessage.info('本地数据库与云端数据库一致, 无需上传')
       return
     }
-    ElMessageBox.confirm(`确认时间戳: 本地修改时间:${new Date(timestamp.local).toLocaleString()} ; 云端修改时间:${timestamp.cloud === -1 ? ' - ' : new Date(timestamp.cloud).toLocaleString()}。${timestamp.local < timestamp.cloud ? '注意!云端比本地更新' : ''}`, 'Warning',
+    ElMessageBox.confirm(
+      `确认时间戳: 本地修改时间:${new Date(timestamp.local).toLocaleString()} ; 云端修改时间:${timestamp.cloud === -1 ? ' - ' : new Date(timestamp.cloud).toLocaleString()}。${timestamp.local < timestamp.cloud ? '注意!云端比本地更新' : ''}`,
+      'Warning',
       {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
-      }).then(async () => {
-      const ei = ElMessage.info({
-        message: '上传中, 请勿关闭窗口',
-        duration: 0,
+      },
+    )
+      .then(async () => {
+        const ei = ElMessage.info({
+          message: '上传中, 请勿关闭窗口',
+          duration: 0,
+        })
+        try {
+          await ipcInvoke('cs:upload')
+          ElMessage.success('上传成功')
+        }
+        catch (error) {
+          ElMessage.error(`上传失败: ${error}`)
+        }
+        ei.close()
       })
-      try {
-        await ipcInvoke('cs:upload')
-        ElMessage.success('上传成功')
-      }
-      catch (error) {
-        ElMessage.error(`上传失败: ${error}`)
-      }
-      ei.close()
-    }).catch(() => {})
+      .catch(() => {})
   }
   catch (error) {
     ElMessage.error(`获取时间戳失败: ${error}`)
@@ -121,7 +126,7 @@ async function upload() {
 }
 async function download() {
   try {
-    const timestamp: { cloud: number;local: number } = await ipcInvoke('cs:getTimestamp')
+    const timestamp: { cloud: number, local: number } = await ipcInvoke('cs:getTimestamp')
     if (timestamp.cloud === -1) {
       ElMessage.error('云端数据库不存在, 请先上传')
       return
@@ -130,25 +135,30 @@ async function download() {
       ElMessage.info('本地数据库与云端数据库一致, 无需下载')
       return
     }
-    ElMessageBox.confirm(`确认时间戳: 本地修改时间:${new Date(timestamp.local).toLocaleString()} ; 云端修改时间:${new Date(timestamp.cloud).toLocaleString()}。${timestamp.local > timestamp.cloud ? '注意!本地比云端更新' : ''}`, 'Warning',
+    ElMessageBox.confirm(
+      `确认时间戳: 本地修改时间:${new Date(timestamp.local).toLocaleString()} ; 云端修改时间:${new Date(timestamp.cloud).toLocaleString()}。${timestamp.local > timestamp.cloud ? '注意!本地比云端更新' : ''}`,
+      'Warning',
       {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
-      }).then(async () => {
-      const ei = ElMessage.info({
-        message: '下载中, 请勿关闭窗口',
-        duration: 0,
+      },
+    )
+      .then(async () => {
+        const ei = ElMessage.info({
+          message: '下载中, 请勿关闭窗口',
+          duration: 0,
+        })
+        try {
+          await ipcInvoke('cs:download')
+          ElMessage.success('下载成功')
+        }
+        catch (error) {
+          ElMessage.error(`下载失败: ${error}`)
+        }
+        ei.close()
       })
-      try {
-        await ipcInvoke('cs:download')
-        ElMessage.success('下载成功')
-      }
-      catch (error) {
-        ElMessage.error(`下载失败: ${error}`)
-      }
-      ei.close()
-    }).catch(() => {})
+      .catch(() => {})
   }
   catch (error) {
     ElMessage.error(`获取时间戳失败: ${error}`)
@@ -164,7 +174,11 @@ async function download() {
           外观
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="主题">
               <el-radio-group v-model="configForm.theme">
                 <el-radio label="system">
@@ -184,7 +198,11 @@ async function download() {
           本地存储
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="配置文件">
               <el-button
                 type="primary"
@@ -220,7 +238,7 @@ async function download() {
               </el-button>
             </el-form-item>
             <el-form-item label="缓存大小">
-              <span>{{ cacheSize ?? "正在计算中" }}</span>
+              <span>{{ cacheSize ?? '正在计算中' }}</span>
               <el-button
                 type="danger"
                 size="small"
@@ -236,7 +254,11 @@ async function download() {
           COS云同步
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="同步">
               <el-button
                 type="primary"
@@ -260,19 +282,31 @@ async function download() {
           访图控制
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="本地模式">
-              <el-switch
-                v-model="configForm.useLocal"
-              />
+              <el-switch v-model="configForm.useLocal" />
             </el-form-item>
           </el-form>
         </div>
       </el-scrollbar>
     </div>
     <div class="btn-block">
-      <el-button type="success" :icon="Check" circle @click="commit" />
-      <el-button type="danger" :icon="Remove" circle @click="revoke" />
+      <el-button
+        type="success"
+        :icon="Check"
+        circle
+        @click="commit"
+      />
+      <el-button
+        type="danger"
+        :icon="Remove"
+        circle
+        @click="revoke"
+      />
     </div>
   </div>
 </template>

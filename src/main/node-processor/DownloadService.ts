@@ -1,9 +1,9 @@
-import path from 'node:path'
-import type { AxiosRequestConfig } from 'axios'
 import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
+import type { AxiosRequestConfig } from 'axios'
+import path from 'node:path'
 import axios from 'axios'
-import { FS } from './FSService'
 import { ConfigDB } from './DBService'
+import { FS } from './FSService'
 import { GifCoverter } from './MediaService'
 
 export class DS {
@@ -13,10 +13,11 @@ export class DS {
     if (
       proxyStr
       && proxyStr.match(
-        /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\:[1-9]\d{0,4}$/,
+        /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
       )
-    )
+    ) {
       this.proxyStr = proxyStr
+    }
   }
 
   private static async downloadFromUrl(
@@ -102,18 +103,29 @@ export class DS {
     }
   }
 
-  public static async downloadFromUgoira(illustObj: PixivIllust, dir: string, meta: UgoiraMetaData) {
+  public static async downloadFromUgoira(
+    illustObj: PixivIllust,
+    dir: string,
+    meta: UgoiraMetaData,
+  ) {
     if (!illustObj.visible)
       throw new Error('Visit Deny.')
     if (illustObj.type !== 'ugoira')
       throw new Error('Not Ugoira type.')
     const delay = meta.ugoira_metadata.frames[0].delay
-    const url = illustObj.meta_single_page.original_image_url.replace('img-original', 'img-zip-ugoira')
+    const url = illustObj.meta_single_page.original_image_url.replace(
+      'img-original',
+      'img-zip-ugoira',
+    )
       .replace(/_ugoira0\.(.*)/, '_ugoira1920x1080.zip')
     const ab = await this.downloadFromUrl(url, true)
     const filename = `${illustObj.id}@${delay}ms.zip`
     await FS.saveArrayBufferTo(ab, filename, dir)
-    await GifCoverter.zipToGif(path.join(dir, filename), path.join(dir, `${illustObj.id}.gif`), delay)
+    await GifCoverter.zipToGif(
+      path.join(dir, filename),
+      path.join(dir, `${illustObj.id}.gif`),
+      delay,
+    )
   }
 }
 DS.setProxy()

@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import { Check, Download, Remove } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
-import { Check, Download, Remove } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref } from 'vue'
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
 
 const resultTable = ref([])
 const selectedList = ref([])
@@ -46,15 +46,11 @@ function handleUpload() {
     ElMessage.error('必须填写入库时间, 否则无法跟踪导入')
     return
   }
-  ElMessageBox.confirm(
-    `将${selectedList.value.length}个项目进行上传，确认？`,
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`将${selectedList.value.length}个项目进行上传，确认？`, 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(() => {
       loading.value = true
       const dto = new BatchDto()
@@ -72,14 +68,8 @@ function handleUpload() {
                 type: ele.type,
                 title: ele.title,
                 original_url:
-                  ele.meta_single_page.original_image_url
-                  || ele.meta_pages[i].image_urls.original,
-                limit:
-                  ele.x_restrict === 1
-                    ? 'R-18'
-                    : ele.x_restrict === 2
-                      ? 'R-18G'
-                      : 'normal',
+                  ele.meta_single_page.original_image_url || ele.meta_pages[i].image_urls.original,
+                limit: ele.x_restrict === 1 ? 'R-18' : ele.x_restrict === 2 ? 'R-18G' : 'normal',
                 author: ele.user.name,
                 author_id: ele.user.id,
                 book_cnt: ele.total_bookmarks,
@@ -116,7 +106,12 @@ function handleSelectionChange(val) {
 
 <template>
   <div class="importer-main">
-    <el-alert type="info" show-icon :closable="false" style="flex: none">
+    <el-alert
+      type="info"
+      show-icon
+      :closable="false"
+      style="flex: none"
+    >
       <template #title>
         导入Pixiv收藏。
       </template>
@@ -126,7 +121,11 @@ function handleSelectionChange(val) {
         导入选项
       </div>
       <div class="form-block">
-        <el-form :model="importOption" label-width="100px" style="width: 100%">
+        <el-form
+          :model="importOption"
+          label-width="100px"
+          style="width: 100%"
+        >
           <el-form-item label="收藏类型">
             <el-radio-group v-model="importOption.type">
               <el-radio label="public">
@@ -164,7 +163,7 @@ function handleSelectionChange(val) {
           width="55"
           :selectable="
             (row) => {
-              return row.visible;
+              return row.visible
             }
           "
         />
@@ -186,13 +185,32 @@ function handleSelectionChange(val) {
           width="150"
           show-overflow-tooltip
         />
-        <el-table-column prop="title" label="标题" show-overflow-tooltip />
+        <el-table-column
+          prop="title"
+          label="标题"
+          show-overflow-tooltip
+        />
       </el-table>
     </div>
     <div class="btn-area">
-      <el-button type="primary" :icon="Download" circle @click="startAction" />
-      <el-button type="success" :icon="Check" circle @click="handleUpload" />
-      <el-button type="danger" :icon="Remove" circle @click="initTab" />
+      <el-button
+        type="primary"
+        :icon="Download"
+        circle
+        @click="startAction"
+      />
+      <el-button
+        type="success"
+        :icon="Check"
+        circle
+        @click="handleUpload"
+      />
+      <el-button
+        type="danger"
+        :icon="Remove"
+        circle
+        @click="initTab"
+      />
     </div>
   </div>
 </template>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import PolyImporter from '@render/components/icxorImporter/polyImporter.vue'
-import PixivRemoteImporter from '@render/components/icxorImporter/pixivRemoteImporter.vue'
 import BasicImporter from '@render/components/icxorImporter/basicImporter.vue'
+import PixivRemoteImporter from '@render/components/icxorImporter/pixivRemoteImporter.vue'
+import PolyImporter from '@render/components/icxorImporter/polyImporter.vue'
+import { ref } from 'vue'
 
 const currentTab = ref('basic')
 </script>
@@ -12,14 +12,26 @@ const currentTab = ref('basic')
     <div class="title">
       导入
     </div>
-    <el-tabs v-model="currentTab" class="tabs">
-      <el-tab-pane label="基导入" name="basic">
+    <el-tabs
+      v-model="currentTab"
+      class="tabs"
+    >
+      <el-tab-pane
+        label="基导入"
+        name="basic"
+      >
         <BasicImporter />
       </el-tab-pane>
-      <el-tab-pane label="聚合" name="poly">
+      <el-tab-pane
+        label="聚合"
+        name="poly"
+      >
         <PolyImporter />
       </el-tab-pane>
-      <el-tab-pane label="Pixiv收藏" name="bookmark">
+      <el-tab-pane
+        label="Pixiv收藏"
+        name="bookmark"
+      >
         <PixivRemoteImporter />
       </el-tab-pane>
     </el-tabs>

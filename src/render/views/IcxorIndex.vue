@@ -1,17 +1,11 @@
 <script setup lang="ts">
+import { House, PictureRounded, Setting, SuitcaseLine, Upload } from '@element-plus/icons-vue'
 import { useDark } from '@vueuse/core'
-import {
-  House,
-  PictureRounded,
-  Setting,
-  SuitcaseLine,
-  Upload,
-} from '@element-plus/icons-vue'
-import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
 
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { useStore } from 'vuex'
 
 const { ipcInvoke, ipcOn } = window.electron
 
@@ -48,7 +42,12 @@ onMounted(async () => {
 <template>
   <div class="index-container">
     <div class="index-menu-container">
-      <el-menu :default-active="$route.path" class="index-menu" collapse router>
+      <el-menu
+        :default-active="$route.path"
+        class="index-menu"
+        collapse
+        router
+      >
         <el-menu-item index="/home">
           <el-icon><House /></el-icon>
           <template #title>
@@ -122,7 +121,7 @@ onMounted(async () => {
       .el-menu-item.is-active {
         background-color: var(--el-menu-hover-bg-color);
       }
-      .el-menu-item [class^="el-icon"] {
+      .el-menu-item [class^='el-icon'] {
         font-size: 30px;
       }
     }

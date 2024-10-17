@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type PixivIllust from '@render/components/icxorPixiv/pixivIllust.vue'
+import type { Ref } from 'vue'
 import IcxorGifConverter from '@render/components/icxorTools/IcxorGifConverter.vue'
 import IcxorSearcher from '@render/components/icxorTools/IcxorSearcher.vue'
-import type { Ref } from 'vue'
 import { onActivated, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -26,11 +26,20 @@ onActivated(() => {
     <div class="title">
       工具
     </div>
-    <el-tabs v-model="currentTab" class="tabs">
-      <el-tab-pane label="搜图" name="search">
+    <el-tabs
+      v-model="currentTab"
+      class="tabs"
+    >
+      <el-tab-pane
+        label="搜图"
+        name="search"
+      >
         <IcxorSearcher />
       </el-tab-pane>
-      <el-tab-pane label="GIF转换" name="gifConvert">
+      <el-tab-pane
+        label="GIF转换"
+        name="gifConvert"
+      >
         <IcxorGifConverter />
       </el-tab-pane>
     </el-tabs>

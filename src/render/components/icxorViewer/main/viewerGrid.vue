@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ref, watch } from 'vue'
 
@@ -29,7 +29,9 @@ function handleRightClick(event: MouseEvent, obj: IllustObj) {
 }
 function scrollToCurrent() {
   try {
-    document.getElementById(`img-grid-${props.currentSelected.id}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    document
+      .getElementById(`img-grid-${props.currentSelected.id}`)
+      .scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
   catch {}
 }
@@ -53,8 +55,15 @@ defineExpose({
 </script>
 
 <template>
-  <el-scrollbar ref="table" style="border-radius: 5px" class="grid-container">
-    <div v-loading="loading" class="grid-group">
+  <el-scrollbar
+    ref="table"
+    style="border-radius: 5px"
+    class="grid-container"
+  >
+    <div
+      v-loading="loading"
+      class="grid-group"
+    >
       <div
         v-for="(obj, index) in tableData"
         :id="`img-grid-${obj.id}`"
@@ -63,17 +72,23 @@ defineExpose({
         class="viewer-grid-container"
       >
         <div class="expo" />
-        <div v-if="obj.checked" class="selected-mask" :class="props.currentSelected && props.currentSelected.id === obj.id ? 'current' : ''">
+        <div
+          v-if="obj.checked"
+          class="selected-mask"
+          :class="props.currentSelected && props.currentSelected.id === obj.id ? 'current' : ''"
+        >
           <CircleCheck />
         </div>
         <el-image
           class="viewer-img"
           :class="`${
-            props.currentSelected && props.currentSelected.id === obj.id
-              ? 'current'
-              : ''
+            props.currentSelected && props.currentSelected.id === obj.id ? 'current' : ''
           }`"
-          :src="image404s[obj.id] ? UrlGenerator.getBlobUrl(obj, 'original') : UrlGenerator.getBlobUrl(obj, 'large')"
+          :src="
+            image404s[obj.id]
+              ? UrlGenerator.getBlobUrl(obj, 'original')
+              : UrlGenerator.getBlobUrl(obj, 'large')
+          "
           fit="cover"
           loading="lazy"
           @error="image404s[obj.id] = true"
@@ -90,11 +105,22 @@ defineExpose({
       </div>
     </div>
   </el-scrollbar>
-  <div v-if="currentSelected" style="display: none;">
+  <div
+    v-if="currentSelected"
+    style="display: none"
+  >
     <el-image
       id="img-fixed"
-      :src="image404s[currentSelected.id] ? UrlGenerator.getBlobUrl(currentSelected, 'original') : UrlGenerator.getBlobUrl(currentSelected, 'large')"
-      :preview-src-list="[image404s[currentSelected.id] ? UrlGenerator.getBlobUrl(currentSelected, 'original') : UrlGenerator.getBlobUrl(currentSelected, 's_large')]"
+      :src="
+        image404s[currentSelected.id]
+          ? UrlGenerator.getBlobUrl(currentSelected, 'original')
+          : UrlGenerator.getBlobUrl(currentSelected, 'large')
+      "
+      :preview-src-list="[
+        image404s[currentSelected.id]
+          ? UrlGenerator.getBlobUrl(currentSelected, 'original')
+          : UrlGenerator.getBlobUrl(currentSelected, 's_large'),
+      ]"
       preview-teleported
       fit="cover"
     >

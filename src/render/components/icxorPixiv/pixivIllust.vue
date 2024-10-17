@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { reactive, ref, toRaw, watch } from 'vue'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { Download, Lock, Picture, Search, Star, Unlock } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
-import { API } from '@render/ts/api'
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import { reactive, ref, toRaw, watch } from 'vue'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
@@ -40,7 +40,9 @@ async function handleDownload() {
       const meta = await API.getPixivUgoiraJson(illustObj.value.id)
       await downloadPixivUgoiraTo(toRaw(illustObj.value), dir, meta)
     }
-    else { await downloadPixivTo(toRaw(illustObj.value), dir, page.value) }
+    else {
+      await downloadPixivTo(toRaw(illustObj.value), dir, page.value)
+    }
     ElMessage.success('下载完成')
   }
   catch (err) {
@@ -48,7 +50,7 @@ async function handleDownload() {
   }
 }
 function handleSearchByBtn() {
-  if (!form.pid || !/[1-9]+[0-9]*]*/.test(form.pid)) {
+  if (!form.pid || !/[1-9]\d*\]*/.test(form.pid)) {
     ElMessage.error('PID非法')
     return
   }
@@ -96,16 +98,33 @@ defineExpose({ handleSearchByLink })
 </script>
 
 <template>
-  <div v-loading="isLoading" style="height: 100%">
+  <div
+    v-loading="isLoading"
+    style="height: 100%"
+  >
     <div class="illust-form">
-      <el-form label-width="80px" style="width: 100%" label-position="left">
+      <el-form
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+      >
         <el-form-item label="PID">
-          <el-input v-model="form.pid" placeholder="输入PID" />
+          <el-input
+            v-model="form.pid"
+            placeholder="输入PID"
+          />
         </el-form-item>
         <el-form-item label="页号">
-          <el-row style="width: 100%" justify="space-between">
+          <el-row
+            style="width: 100%"
+            justify="space-between"
+          >
             <el-col :span="12">
-              <el-input-number v-model="form.page" :min="0" :max="maxpage" />
+              <el-input-number
+                v-model="form.page"
+                :min="0"
+                :max="maxpage"
+              />
             </el-col>
             <el-col :span="8">
               <el-row justify="end">
@@ -126,7 +145,10 @@ defineExpose({ handleSearchByLink })
         </el-form-item>
       </el-form>
     </div>
-    <div v-if="illustObj" class="illust-result">
+    <div
+      v-if="illustObj"
+      class="illust-result"
+    >
       <div class="result-left">
         <el-image
           v-loading="isImgLoading"
@@ -183,11 +205,7 @@ defineExpose({ handleSearchByLink })
             </template>
             <el-descriptions-item label="类型">
               <el-tag>
-                {{
-                  { ugoira: "动图", manga: "漫画", illust: "插画" }[
-                    illustObj.type
-                  ]
-                }}
+                {{ { ugoira: '动图', manga: '漫画', illust: '插画' }[illustObj.type] }}
               </el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="ID">
@@ -212,13 +230,22 @@ defineExpose({ handleSearchByLink })
               </el-link>
             </el-descriptions-item>
             <el-descriptions-item label="限制级">
-              <el-tag v-if="illustObj.x_restrict === 0" type="success">
+              <el-tag
+                v-if="illustObj.x_restrict === 0"
+                type="success"
+              >
                 全年龄
               </el-tag>
-              <el-tag v-else-if="illustObj.x_restrict === 1" type="warning">
+              <el-tag
+                v-else-if="illustObj.x_restrict === 1"
+                type="warning"
+              >
                 R-18
               </el-tag>
-              <el-tag v-else-if="illustObj.x_restrict === 2" type="danger">
+              <el-tag
+                v-else-if="illustObj.x_restrict === 2"
+                type="danger"
+              >
                 R-18G
               </el-tag>
             </el-descriptions-item>

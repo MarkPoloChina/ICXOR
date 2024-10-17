@@ -1,16 +1,17 @@
 import path from 'node:path'
-import { extract } from 'zip-lib'
-import getPixels from 'get-pixels'
-import imageSize from 'image-size'
-import GifEncoder from 'gif-encoder'
 import fs from 'fs-extra'
+import getPixels from 'get-pixels'
+import GifEncoder from 'gif-encoder'
+import imageSize from 'image-size'
+import { extract } from 'zip-lib'
 import { FS } from './FSService'
 
 export class GifCoverter {
   static async zipToGif(input: string, output: string, delay: number) {
     const tempDir = output.replace('.gif', '_temp')
     await extract(input, tempDir)
-    const files = (await FS.parseFilenamesFromDirectoryAsync(tempDir)).map(file => path.join(tempDir, file))
+    const files = (await FS.parseFilenamesFromDirectoryAsync(tempDir))
+      .map(file => path.join(tempDir, file))
     const imagesData: Uint8Array[] = []
     const dimensions = imageSize(files[0])
     for (const imagePath of files) {

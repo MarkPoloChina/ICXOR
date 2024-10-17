@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Check, Download, Remove } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { FilenameAdapter } from '@render/ts/util/filename'
-import { onMounted, reactive, ref } from 'vue'
-import { API } from '@render/ts/api'
-import { BatchDto } from '@render/ts/dto/batch'
 import MetaForm from '@render/components/share/form/metaForm.vue'
 import FilterTable from '@render/components/share/table/filterTable.vue'
+import { API } from '@render/ts/api'
+import { BatchDto } from '@render/ts/dto/batch'
+import { FilenameAdapter } from '@render/ts/util/filename'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive, ref } from 'vue'
 
 const { ipcInvoke } = window.electron
 
@@ -68,23 +68,19 @@ async function startAction() {
       return
     ElMessage.info('开始收集信息')
     loading.value = true
-    paths.push(...(await ipcInvoke(
-      'fs:getFilenames',
-      dir,
-    )))
+    paths.push(...(await ipcInvoke('fs:getFilenames', dir)))
   }
   else {
-    const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }])
+    const files: string[] = await ipcInvoke('dialog:openFile', [
+      { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+    ])
     if (!files)
       return
     ElMessage.info('开始收集信息')
     loading.value = true
     paths.push(...files)
   }
-  const resp = await FilenameAdapter.getDtoList(
-    paths,
-    importOption.autoInject,
-  )
+  const resp = await FilenameAdapter.getDtoList(paths, importOption.autoInject)
   ElMessage.info(`信息收集完成，共${resp.length}条数据`)
   loading.value = false
   log.list = resp
@@ -99,15 +95,11 @@ function handleUpload() {
     ElMessage.error('未选择任何数据')
     return
   }
-  ElMessageBox.confirm(
-    `将${selectedList.length}个项目进行上传，确认？`,
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`将${selectedList.length}个项目进行上传，确认？`, 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(async () => {
       loading.value = true
       const dto = new BatchDto()
@@ -133,7 +125,7 @@ function handleUpload() {
         })
         table.value.onReset()
       }
-      catch (err) {
+      catch {
         ElMessage.error('网络错误')
       }
       finally {
@@ -146,7 +138,12 @@ function handleUpload() {
 
 <template>
   <div class="importer-main">
-    <el-alert type="info" show-icon :closable="false" style="flex: none">
+    <el-alert
+      type="info"
+      show-icon
+      :closable="false"
+      style="flex: none"
+    >
       <template #title>
         利用文件名创建Illust信息, 指向对应类型的Remote, 也可同时附加元数据。
       </template>
@@ -156,7 +153,11 @@ function handleUpload() {
         导入选项
       </div>
       <div class="form-block">
-        <el-form :model="importOption" label-width="100px" style="width: 100%">
+        <el-form
+          :model="importOption"
+          label-width="100px"
+          style="width: 100%"
+        >
           <el-form-item label="导入类型">
             <el-radio-group v-model="importOption.importType">
               <el-radio label="directory">
@@ -168,7 +169,10 @@ function handleUpload() {
             </el-radio-group>
           </el-form-item>
           <el-form-item label="默认识别">
-            <el-row :gutter="20" style="width: 100%">
+            <el-row
+              :gutter="20"
+              style="width: 100%"
+            >
               <el-col :span="6">
                 <el-select
                   v-model="importOption.autoInject.defaultRemoteBaseId"
@@ -199,20 +203,44 @@ function handleUpload() {
               v-model="importOption.autoInject.remoteEndpointForPixiv"
               label="Pixiv末端"
             />
-            <el-select v-model="importOption.autoInject.thumbEndpoint" style="margin-left: 20px;">
-              <el-option label="不变" value="notSet" />
-              <el-option label="与原图一致" value="same" />
-              <el-option label="jpg扩展名" value="jpg" />
+            <el-select
+              v-model="importOption.autoInject.thumbEndpoint"
+              style="margin-left: 20px"
+            >
+              <el-option
+                label="不变"
+                value="notSet"
+              />
+              <el-option
+                label="与原图一致"
+                value="same"
+              />
+              <el-option
+                label="jpg扩展名"
+                value="jpg"
+              />
             </el-select>
-            <el-button style="margin-left: 20px;" @click="showDialog = true">
+            <el-button
+              style="margin-left: 20px"
+              @click="showDialog = true"
+            >
               附加元
             </el-button>
           </el-form-item>
           <el-form-item label="更新策略">
             <el-select v-model="importOption.updatePolicy">
-              <el-option label="覆盖" value="cover" />
-              <el-option label="仅更新" value="onlyUpdate" />
-              <el-option label="仅添加" value="onlyAdd" />
+              <el-option
+                label="覆盖"
+                value="cover"
+              />
+              <el-option
+                label="仅更新"
+                value="onlyUpdate"
+              />
+              <el-option
+                label="仅添加"
+                value="onlyAdd"
+              />
             </el-select>
           </el-form-item>
         </el-form>

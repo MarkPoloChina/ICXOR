@@ -1,5 +1,5 @@
-import { Controller } from '@nestjs/common'
 import { IpcHandle } from '@doubleshot/nest-electron'
+import { Controller } from '@nestjs/common'
 import { Payload } from '@nestjs/microservices'
 import { PixivApiService } from './pixiv-api.service'
 
@@ -10,13 +10,15 @@ export class PixivApiController {
   @IpcHandle('api:GET/pixiv-api/url')
   async getUrl(
     @Payload()
-    [{ pid, page, type }]: [{ pid: number; page: number; type: string }],
+    [{ pid, page, type }]: [{ pid: number, page: number, type: string }],
   ) {
     return this.pixivApiService.getPixivUrl(pid, page, type)
   }
 
   @IpcHandle('api:GET/pixiv-api/pixiv-json/latest')
-  async getJsonLatest(@Payload() [{ isPrivate, existFilenames }]: [{ isPrivate: boolean;existFilenames?: string[] }]) {
+  async getJsonLatest(
+    @Payload() [{ isPrivate, existFilenames }]: [{ isPrivate: boolean, existFilenames?: string[] }],
+  ) {
     const json = await this.pixivApiService.getLatestIllusts(isPrivate, existFilenames)
     return json
   }
@@ -47,7 +49,9 @@ export class PixivApiController {
   }
 
   @IpcHandle('api:POST/pixiv-api/bookmark')
-  async togglePixivBookmark(@Payload() [{ pid, op, isPrivate }]: [{ pid: number; op: boolean; isPrivate: boolean }]) {
+  async togglePixivBookmark(
+    @Payload() [{ pid, op, isPrivate }]: [{ pid: number, op: boolean, isPrivate: boolean }],
+  ) {
     if (op)
       return this.pixivApiService.bookmarkIllust(pid, isPrivate)
     else return this.pixivApiService.unbookmarkIllust(pid)

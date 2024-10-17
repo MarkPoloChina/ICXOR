@@ -1,5 +1,5 @@
-import path from 'node:path'
 import { Buffer } from 'node:buffer'
+import path from 'node:path'
 import fs from 'fs-extra'
 
 export class FS {

@@ -14,14 +14,21 @@ function checkUpdate() {
 <template>
   <el-scrollbar height="100%">
     <div class="about">
-      <el-image :src="url" class="home-img" style="width: 200px" />
+      <el-image
+        :src="url"
+        class="home-img"
+        style="width: 200px"
+      />
       <div class="home-title">
         ICXOR
       </div>
       <div class="version">
         Ver. {{ packageJson.version }}
       </div>
-      <el-link type="primary" @click="checkUpdate">
+      <el-link
+        type="primary"
+        @click="checkUpdate"
+      >
         检查更新
       </el-link>
       <div class="home-title-2">
@@ -36,9 +43,7 @@ function checkUpdate() {
           <el-link
             type="primary"
             href=""
-            style="
-              vertical-align: baseline;
-            "
+            style="vertical-align: baseline"
             @click="linkClick('https://github.com/MarkPoloChina')"
           >
             MarkPoloChauvet
@@ -93,7 +98,8 @@ function checkUpdate() {
             </el-link>
           </div>
           <div style="margin-top: 5px">
-            Speical Thanks to <span style="color: #cc696b">Seven</span>
+            Speical Thanks to
+            <span style="color: #cc696b">Seven</span>
           </div>
         </div>
         <div class="title">
@@ -113,23 +119,27 @@ function checkUpdate() {
             <img
               src="../../assets/img/element-plus-logo.svg"
               style="height: 25px; margin-right: 5px"
-            >Element Plus - The MIT License
+            >
+            Element Plus - The MIT License
           </div>
           <div class="single-info">
             <img
               src="../../assets/img/electron-logo.svg"
               style="height: 25px; margin-right: 5px"
-            >Electron - The MIT License
+            >
+            Electron - The MIT License
           </div>
           <div class="single-info">
             <img
               src="../../assets/img/nestjs.svg"
               style="height: 25px; margin-right: 5px"
-            >Nest - The MIT License
+            >
+            Nest - The MIT License
           </div>
           <br>
           <div class="single-info">
-            Template from&nbsp;<img
+            Template from&nbsp;
+            <img
               src="../../assets/img/fvne.png"
               style="height: 25px; margin-right: 5px"
             >
@@ -137,14 +147,11 @@ function checkUpdate() {
               style="vertical-align: baseline"
               type="info"
               href=""
-              @click="
-                linkClick(
-                  'https://github.com/ArcherGu/fast-vite-nestjs-electron',
-                )
-              "
+              @click="linkClick('https://github.com/ArcherGu/fast-vite-nestjs-electron')"
             >
               fast-vite-nestjs-electron
-            </el-link>&nbsp;- The MIT License
+            </el-link>
+            &nbsp;- The MIT License
           </div>
           <div class="title">
             Visit more
@@ -154,9 +161,7 @@ function checkUpdate() {
               <el-link
                 type="info"
                 href=""
-                @click="
-                  linkClick('https://github.com/MarkPoloChina/ICXOR')
-                "
+                @click="linkClick('https://github.com/MarkPoloChina/ICXOR')"
               >
                 Project in Github
               </el-link>
@@ -175,17 +180,15 @@ function checkUpdate() {
             <el-link
               type="info"
               href=""
-              style="
-                vertical-align: baseline;
-              "
+              style="vertical-align: baseline"
               @click="linkClick('https://saucenao.com/')"
             >
               SauceNAO
-            </el-link>&nbsp;is a reverse image search engine.
+            </el-link>
+            &nbsp;is a reverse image search engine.
           </div>
           <div class="cpr">
-            "pixiv"和"p"图标是日本ピクシブ株式会社持有的商标,
-            不代表本软件由其提供或支持
+            "pixiv"和"p"图标是日本ピクシブ株式会社持有的商标, 不代表本软件由其提供或支持
             <br>
             The "pixiv" and "p" logos are trademarks of pixiv Inc.
           </div>

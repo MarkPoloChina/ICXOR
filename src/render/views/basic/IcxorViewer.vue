@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
+import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
+import type { BatchLog } from '@render/ts/interface/batchLog'
 import { Clock, Filter, MessageBox, Tickets } from '@element-plus/icons-vue'
-import ViewerMain from '@render/components/icxorViewer/viewerMain.vue'
+import ViewerBatchLog from '@render/components/icxorViewer/viewerBatch.vue'
 import ViewerFilter from '@render/components/icxorViewer/viewerFilter.vue'
 import ViewerFunctions from '@render/components/icxorViewer/viewerFunctions.vue'
 import ViewerInfo from '@render/components/icxorViewer/viewerInfo.vue'
-import { reactive, ref, watch } from 'vue'
-import ViewerBatchLog from '@render/components/icxorViewer/viewerBatch.vue'
-import type { BatchLog } from '@render/ts/interface/batchLog'
+import ViewerMain from '@render/components/icxorViewer/viewerMain.vue'
 import ViewerPoly from '@render/components/icxorViewer/viewerPoly.vue'
-import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
-import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
+import { reactive, ref, watch } from 'vue'
 
 const viewerMain = ref()
 const viewerInfo = ref()
@@ -41,15 +41,13 @@ function handleToggle(e: MouseEvent, side: string, type: string) {
     viewerColShow[side][type] = false
   }
   else {
-    for (const key in viewerColShow[side])
-      viewerColShow[side][key] = false
+    for (const key in viewerColShow[side]) viewerColShow[side][key] = false
     viewerColShow[side][type] = true
   }
   if (side === 'left' && viewerColShow[side][type])
     currentMode.value = type
   let target = e.target as HTMLElement
-  while (target.tagName.toLowerCase() !== 'button')
-    target = target.parentElement
+  while (target.tagName.toLowerCase() !== 'button') target = target.parentElement
   target.blur()
 }
 watch(currentMode, (val) => {
@@ -64,29 +62,61 @@ watch(currentMode, (val) => {
   <div class="viewer-container">
     <div class="title">
       <div class="btn-group">
-        <el-button text :icon="Filter" :bg="viewerColShow.left.filter" @click="handleToggle($event, 'left', 'filter')" />
-        <el-button text :icon="MessageBox" :bg="viewerColShow.left.poly" @click="handleToggle($event, 'left', 'poly')" />
+        <el-button
+          text
+          :icon="Filter"
+          :bg="viewerColShow.left.filter"
+          @click="handleToggle($event, 'left', 'filter')"
+        />
+        <el-button
+          text
+          :icon="MessageBox"
+          :bg="viewerColShow.left.poly"
+          @click="handleToggle($event, 'left', 'poly')"
+        />
       </div>
       <div>
-        <span v-if="currentMode === 'poly'">聚合</span>视图
+        <span v-if="currentMode === 'poly'">聚合</span>
+        视图
       </div>
       <div class="btn-group">
-        <el-button text :icon="Tickets" :bg="viewerColShow.right.info" @click="handleToggle($event, 'right', 'info')" />
-        <el-button text :icon="Clock" :bg="viewerColShow.right.batch" @click="handleToggle($event, 'right', 'batch')" />
+        <el-button
+          text
+          :icon="Tickets"
+          :bg="viewerColShow.right.info"
+          @click="handleToggle($event, 'right', 'info')"
+        />
+        <el-button
+          text
+          :icon="Clock"
+          :bg="viewerColShow.right.batch"
+          @click="handleToggle($event, 'right', 'batch')"
+        />
       </div>
     </div>
     <div class="main">
       <div class="col selector-col">
-        <ViewerFilter v-show="viewerColShow.left.filter" ref="viewerFilterRef" @update:filter="filter = $event" @update:sorter="sorter = $event" />
-        <ViewerPoly v-show="viewerColShow.left.poly" ref="viewerPolyRef" @update:filter="filter = $event" @update:sorter="sorter = $event" @update:picolt="currentPicoltId = $event" />
+        <ViewerFilter
+          v-show="viewerColShow.left.filter"
+          ref="viewerFilterRef"
+          @update:filter="filter = $event"
+          @update:sorter="sorter = $event"
+        />
+        <ViewerPoly
+          v-show="viewerColShow.left.poly"
+          ref="viewerPolyRef"
+          @update:filter="filter = $event"
+          @update:sorter="sorter = $event"
+          @update:picolt="currentPicoltId = $event"
+        />
       </div>
       <div class="col main-and-func-col">
         <div class="main-row">
           <ViewerMain
             ref="viewerMain"
-            v-model:curPage="curPage"
+            v-model:cur-page="curPage"
             v-model:page-size="pageSize"
-            v-model:currentSelected="currentSelected"
+            v-model:current-selected="currentSelected"
             :filter="filter"
             :sorter="sorter"
             :viewer-type="viewerType"
@@ -99,7 +129,7 @@ watch(currentMode, (val) => {
         </div>
         <div class="func-row">
           <ViewerFunctions
-            v-model:curPage="curPage"
+            v-model:cur-page="curPage"
             v-model:page-size="pageSize"
             :illust-count="illustCount"
             :selection-count="selectionCount"
@@ -116,7 +146,10 @@ watch(currentMode, (val) => {
           v-model:info="currentSelected"
           @upload="viewerMain.handleSingleIllustChange($event)"
         />
-        <ViewerBatchLog v-show="viewerColShow.right.batch" :batch-logs="batchLogs" />
+        <ViewerBatchLog
+          v-show="viewerColShow.right.batch"
+          :batch-logs="batchLogs"
+        />
       </div>
     </div>
   </div>

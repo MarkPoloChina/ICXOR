@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@electron/notarize": "^2.2.0",
-    "@lightwing/eslint-config": "^0.0.21",
+    "@lightwing/eslint-config": "^1.0.52",
     "@types/get-pixels": "^3.3.3",
     "@types/gif-encoder": "^0.7.3",
     "@vitejs/plugin-vue": "4.3.4",
@@ -62,7 +62,7 @@
     "electron-icon-builder": "^2.0.1",
     "electron-log": "^5.0.0",
     "electron-updater": "^6.1.4",
-    "eslint": "8.49.0",
+    "eslint": "9.12.0",
     "lint-staged": "14.0.1",
     "rimraf": "5.0.1",
     "sass": "^1.66.1",

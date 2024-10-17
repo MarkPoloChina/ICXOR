@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { reactive, ref, toRaw } from 'vue'
-import { Download, RefreshLeft, Search } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import { API } from '@render/ts/api'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import { Download, RefreshLeft, Search } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
+import { ElMessage } from 'element-plus'
+import { reactive, ref, toRaw } from 'vue'
 
 const emit = defineEmits(['toIllust', 'toUser'])
-const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
+const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
+  = window.electron
 const form = reactive({
   type: 'public',
   limit: 'lib',
@@ -30,18 +31,16 @@ async function handleDownload(illustObj: PixivIllust) {
       const meta = await API.getPixivUgoiraJson(illustObj.id)
       await downloadPixivUgoiraTo(toRaw(illustObj), dir, meta)
     }
-    else { await downloadPixivTo(toRaw(illustObj), dir) }
+    else {
+      await downloadPixivTo(toRaw(illustObj), dir)
+    }
     ElMessage.success('下载完成')
   }
   catch (err) {
     ElMessage.error(`下载失败: ${err}`)
   }
 }
-function tableRowClassName({
-  row,
-}: {
-  row: PixivIllust
-}) {
+function tableRowClassName({ row }: { row: PixivIllust }) {
   if (success.value.includes(row.id))
     return 'success-row'
   else if (failed.value.includes(row.id))
@@ -72,10 +71,12 @@ async function handleDownloadAll() {
             const meta = await API.getPixivUgoiraJson(ele.id)
             await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
           }
-          else { await downloadPixivTo(toRaw(ele), dir) }
+          else {
+            await downloadPixivTo(toRaw(ele), dir)
+          }
           success.value.push(ele.id)
         }
-        catch (err) {
+        catch {
           if (retrys++ >= 3) {
             ElMessage.error(`Too much retry in ${ele.id}`)
             failed.value.push(ele.id)
@@ -91,7 +92,9 @@ async function handleDownloadAll() {
     stat.value = `下载[S+I+F/T]  ${success.value.length} + ${invisable.length} + ${failed.value.length} / ${illusts.value.length} 个项目`
   }
   isDownloading.value = false
-  ElMessage.success(`下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目`)
+  ElMessage.success(
+    `下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目`,
+  )
 }
 async function handleSearch() {
   let existFilenames: string[] | undefined
@@ -100,10 +103,7 @@ async function handleSearch() {
     const dir = await ipcInvoke('dialog:openDirectory')
     if (!dir)
       return
-    existFilenames = await ipcInvoke(
-      'fs:getFilenames',
-      dir,
-    )
+    existFilenames = await ipcInvoke('fs:getFilenames', dir)
   }
   else if (form.limit === 'none') {
     existFilenames = []
@@ -144,10 +144,12 @@ async function handleRetry() {
           const meta = await API.getPixivUgoiraJson(ele.id)
           await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
         }
-        else { await downloadPixivTo(toRaw(ele), dir) }
+        else {
+          await downloadPixivTo(toRaw(ele), dir)
+        }
         success.value.push(ele.id)
       }
-      catch (err) {
+      catch {
         if (retrys++ >= 3) {
           ElMessage.error(`Too much retry in ${ele.id}`)
           failed.value.push(ele.id)
@@ -187,9 +189,16 @@ function handleRightClick(obj: PixivIllust) {
 <template>
   <div style="height: 100%">
     <div class="illust-form">
-      <el-form label-width="80px" style="width: 100%" label-position="left">
+      <el-form
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+      >
         <el-form-item label="类型">
-          <el-row style="width: 100%" justify="space-between">
+          <el-row
+            style="width: 100%"
+            justify="space-between"
+          >
             <el-radio-group v-model="form.type">
               <el-radio label="public">
                 公开(Public)
@@ -225,7 +234,10 @@ function handleRightClick(obj: PixivIllust) {
           </el-row>
         </el-form-item>
         <el-form-item label="截断">
-          <el-row style="width: 100%" justify="space-between">
+          <el-row
+            style="width: 100%"
+            justify="space-between"
+          >
             <el-radio-group v-model="form.limit">
               <el-radio label="lib">
                 基准
@@ -267,7 +279,11 @@ function handleRightClick(obj: PixivIllust) {
           width="150"
           show-overflow-tooltip
         />
-        <el-table-column prop="title" label="标题" show-overflow-tooltip />
+        <el-table-column
+          prop="title"
+          label="标题"
+          show-overflow-tooltip
+        />
       </el-table>
     </div>
     <div class="illust-stat">

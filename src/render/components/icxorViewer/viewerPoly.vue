@@ -55,20 +55,27 @@ const tabsGetEnumFunc = {
   },
   lnr: async () => {
     const data = await API.getTags()
-    return data.filter(ele => ele.type !== 'author').map((ele) => {
-      return {
-        label: ele.name,
-      }
-    })
+    return data
+      .filter(ele => ele.type !== 'author')
+      .map((ele) => {
+        return {
+          label: ele.name,
+        }
+      })
   },
   author: async () => {
     const data = await API.getTags()
-    return data.filter(ele => ele.type === 'author' && !ele.name.startsWith('@')).map((ele) => {
-      return {
-        label: ele.name.replace(/^\[\d+\]/, '').trim().split('@')[0],
-        author_id: /^\[(\d+)\]/.exec(ele.name)[1],
-      }
-    })
+    return data
+      .filter(ele => ele.type === 'author' && !ele.name.startsWith('@'))
+      .map((ele) => {
+        return {
+          label: ele.name
+            .replace(/^\[\d+\]/, '')
+            .trim()
+            .split('@')[0],
+          author_id: /^\[(\d+)\]/.exec(ele.name)[1],
+        }
+      })
   },
   source: async () => {
     const data = await API.getRemoteBase()
@@ -80,13 +87,8 @@ const tabsGetEnumFunc = {
   },
 }
 const tabsGetFilterFunc = {
-  timeline: (item: {
-    label: string
-  }) => {
-    const dateStr = UtilDate.getDateCST(
-      new Date(UtilDate.getISOFromDateCST(item.label)),
-      '-',
-    )
+  timeline: (item: { label: string }) => {
+    const dateStr = UtilDate.getDateCST(new Date(UtilDate.getISOFromDateCST(item.label)), '-')
     return {
       filter: {
         'illust.date': [dateStr],
@@ -96,10 +98,7 @@ const tabsGetFilterFunc = {
       },
     }
   },
-  picolt: (item: {
-    parent: string
-    name: string
-  }) => {
+  picolt: (item: { parent: string, name: string }) => {
     return {
       filter: {
         'poly.parent': [item.parent],
@@ -111,9 +110,7 @@ const tabsGetFilterFunc = {
       },
     }
   },
-  lnr: (item: {
-    label: string
-  }) => {
+  lnr: (item: { label: string }) => {
     return {
       filter: {
         'tag.name': [item.label],
@@ -123,9 +120,7 @@ const tabsGetFilterFunc = {
       },
     }
   },
-  author: (item: {
-    author_id: string
-  }) => {
+  author: (item: { author_id: string }) => {
     return {
       filter: {
         'meta.author_id': item.author_id,
@@ -135,9 +130,7 @@ const tabsGetFilterFunc = {
       },
     }
   },
-  source: (item: {
-    label: string
-  }) => {
+  source: (item: { label: string }) => {
     return {
       filter: {
         'remote_base.name': [item.label],
@@ -148,12 +141,13 @@ const tabsGetFilterFunc = {
 }
 
 onMounted(async () => {
-  for (const key of Object.keys(tabsData))
-    tabsData[key].info = await tabsGetEnumFunc[key]()
+  for (const key of Object.keys(tabsData)) tabsData[key].info = await tabsGetEnumFunc[key]()
 })
 function handleCurrentChange() {
   const currentTabKey = currentTab.value
-  const obj = tabsGetFilterFunc[currentTabKey](tabsData[currentTabKey].info[tabsData[currentTabKey].currentKey])
+  const obj = tabsGetFilterFunc[currentTabKey](
+    tabsData[currentTabKey].info[tabsData[currentTabKey].currentKey],
+  )
   emit('update:filter', obj.filter)
   emit('update:sorter', obj.sorter)
   if (currentTabKey === 'picolt' && tabsData.picolt.info[tabsData.picolt.currentKey])
@@ -204,8 +198,16 @@ defineExpose({ handleClear })
 
 <template>
   <div class="container">
-    <el-tabs v-model="currentTab" class="tabs" tab-position="left" @tab-change="handleCurrentChange">
-      <el-tab-pane label="时间线" name="timeline">
+    <el-tabs
+      v-model="currentTab"
+      class="tabs"
+      tab-position="left"
+      @tab-change="handleCurrentChange"
+    >
+      <el-tab-pane
+        label="时间线"
+        name="timeline"
+      >
         <el-tabs
           v-if="tabsData.timeline.info.length !== 0"
           v-model="tabsData.timeline.currentKey"
@@ -221,7 +223,10 @@ defineExpose({ handleClear })
           />
         </el-tabs>
       </el-tab-pane>
-      <el-tab-pane label="PICOLT聚合" name="picolt">
+      <el-tab-pane
+        label="PICOLT聚合"
+        name="picolt"
+      >
         <el-tabs
           v-if="tabsData.picolt.info.length !== 0"
           v-model="tabsData.picolt.currentKey"
@@ -242,7 +247,10 @@ defineExpose({ handleClear })
           </el-tab-pane>
         </el-tabs>
       </el-tab-pane>
-      <el-tab-pane label="LNR聚合" name="lnr">
+      <el-tab-pane
+        label="LNR聚合"
+        name="lnr"
+      >
         <el-tabs
           v-if="tabsData.lnr.info.length !== 0"
           v-model="tabsData.lnr.currentKey"
@@ -258,7 +266,10 @@ defineExpose({ handleClear })
           />
         </el-tabs>
       </el-tab-pane>
-      <el-tab-pane label="作者专题聚合" name="author">
+      <el-tab-pane
+        label="作者专题聚合"
+        name="author"
+      >
         <el-tabs
           v-if="tabsData.author.info.length !== 0"
           v-model="tabsData.author.currentKey"
@@ -274,7 +285,10 @@ defineExpose({ handleClear })
           />
         </el-tabs>
       </el-tab-pane>
-      <el-tab-pane label="图源聚合" name="source">
+      <el-tab-pane
+        label="图源聚合"
+        name="source"
+      >
         <el-tabs
           v-if="tabsData.source.info.length !== 0"
           v-model="tabsData.source.currentKey"

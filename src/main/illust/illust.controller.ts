@@ -1,21 +1,21 @@
-import { Controller } from '@nestjs/common'
-import { IpcHandle } from '@doubleshot/nest-electron'
-import { Payload } from '@nestjs/microservices'
 import type { IllustDto } from './dto/illust.dto'
 import type { IllustBatchDto } from './dto/illust_batch.dto'
 import type { RemoteBaseDto } from './dto/remote_base.dto'
-import { IllustService } from './illust.service'
+import { IpcHandle } from '@doubleshot/nest-electron'
+import { Controller } from '@nestjs/common'
+import { Payload } from '@nestjs/microservices'
 import { FilterConditionObj } from './dto/filter_condition_obj.dto'
 import { IllustTodayDto } from './dto/illust_today.dto'
-import { Tag } from './entities/tag.entities'
 import { Poly } from './entities/poly.entities'
+import { Tag } from './entities/tag.entities'
+import { IllustService } from './illust.service'
 
 @Controller()
 export class IllustController {
   constructor(private readonly illustService: IllustService) {}
 
   @IpcHandle('api:GET/illust/base/enum')
-  getIllustEnum(@Payload() [{ row, desc }]: [{ row: string; desc: boolean }]) {
+  getIllustEnum(@Payload() [{ row, desc }]: [{ row: string, desc: boolean }]) {
     return this.illustService.getIllustEnum(row, desc)
   }
 
@@ -66,7 +66,7 @@ export class IllustController {
   getPolys(
     @Payload()
     [{ withIllust, type, orderAsJson }]: [
-      { withIllust: boolean; type: string; orderAsJson: object },
+      { withIllust: boolean, type: string, orderAsJson: object },
     ],
   ) {
     return this.illustService.getPolys(
@@ -84,7 +84,7 @@ export class IllustController {
   @IpcHandle('api:DELETE/illust/poly/bases')
   removeIllustsFromPoly(
     @Payload()
-    [{ polyId, illustList }]: [{ polyId: number; illustList: number[] }],
+    [{ polyId, illustList }]: [{ polyId: number, illustList: number[] }],
   ) {
     return this.illustService.removeIllustsFromPoly(polyId, illustList)
   }
@@ -103,7 +103,7 @@ export class IllustController {
   getPolyEnum(
     @Payload()
     [{ requiredType, row, desc }]: [
-      { requiredType: string; row: string; desc: boolean },
+      { requiredType: string, row: string, desc: boolean },
     ],
   ) {
     return this.illustService.getPolyEnum(row, desc, requiredType)

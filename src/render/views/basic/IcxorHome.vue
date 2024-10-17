@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import url from '@render/assets/img/avatar.jpg'
 import { computed } from 'vue'
 import { useStore } from 'vuex'
-import url from '@render/assets/img/avatar.jpg'
+
+const store = useStore()
 
 const username = computed(() => {
-  return useStore().state.username
+  return store.state.username
 })
 </script>
 
@@ -15,9 +17,13 @@ const username = computed(() => {
     </div>
     <div class="home-main">
       <div class="home-welcome">
-        Hi, <span>{{ username }}</span>
+        Hi,
+        <span>{{ username }}</span>
       </div>
-      <el-image :src="url" class="home-img" />
+      <el-image
+        :src="url"
+        class="home-img"
+      />
       <div class="home-title">
         ICXOR
       </div>
@@ -47,7 +53,7 @@ const username = computed(() => {
       }
     }
     .home-img {
-      width: min(50vh, 50vw) ;
+      width: min(50vh, 50vw);
       height: min(50vh, 50vw);
       margin-bottom: 20px;
       border-radius: 20px;

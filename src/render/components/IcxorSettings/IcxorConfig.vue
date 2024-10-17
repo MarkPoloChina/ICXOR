@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Check, Remove } from '@element-plus/icons-vue'
-import { useStore } from 'vuex'
-import { onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { useStore } from 'vuex'
 
 const configForm = reactive({
   username: '',
@@ -48,7 +48,11 @@ function revoke() {
           用户
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="用户名">
               <el-input
                 v-model="configForm.username"
@@ -61,7 +65,11 @@ function revoke() {
           COS云同步
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="SecretId">
               <el-input
                 v-model="configForm.cosSecretId"
@@ -75,7 +83,10 @@ function revoke() {
               />
             </el-form-item>
             <el-form-item label="储存桶">
-              <el-input v-model="configForm.cosBucket" placeholder="请输入储存桶名" />
+              <el-input
+                v-model="configForm.cosBucket"
+                placeholder="请输入储存桶名"
+              />
             </el-form-item>
             <el-form-item label="区域">
               <el-input
@@ -89,9 +100,16 @@ function revoke() {
           访图控制
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="磁盘访问路径">
-              <el-input v-model="configForm.localDiskRoot" placeholder="请输入路径" />
+              <el-input
+                v-model="configForm.localDiskRoot"
+                placeholder="请输入路径"
+              />
             </el-form-item>
             <el-form-item label="公网IHS路径">
               <el-input
@@ -106,7 +124,10 @@ function revoke() {
               />
             </el-form-item>
             <el-form-item label="COS路径">
-              <el-input v-model="configForm.cos" placeholder="请输入路径" />
+              <el-input
+                v-model="configForm.cos"
+                placeholder="请输入路径"
+              />
             </el-form-item>
           </el-form>
         </div>
@@ -114,9 +135,16 @@ function revoke() {
           MPS API
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="API路径">
-              <el-input v-model="configForm.mpsApiUrl" placeholder="请输入路径" />
+              <el-input
+                v-model="configForm.mpsApiUrl"
+                placeholder="请输入路径"
+              />
             </el-form-item>
           </el-form>
         </div>
@@ -124,7 +152,11 @@ function revoke() {
           Pixiv API
         </div>
         <div class="form-block">
-          <el-form :model="configForm" label-width="100px" style="width: 100%">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
             <el-form-item label="Token">
               <el-input
                 v-model="configForm.pixivToken"
@@ -148,7 +180,11 @@ function revoke() {
         <div class="title-block">
           SauceNAO API
         </div>
-        <el-form :model="configForm" label-width="100px" style="width: 100%">
+        <el-form
+          :model="configForm"
+          label-width="100px"
+          style="width: 100%"
+        >
           <el-form-item label="Token">
             <el-input
               v-model="configForm.sauceNAOToken"
@@ -159,8 +195,18 @@ function revoke() {
       </el-scrollbar>
     </div>
     <div class="btn-block">
-      <el-button type="success" :icon="Check" circle @click="commit" />
-      <el-button type="danger" :icon="Remove" circle @click="revoke" />
+      <el-button
+        type="success"
+        :icon="Check"
+        circle
+        @click="commit"
+      />
+      <el-button
+        type="danger"
+        :icon="Remove"
+        circle
+        @click="revoke"
+      />
     </div>
   </div>
 </template>

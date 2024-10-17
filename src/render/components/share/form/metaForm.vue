@@ -71,7 +71,11 @@ defineExpose({ clearForm })
       title="元数据表单"
       width="60%"
     >
-      <el-form :model="addition" label-width="100px" style="width: 100%">
+      <el-form
+        :model="addition"
+        label-width="100px"
+        style="width: 100%"
+      >
         <el-form-item label="入库时间">
           <el-date-picker
             v-model="addition.date"
@@ -103,7 +107,7 @@ defineExpose({ clearForm })
             v-model="tagType"
             placeholder="选择标签类型"
             :disabled="notChange.tag"
-            style="width: 100px;"
+            style="width: 100px"
           >
             <el-option
               v-for="item in ['simple', 'works']"
@@ -131,7 +135,12 @@ defineExpose({ clearForm })
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleConfirm"> 确定 </el-button>
+          <el-button
+            type="primary"
+            @click="handleConfirm"
+          >
+            确定
+          </el-button>
         </span>
       </template>
     </el-dialog>

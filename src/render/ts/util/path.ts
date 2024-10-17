@@ -1,6 +1,6 @@
-import store from '@render/store/index'
 import type { Poly } from '@main/illust/entities/poly.entities'
 import type { IllustObj } from '../interface/illustObj'
+import store from '@render/store/index'
 import { FilenameResolver } from './filename'
 
 const { ipcSendSync } = window.electron
@@ -46,7 +46,10 @@ export class PathHelper {
 }
 
 export class UrlGenerator {
-  static getBlobUrl(obj: IllustObj, type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original'): string {
+  static getBlobUrl(
+    obj: IllustObj,
+    type: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original',
+  ): string {
     if (type === 'original' || type === 's_large') {
       if (useLocal) {
         if (obj.remote_endpoint && local_base_map[obj.remote_base.name]?.original)
@@ -86,7 +89,10 @@ export class UrlGenerator {
   }
 
   static getPicoltLocalPath(obj: IllustObj, targetPoly: Poly, need2x = false) {
-    return PathHelper.joinFilenamePath(`${local_base}${picolt_local_base}${need2x ? targetPoly.remote2x_base : targetPoly.remote_base}`, obj.remote_endpoint)
+    return PathHelper.joinFilenamePath(
+      `${local_base}${picolt_local_base}${need2x ? targetPoly.remote2x_base : targetPoly.remote_base}`,
+      obj.remote_endpoint,
+    )
   }
 
   static getPicoltRemotePath(obj: IllustObj, targetPoly: Poly, need2x = false) {
@@ -119,24 +125,42 @@ export class UrlGenerator {
     else return url.replace('i.pximg.net', 'i.pixiv.re')
   }
 
-  static getPixivUrlSized(url: string, size: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original') {
-    if (size === 'medium')
-      return url.replace('_ugoira0', '').replace('img-original', 'c/540x540_70/img-master').replace(/\.[^.]*$/, '_master1200.jpg')
-    else if (size === 'large')
-      return url.replace('_ugoira0', '').replace('img-original', 'c/600x1200_90/img-master').replace(/\.[^.]*$/, '_master1200.jpg')
-    else if (size === 'square_medium')
-      return url.replace('_ugoira0', '').replace('img-original', 'c/360x360_70/img-master').replace(/\.[^.]*$/, '_square1200.jpg')
-    else if (size === 's_large')
-      return url.replace('_ugoira0', '').replace('img-original', 'img-master').replace(/\.[^.]*$/, '_master1200.jpg')
-    else
+  static getPixivUrlSized(
+    url: string,
+    size: 'original' | 'medium' | 'large' | 'square_medium' | 's_large' = 'original',
+  ) {
+    if (size === 'medium') {
       return url
+        .replace('_ugoira0', '')
+        .replace('img-original', 'c/540x540_70/img-master')
+        .replace(/\.[^.]*$/, '_master1200.jpg')
+    }
+    else if (size === 'large') {
+      return url
+        .replace('_ugoira0', '')
+        .replace('img-original', 'c/600x1200_90/img-master')
+        .replace(/\.[^.]*$/, '_master1200.jpg')
+    }
+    else if (size === 'square_medium') {
+      return url
+        .replace('_ugoira0', '')
+        .replace('img-original', 'c/360x360_70/img-master')
+        .replace(/\.[^.]*$/, '_square1200.jpg')
+    }
+    else if (size === 's_large') {
+      return url
+        .replace('_ugoira0', '')
+        .replace('img-original', 'img-master')
+        .replace(/\.[^.]*$/, '_master1200.jpg')
+    }
+    else {
+      return url
+    }
   }
 
   static getPixivUrlCat(pid: number, page: number, ext?: string) {
     const url = new URL(
-      `https://pixiv.cat/${pid}${page === 0 ? '' : `-${page + 1}`}${
-        ext ?? '.jpg'
-      }`,
+      `https://pixiv.cat/${pid}${page === 0 ? '' : `-${page + 1}`}${ext ?? '.jpg'}`,
     )
     return url.href
   }

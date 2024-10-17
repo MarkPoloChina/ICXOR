@@ -1,8 +1,8 @@
 <script setup lang="tsx">
-import { Filter } from '@element-plus/icons-vue'
-import { computed, reactive, ref } from 'vue'
-import { ElButton, ElCheckbox, ElIcon, ElPopover } from 'element-plus'
 import type { BatchLog } from '@render/ts/interface/batchLog'
+import { Filter } from '@element-plus/icons-vue'
+import { ElButton, ElCheckbox, ElIcon, ElPopover } from 'element-plus'
+import { computed, reactive, ref } from 'vue'
 
 const props = defineProps({
   loading: Boolean,
@@ -73,17 +73,17 @@ defineExpose({ onReset })
         ({ rowIndex }) => {
           switch (showList[rowIndex].status) {
           case 'ready':
-            return 'success-row';
+            return 'success-row'
           case 'success':
-            return 'success-row';
+            return 'success-row'
           case 'fault':
-            return 'danger-row';
+            return 'danger-row'
           case 'ignore':
-            return 'danger-row';
+            return 'danger-row'
           case 'conflict':
-            return 'warning-row';
+            return 'warning-row'
           default:
-            return '';
+            return ''
           }
         }
       "
@@ -99,7 +99,7 @@ defineExpose({ onReset })
             @change="
               (value) => {
                 if (row.status === 'ready' || row.status === 'conflict') {
-                  row.checked = value;
+                  row.checked = value
                 }
               }
             "
@@ -107,38 +107,42 @@ defineExpose({ onReset })
         </template>
         <template #header>
           <SelectionCell
-            :value="
-              writableList.every((row) => row.checked)
-                && writableList.length !== 0
-            "
+            :value="writableList.every((row) => row.checked) && writableList.length !== 0"
             :intermediate="
               writableList.some((row) => row.checked)
-                && !(
-                  writableList.every((row) => row.checked)
-                  && writableList.length !== 0
-                )
+                && !(writableList.every((row) => row.checked) && writableList.length !== 0)
             "
             :disabled="writableList.length === 0"
             @change="
               (value) => {
                 writableList.forEach((log) => {
                   if (log.status === 'ready' || log.status === 'conflict') {
-                    log.checked = value;
+                    log.checked = value
                   }
-                });
+                })
               }
             "
           />
         </template>
       </el-table-column>
-      <el-table-column prop="filename" label="文件名" :width="350" />
-      <el-table-column prop="status" label="状态" :width="100">
+      <el-table-column
+        prop="filename"
+        label="文件名"
+        :width="350"
+      />
+      <el-table-column
+        prop="status"
+        label="状态"
+        :width="100"
+      >
         <template #header>
-          <div
-            style="display: flex; align-items: center; justify-content: space-between"
-          >
+          <div style="display: flex; align-items: center; justify-content: space-between">
             状态
-            <ElPopover ref="popoverRef" trigger="click" width="150">
+            <ElPopover
+              ref="popoverRef"
+              trigger="click"
+              width="150"
+            >
               <div class="filter-wrapper">
                 <div class="filter-group">
                   <ElCheckbox v-model="shouldFilter.ready">
@@ -166,7 +170,10 @@ defineExpose({ onReset })
                     justify-content: center;
                   "
                 >
-                  <ElButton text @click="onReset">
+                  <ElButton
+                    text
+                    @click="onReset"
+                  >
                     Reset
                   </ElButton>
                 </div>
@@ -180,7 +187,10 @@ defineExpose({ onReset })
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="message" label="说明" />
+      <el-table-column
+        prop="message"
+        label="说明"
+      />
     </el-table>
     <el-pagination
       v-model:current-page="writableCurPage"

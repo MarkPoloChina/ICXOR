@@ -72,9 +72,20 @@ function handleSelectAll(selection: IllustObj[]) {
       @select-all="handleSelectAll"
       @row-contextmenu="handleContextDeteched"
     >
-      <el-table-column type="selection" width="40" />
-      <el-table-column prop="remote_base.name" label="类型" :min-width="70" />
-      <el-table-column prop="star" label="评级" :width="150">
+      <el-table-column
+        type="selection"
+        width="40"
+      />
+      <el-table-column
+        prop="remote_base.name"
+        label="类型"
+        :min-width="70"
+      />
+      <el-table-column
+        prop="star"
+        label="评级"
+        :width="150"
+      >
         <template #default="scope">
           <el-rate
             :model-value="scope.row.star"
@@ -82,7 +93,12 @@ function handleSelectAll(selection: IllustObj[]) {
           />
         </template>
       </el-table-column>
-      <el-table-column prop="remote_endpoint" label="末端" :min-width="250" show-overflow-tooltip />
+      <el-table-column
+        prop="remote_endpoint"
+        label="末端"
+        :min-width="250"
+        show-overflow-tooltip
+      />
     </el-table>
   </div>
 </template>

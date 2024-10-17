@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { API } from '@render/ts/api'
 import { Plus, Remove } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
 
@@ -42,8 +42,14 @@ function handleUpdateRemote(row) {
       远程基
     </div>
     <div class="form-block">
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column label="类型" width="150">
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+      >
+        <el-table-column
+          label="类型"
+          width="150"
+        >
           <template #default="scope">
             <el-select
               v-model="scope.row.type"
@@ -59,7 +65,10 @@ function handleUpdateRemote(row) {
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="标识符" width="150">
+        <el-table-column
+          label="标识符"
+          width="150"
+        >
           <template #default="scope">
             <span v-if="!scope.row.editing">{{ scope.row.name }}</span>
             <span v-else><el-input v-model="scope.row.name" /></span>
@@ -77,7 +86,11 @@ function handleUpdateRemote(row) {
             <span v-else><el-input v-model="scope.row.thum_url" /></span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="80">
+        <el-table-column
+          fixed="right"
+          label="操作"
+          width="80"
+        >
           <template #default="scope">
             <el-button
               v-if="!scope.row.editing"
@@ -102,7 +115,12 @@ function handleUpdateRemote(row) {
       </el-table>
     </div>
     <div class="btn-block">
-      <el-button type="success" :icon="Plus" circle @click="addRow" />
+      <el-button
+        type="success"
+        :icon="Plus"
+        circle
+        @click="addRow"
+      />
       <el-button
         type="danger"
         :icon="Remove"

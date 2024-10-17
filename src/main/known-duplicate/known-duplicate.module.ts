@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { PixivTwitter } from './entities/pixiv-twitter.entities'
-import { KnownDuplicateService } from './known-duplicate.service'
 import { KnownDuplicateController } from './known-duplicate.controller'
+import { KnownDuplicateService } from './known-duplicate.service'
 
 @Module({
   imports: [

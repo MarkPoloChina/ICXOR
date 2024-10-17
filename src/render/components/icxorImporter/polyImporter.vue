@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { FilenameAdapter } from '@render/ts/util/filename'
 import { Check, Download, Remove } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { reactive, ref } from 'vue'
-import { API } from '@render/ts/api'
-import { BatchDto } from '@render/ts/dto/batch'
 import PolyForm from '@render/components/share/form/polyForm.vue'
 import FilterTable from '@render/components/share/table/filterTable.vue'
+import { API } from '@render/ts/api'
+import { BatchDto } from '@render/ts/dto/batch'
+import { FilenameAdapter } from '@render/ts/util/filename'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { reactive, ref } from 'vue'
 
 const { ipcInvoke } = window.electron
 const log = reactive({ message: '', list: [] })
@@ -41,13 +41,12 @@ async function startAction() {
       return
     ElMessage.info('开始收集信息')
     loading.value = true
-    paths.push(...(await ipcInvoke(
-      'fs:getFilenames',
-      dir,
-    )))
+    paths.push(...(await ipcInvoke('fs:getFilenames', dir)))
   }
   else {
-    const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }])
+    const files: string[] = await ipcInvoke('dialog:openFile', [
+      { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+    ])
     if (!files)
       return
     ElMessage.info('开始收集信息')
@@ -73,15 +72,11 @@ function handleUpload() {
     ElMessage.error('未选择任何数据')
     return
   }
-  ElMessageBox.confirm(
-    `将${selectedList.length}个项目进行聚合，确认？`,
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`将${selectedList.length}个项目进行聚合，确认？`, 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(() => {
       loading.value = true
       const dto = new BatchDto()
@@ -119,10 +114,14 @@ function handleUpload() {
 
 <template>
   <div class="importer-main">
-    <el-alert type="info" show-icon :closable="false" style="flex: none">
+    <el-alert
+      type="info"
+      show-icon
+      :closable="false"
+      style="flex: none"
+    >
       <template #title>
-        识别Pixiv规则的文件名, 匹配对应的PID和Page,
-        或者仅尝试匹配末端，然后生成PICOLT聚合。
+        识别Pixiv规则的文件名, 匹配对应的PID和Page, 或者仅尝试匹配末端，然后生成PICOLT聚合。
       </template>
     </el-alert>
     <div class="import-area">
@@ -130,7 +129,11 @@ function handleUpload() {
         导入选项
       </div>
       <div class="form-block">
-        <el-form :model="importOption" label-width="100px" style="width: 100%">
+        <el-form
+          :model="importOption"
+          label-width="100px"
+          style="width: 100%"
+        >
           <el-form-item label="导入类型">
             <el-radio-group v-model="importOption.importType">
               <el-radio label="directory">
@@ -161,9 +164,24 @@ function handleUpload() {
       />
     </div>
     <div class="btn-block">
-      <el-button type="primary" :icon="Download" circle @click="startAction" />
-      <el-button type="success" :icon="Check" circle @click="handleUpload" />
-      <el-button type="danger" :icon="Remove" circle @click="initTab" />
+      <el-button
+        type="primary"
+        :icon="Download"
+        circle
+        @click="startAction"
+      />
+      <el-button
+        type="success"
+        :icon="Check"
+        circle
+        @click="handleUpload"
+      />
+      <el-button
+        type="danger"
+        :icon="Remove"
+        circle
+        @click="initTab"
+      />
     </div>
     <PolyForm
       ref="polyForm"

@@ -35,7 +35,7 @@ const possibleMatch = {
   pxderMultiple: (basename: string) => {
     if (/^\(\d+\)/.test(basename) && /_p\d+$/.test(basename)) {
       return {
-        title: /^\(\d+\)(.*)?_p\d+$/.exec(basename)[1] || '',
+        title: /^\(\d+\)(.*)_p\d+$/.exec(basename)[1] || '',
         pid: /^\((\d+)\)/.exec(basename)[1],
         page: /_p(\d+)$/.exec(basename)[1],
       }
@@ -47,7 +47,7 @@ const possibleMatch = {
   pxderSingle: (basename: string) => {
     if (/^\(\d+\)/.test(basename)) {
       return {
-        title: /^\(\d+\)(.*)?$/.exec(basename)[1] || '',
+        title: /^\(\d+\)(.*)$/.exec(basename)[1] || '',
         pid: /^\((\d+)\)/.exec(basename)[1],
         page: '0',
       }
@@ -111,11 +111,11 @@ const possibleMatch = {
     }
   },
   Twitter: (basename: string) => {
-    if (/\d+@[\d\w_]+/.test(basename)) {
+    if (/\d+@\w+/.test(basename)) {
       return {
         coreId: basename,
-        statusId: /(\d+)@[\d\w_]+/.exec(basename)[1],
-        authorId: /\d+@([\d\w_]+)_photo/.exec(basename)[1],
+        statusId: /(\d+)@\w+/.exec(basename)[1],
+        authorId: /\d+@(\w+)_photo/.exec(basename)[1],
       }
     }
     else {

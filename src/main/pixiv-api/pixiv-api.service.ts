@@ -1,9 +1,9 @@
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import { ConfigDB } from '@main/node-processor/DBService'
+import Pixiv from '@markpolochina/pixiv.ts'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import Pixiv from '@markpolochina/pixiv.ts'
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
-import { ConfigDB } from '@main/node-processor/DBService'
 import { Meta } from '../illust/entities/meta.entities'
 
 let pixivApi: Pixiv = null
@@ -12,20 +12,18 @@ async function initPixiv() {
   if (
     proxyStr
     && proxyStr.match(
-      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\:[1-9]\d{0,4}$/,
+      /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
     )
-  )
+  ) {
     Pixiv.setProxy(proxyStr.split(':')[0], Number(proxyStr.split(':')[1]))
+  }
   const token = ConfigDB.getByKey('pixivToken')
   if (token)
     pixivApi = await Pixiv.refreshLogin(token)
 }
 function checkIfAvailable() {
   if (!pixivApi) {
-    throw new HttpException(
-      'API not started.',
-      HttpStatus.SERVICE_UNAVAILABLE,
-    )
+    throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
   }
 }
 initPixiv()
@@ -63,7 +61,7 @@ export class PixivApiService {
     }
     const check = async (url?: string) => {
       let flag = false
-      let json: { illusts: Array<PixivIllust>; next_url: string }
+      let json: { illusts: Array<PixivIllust>, next_url: string }
       if (!url) {
         json = {
           illusts: await pixivApi.user.bookmarksIllust({
@@ -78,7 +76,11 @@ export class PixivApiService {
       }
       if (existFilenames) {
         json.illusts.forEach((illust) => {
-          if (!existFilenames.find(value => value.startsWith(`${illust.id}_`) || value.startsWith(`${illust.id}.`))) {
+          if (
+            !existFilenames.find(
+              value => value.startsWith(`${illust.id}_`) || value.startsWith(`${illust.id}.`),
+            )
+          ) {
             list.push({ ...illust, caption: null })
             flag = true
           }
@@ -139,7 +141,10 @@ export class PixivApiService {
 
   async bookmarkIllust(pid: number | string, isPrivate = false) {
     checkIfAvailable()
-    return await pixivApi.illust.bookmarkIllust({ illust_id: Number(pid), restrict: isPrivate ? 'private' : 'public' })
+    return await pixivApi.illust.bookmarkIllust({
+      illust_id: Number(pid),
+      restrict: isPrivate ? 'private' : 'public',
+    })
   }
 
   async unbookmarkIllust(pid: number | string) {

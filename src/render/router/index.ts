@@ -1,4 +1,4 @@
-import type { RouteRecordRaw, Router, RouterOptions } from 'vue-router'
+import type { Router, RouteRecordRaw, RouterOptions } from 'vue-router'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
@@ -39,7 +39,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@render/views/basic/IcxorTool.vue'),
       },
     ],
-  }]
+  },
+]
 
 const options: RouterOptions = {
   history: createWebHashHistory(),

@@ -4,11 +4,11 @@ export class UtilDate {
    * @function
    */
   static getISOFromDateCST(string: string) {
-    if (/^(\d\d\d\d)-(\d\d)-(\d\d)$/.test(string)) {
+    if (/^\d\d\d\d-\d\d-\d\d$/.test(string)) {
       const date = new Date(`${string}T00:00:00+08:00`)
       return date.toISOString()
     }
-    else if (/^(\d\d\d\d\d\d\d\d)$/.test(string)) {
+    else if (/^\d\d\d\d\d\d\d\d$/.test(string)) {
       const date = new Date(
         `${string.slice(0, 4)}-${string.slice(4, 6)}-${string.slice(
           6,
@@ -17,8 +17,8 @@ export class UtilDate {
       )
       return date.toISOString()
     }
-    else if (/^(\d\d\d\d)\/(\d\d)\/(\d\d)$/.test(string)) {
-      const date = new Date(`${string.replace(/[/]/g, '-')}T00:00:00+08:00`)
+    else if (/^\d\d\d\d\/\d\d\/\d\d$/.test(string)) {
+      const date = new Date(`${string.replace(/\//g, '-')}T00:00:00+08:00`)
       return date.toISOString()
     }
     else { return null }
@@ -31,7 +31,7 @@ export class UtilDate {
   static getDateCST(date: Date, desp: string) {
     const str = date.toISOString()
     const _date = new Date(str.replace('Z', '-08:00'))
-    return _date.toISOString().slice(0, 10).replace(/[-]/g, desp)
+    return _date.toISOString().slice(0, 10).replace(/-/g, desp)
   }
 
   /**
@@ -44,9 +44,9 @@ export class UtilDate {
     return _date
       .toISOString()
       .slice(0, 19)
-      .replace(/[-]/g, desp1)
+      .replace(/-/g, desp1)
       .replace('T', desp2)
-      .replace(/[:]/g, desp3)
+      .replace(/:/g, desp3)
   }
 
   /**

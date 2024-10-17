@@ -1,32 +1,32 @@
+import type { MicroserviceOptions } from '@nestjs/microservices'
 import { basename, dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import fs from 'fs-extra'
+import { ElectronIpcTransport } from '@doubleshot/nest-electron'
+import { AppModule } from '@main/app.module'
+import { ConfigDB, LocalDiskDB } from '@main/node-processor/DBService'
+import { FS } from '@main/node-processor/FSService'
 import { NestFactory } from '@nestjs/core'
 import {
-  BrowserWindow,
-  Menu,
-  MenuItem,
   app,
+  BrowserWindow,
   dialog,
   ipcMain,
+  Menu,
+  MenuItem,
   nativeTheme,
   net,
   protocol,
   session,
   shell,
 } from 'electron'
-import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
-import type { MicroserviceOptions } from '@nestjs/microservices'
-import { ElectronIpcTransport } from '@doubleshot/nest-electron'
-import { AppModule } from '@main/app.module'
-import { ConfigDB, LocalDiskDB } from '@main/node-processor/DBService'
-import { FS } from '@main/node-processor/FSService'
-import { DS } from './node-processor/DownloadService'
-import { PS } from './node-processor/PathService'
+import { autoUpdater } from 'electron-updater'
+import fs from 'fs-extra'
 import { CS } from './node-processor/CloudService'
-import { SS } from './node-processor/SagiriService'
+import { DS } from './node-processor/DownloadService'
 import { GifCoverter } from './node-processor/MediaService'
+import { PS } from './node-processor/PathService'
+import { SS } from './node-processor/SagiriService'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -74,10 +74,13 @@ async function createWindow() {
     }
   })
 
-  win.webContents.session.webRequest.onBeforeSendHeaders({ urls: ['https://i.pximg.net/*'] }, (details, callback) => {
-    details.requestHeaders['Referer'] = 'https://www.pixiv.net/'
-    callback({ requestHeaders: details.requestHeaders })
-  })
+  win.webContents.session.webRequest.onBeforeSendHeaders(
+    { urls: ['https://i.pximg.net/*'] },
+    (details, callback) => {
+      details.requestHeaders.Referer = 'https://www.pixiv.net/'
+      callback({ requestHeaders: details.requestHeaders })
+    },
+  )
 
   const URL = isDev
     ? process.env.DS_RENDERER_URL
@@ -179,9 +182,7 @@ function afterReady() {
         {
           label: 'Github主页',
           click: () => {
-            shell.openExternal(
-              'https://github.com/MarkPoloChina/IllustComplexor',
-            )
+            shell.openExternal('https://github.com/MarkPoloChina/IllustComplexor')
           },
         },
         {
@@ -214,10 +215,7 @@ function afterReady() {
 
   nativeTheme.on('updated', () => {
     BrowserWindow.getAllWindows().forEach((win) => {
-      win.webContents.send(
-        'dark-mode:updated',
-        nativeTheme.shouldUseDarkColors,
-      )
+      win.webContents.send('dark-mode:updated', nativeTheme.shouldUseDarkColors)
     })
   })
 
@@ -253,9 +251,7 @@ function afterReady() {
         })
       }
     })
-    const ctx = Menu.buildFromTemplate([
-      ...templateMenu,
-    ])
+    const ctx = Menu.buildFromTemplate([...templateMenu])
     ctx.popup({
       window: BrowserWindow.fromWebContents(event.sender),
     })
@@ -284,9 +280,14 @@ function afterReady() {
   })
 
   ipcMain.on('app:openInFolder', (event, path) => {
-    if (fs.pathExistsSync(path))
+    if (fs.pathExistsSync(path)) {
       shell.showItemInFolder(path)
-    else shell.showItemInFolder(join(dirname(path), `${basename(path).substring(0, basename(path).lastIndexOf('.'))}.png`))
+    }
+    else {
+      shell.showItemInFolder(
+        join(dirname(path), `${basename(path).substring(0, basename(path).lastIndexOf('.'))}.png`),
+      )
+    }
   })
 
   ipcMain.on('app:checkUpdate', () => {
@@ -417,7 +418,9 @@ function afterReady() {
   autoUpdater.autoDownload = false
 
   protocol.handle('icxorimg', request =>
-    net.fetch(pathToFileURL(decodeURIComponent(request.url.slice('icxorimg://s/?u='.length))).toString()))
+    net.fetch(
+      pathToFileURL(decodeURIComponent(request.url.slice('icxorimg://s/?u='.length))).toString(),
+    ))
 }
 
 async function electronAppInit() {
@@ -455,12 +458,9 @@ async function bootstrap() {
   try {
     await electronAppInit()
 
-    const nestApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-      AppModule,
-      {
-        strategy: new ElectronIpcTransport('IpcTransport'),
-      },
-    )
+    const nestApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+      strategy: new ElectronIpcTransport('IpcTransport'),
+    })
 
     await nestApp.listen()
   }

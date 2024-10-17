@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import type { Ref } from 'vue'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import MetaForm from '@render/components/share/form/metaForm.vue'
-import PolyForm from '@render/components/share/form/polyForm.vue'
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
-import { API } from '@render/ts/api'
-import { BatchDto } from '@render/ts/dto/batch'
-import type { BatchLog } from '@render/ts/interface/batchLog'
-import { PathHelper, UrlGenerator } from '@render/ts/util/path'
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
-import IllustTodayForm from '@render/components/share/form/illustTodayForm.vue'
-import type { IllustObj } from '@render/ts/interface/illustObj'
-import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
-import ViewerGrid from './main/viewerGrid.vue'
+import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
+import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import type { BatchLog } from '@render/ts/interface/batchLog'
+import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { Ref } from 'vue'
+import IllustTodayForm from '@render/components/share/form/illustTodayForm.vue'
+import MetaForm from '@render/components/share/form/metaForm.vue'
+import PolyForm from '@render/components/share/form/polyForm.vue'
+import { API } from '@render/ts/api'
+import { BatchDto } from '@render/ts/dto/batch'
+import { PathHelper, UrlGenerator } from '@render/ts/util/path'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import ViewerFocus from './main/viewerFocus.vue'
+import ViewerGrid from './main/viewerGrid.vue'
 import ViewerTable from './main/viewerTable.vue'
 
 const props = defineProps({
@@ -38,11 +38,9 @@ const emit = defineEmits([
   'update:star',
   'update:batchLogs',
 ])
-const { ipcRemoveAll, ipcOnce, ipcSend, ipcSendSync, ipcInvoke, downloadTo }
-  = window.electron
+const { ipcRemoveAll, ipcOnce, ipcSend, ipcSendSync, ipcInvoke, downloadTo } = window.electron
 const osString = ipcSendSync('app:getOS') === 'darwin' ? 'Finder' : 'Explorer'
-const viewer: Ref<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable>
-  = ref()
+const viewer: Ref<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable> = ref()
 const metaForm: Ref<typeof MetaForm> = ref()
 const polyForm: Ref<typeof PolyForm> = ref()
 const itForm: Ref<typeof IllustTodayForm> = ref()
@@ -64,11 +62,15 @@ const writablePageSize = computed({
 })
 const isLoading = ref(false)
 const illustList = ref<IllustObj[]>([])
-watch(illustList, () => {
-  emit('update:selection-count', illustList.value.filter(v => v.checked).length)
-}, {
-  deep: true,
-})
+watch(
+  illustList,
+  () => {
+    emit('update:selection-count', illustList.value.filter(v => v.checked).length)
+  },
+  {
+    deep: true,
+  },
+)
 const illustCount = ref(0)
 watch(illustCount, (val) => {
   emit('update:illust-count', val)
@@ -162,7 +164,7 @@ function handleSingleIllustChange(obj: IllustObj, withClear?: boolean) {
 function handleUpdate(addition: {
   date?: Date
   star?: number
-  tag?: Array<{ name: string; type: string }>
+  tag?: Array<{ name: string, type: string }>
 }) {
   const waitingOperateDto: IllustObj[] = []
   if (!chooseAll.update && currentOperating.value) {
@@ -178,15 +180,11 @@ function handleUpdate(addition: {
     ElMessage.error('项目为空')
     return
   }
-  ElMessageBox.confirm(
-    `将为${waitingOperateDto.length}个项目进行更新，确认？`,
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`将为${waitingOperateDto.length}个项目进行更新，确认？`, 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(() => {
       const batchLog: BatchLog = {
         total: waitingOperateDto.length,
@@ -234,11 +232,7 @@ function handleUpdate(addition: {
     .catch(() => {})
 }
 
-function handlePoly(polyOption: {
-  type: string
-  parent: string
-  name: string
-}) {
+function handlePoly(polyOption: { type: string, parent: string, name: string }) {
   const waitingOperateDto: IllustObj[] = []
   if (!chooseAll.poly && currentOperating.value) {
     waitingOperateDto.push(currentOperating.value)
@@ -329,7 +323,7 @@ async function handleDownload() {
     )
     ElMessage.success('下载完成')
   }
-  catch (err) {
+  catch {
     ElMessage.error('下载失败')
   }
   ei.close()
@@ -360,9 +354,7 @@ async function handleDownloadBatch() {
     try {
       await downloadTo(
         url,
-        obj.remote_base.type === 'pixiv'
-          ? PathHelper.getBasename(url)
-          : obj.remote_endpoint,
+        obj.remote_base.type === 'pixiv' ? PathHelper.getBasename(url) : obj.remote_endpoint,
         dir,
         url.includes('i.pximg.net'),
       )
@@ -400,15 +392,11 @@ function handleFetch(chooseAll: boolean) {
     ElMessage.error('项目为空')
     return
   }
-  ElMessageBox.confirm(
-    `将为${waitingOperateDto.length}个项目抓取元，确认？`,
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`将为${waitingOperateDto.length}个项目抓取元，确认？`, 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(async () => {
       const batchLog: BatchLog = {
         total: waitingOperateDto.length,
@@ -433,11 +421,7 @@ function handleFetch(chooseAll: boolean) {
               = resp.meta_single_page.original_image_url
               || resp.meta_pages[ele.meta.page].image_urls.original
             ele.meta.limit
-              = resp.x_restrict === 1
-                ? 'R-18'
-                : resp.x_restrict === 2
-                  ? 'R-18G'
-                  : 'normal'
+              = resp.x_restrict === 1 ? 'R-18' : resp.x_restrict === 2 ? 'R-18G' : 'normal'
             ele.meta.book_cnt = resp.total_bookmarks
             ele.meta.height = resp.height
             ele.meta.width = resp.width
@@ -484,7 +468,7 @@ function handleFetch(chooseAll: boolean) {
     .catch(() => {})
 }
 
-function handleIT(info: { date: string; char: string; tags: string[] }) {
+function handleIT(info: { date: string, char: string, tags: string[] }) {
   ElMessageBox.confirm('为当前项目建立IT, 确认?', 'Warning', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -501,7 +485,8 @@ function handleIT(info: { date: string; char: string; tags: string[] }) {
         type: currentOperating.value.remote_base.name,
         base: currentOperating.value.remote_base.origin_url,
         target: currentOperating.value.remote_endpoint,
-        source: currentOperating.value.link || UrlGenerator.getSourceLink(currentOperating.value) || null,
+        source:
+          currentOperating.value.link || UrlGenerator.getSourceLink(currentOperating.value) || null,
       }
       API.coverIllustToday(info.date, dto)
         .then(() => {
@@ -530,15 +515,11 @@ function handleDelete(chooseAll: boolean) {
     ElMessage.error('项目为空')
     return
   }
-  ElMessageBox.confirm(
-    `将永久删除${waitingOperateDto.length}个项目，确认？`,
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`将永久删除${waitingOperateDto.length}个项目，确认？`, 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(() => {
       const batchLog: BatchLog = {
         total: waitingOperateDto.length,
@@ -642,10 +623,24 @@ function handlePopupContext(row: IllustObj) {
         ipcSend('app:openInFolder', UrlGenerator.getLocalPath(row))
         break
       case `在${osString}中打开聚合`:
-        ipcSend('app:openInFolder', UrlGenerator.getPicoltLocalPath(row, row.poly.find(p => p.parent === subItem), false))
+        ipcSend(
+          'app:openInFolder',
+          UrlGenerator.getPicoltLocalPath(
+            row,
+            row.poly.find(p => p.parent === subItem),
+            false,
+          ),
+        )
         break
       case `在${osString}中打开2x聚合`:
-        ipcSend('app:openInFolder', UrlGenerator.getPicoltLocalPath(row, row.poly.find(p => p.parent === subItem), true))
+        ipcSend(
+          'app:openInFolder',
+          UrlGenerator.getPicoltLocalPath(
+            row,
+            row.poly.find(p => p.parent === subItem),
+            true,
+          ),
+        )
         break
       case '删除基':
         handleDelete(false)
@@ -696,29 +691,35 @@ function handlePopupContext(row: IllustObj) {
         ]
       : []),
     ...(row.poly.filter(v => v.remote_base).length
-      ? [{
-          label: `在${osString}中打开聚合`,
-          submenu: [
-            ...row.poly.filter(v => v.remote_base).map((v) => {
-              return {
-                label: v.parent,
-              }
-            }),
-          ],
-        },
+      ? [
+          {
+            label: `在${osString}中打开聚合`,
+            submenu: [
+              ...row.poly
+                .filter(v => v.remote_base)
+                .map((v) => {
+                  return {
+                    label: v.parent,
+                  }
+                }),
+            ],
+          },
         ]
       : []),
     ...(row.poly.filter(v => v.remote2x_base).length
-      ? [{
-          label: `在${osString}中打开2x聚合`,
-          submenu: [
-            ...row.poly.filter(v => v.remote2x_base).map((v) => {
-              return {
-                label: v.parent,
-              }
-            }),
-          ],
-        },
+      ? [
+          {
+            label: `在${osString}中打开2x聚合`,
+            submenu: [
+              ...row.poly
+                .filter(v => v.remote2x_base)
+                .map((v) => {
+                  return {
+                    label: v.parent,
+                  }
+                }),
+            ],
+          },
         ]
       : []),
     { type: 'separator' },
@@ -757,11 +758,7 @@ defineExpose({
     <KeepAlive>
       <component
         :is="
-          viewerType === 'table'
-            ? ViewerTable
-            : viewerType === 'grid'
-              ? ViewerGrid
-              : ViewerFocus
+          viewerType === 'table' ? ViewerTable : viewerType === 'grid' ? ViewerGrid : ViewerFocus
         "
         ref="viewer"
         :table-data="illustList"
@@ -782,7 +779,12 @@ defineExpose({
       v-model="show.poly"
       @update:poly-option="handlePoly"
     />
-    <IllustTodayForm ref="itForm" v-model="show.it" :current-operating="currentOperating" @confirm="handleIT" />
+    <IllustTodayForm
+      ref="itForm"
+      v-model="show.it"
+      :current-operating="currentOperating"
+      @confirm="handleIT"
+    />
   </div>
 </template>
 

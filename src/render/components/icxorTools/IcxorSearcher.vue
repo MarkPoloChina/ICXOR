@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
-import { Download, RefreshLeft, Search, Upload } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 import type { SagiriResultDto } from '@render/ts/dto/sagiriResult'
-import { PathHelper } from '@render/ts/util/path'
+import { Download, RefreshLeft, Search, Upload } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
+import { PathHelper } from '@render/ts/util/path'
+import { ElMessage } from 'element-plus'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const { ipcInvoke } = window.electron
 const isLoading = ref(false)
@@ -14,7 +14,9 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 async function getIllusts() {
-  const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Image', extensions: ['jpg', 'jpeg', 'png'] }])
+  const files: string[] = await ipcInvoke('dialog:openFile', [
+    { name: 'Image', extensions: ['jpg', 'jpeg', 'png'] },
+  ])
   if (!files || files.length === 0)
     return
   await handleGetIlluts(files)
@@ -28,8 +30,8 @@ async function handleGetIlluts(files: string[]) {
     for (const file of files) {
       const result: SagiriResultDto = await ipcInvoke('ss:run', file)
       illusts.value.push({ filename: file, ...result })
-      if (result.twitter && result.twitter.match(/status\/([\d]+)/))
-        API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/([\d]+)/)[1])
+      if (result.twitter && result.twitter.match(/status\/(\d+)/))
+        API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
 
       stat.value = `${illusts.value.length} / ${files.length}`
       await sleep(3000)
@@ -53,8 +55,8 @@ async function handleRetry() {
     const result: SagiriResultDto = await ipcInvoke('ss:run', illust.filename)
     illust.error = undefined
     Object.assign(illust, result)
-    if (result.twitter && result.twitter.match(/status\/([\d]+)/))
-      API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/([\d]+)/)[1])
+    if (result.twitter && result.twitter.match(/status\/(\d+)/))
+      API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
 
     stat.value = `重试 ${++idx} / ${failed.length}`
     await sleep(3000)
@@ -63,7 +65,9 @@ async function handleRetry() {
   stat.value += ' - 已完成'
 }
 async function getJsons() {
-  const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'JSON', extensions: ['json'] }])
+  const files: string[] = await ipcInvoke('dialog:openFile', [
+    { name: 'JSON', extensions: ['json'] },
+  ])
   if (!files || files.length === 0)
     return
   isLoading.value = true
@@ -74,8 +78,8 @@ async function getJsons() {
     for (const file of files) {
       const result: SagiriResultDto = await ipcInvoke('ss:runJson', file)
       illusts.value.push({ filename: file, ...result })
-      if (result.twitter && result.twitter.match(/status\/([\d]+)/))
-        API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/([\d]+)/)[1])
+      if (result.twitter && result.twitter.match(/status\/(\d+)/))
+        API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
 
       stat.value = `${illusts.value.length} / ${files.length}`
     }
@@ -94,12 +98,32 @@ async function handleDownload() {
   const dir = await ipcInvoke('dialog:openDirectory')
   if (!dir)
     return
-  const pixiv_ids = Array.from(new Set(illusts.value.filter(illust => illust.pixiv).map(illust => illust.pixiv)))
-  const twitter_urls = Array.from(new Set(illusts.value.filter(illust => illust.twitter).map(illust => illust.twitter)))
-  await ipcInvoke('fs:saveStringToFile', PathHelper.joinFilenamePath(dir, 'pixiv_ids.txt'), pixiv_ids.join('\n'))
-  await ipcInvoke('fs:saveStringToFile', PathHelper.joinFilenamePath(dir, 'twitter_urls.txt'), twitter_urls.join('\n'))
-  await ipcInvoke('fs:saveStringToFile', PathHelper.joinFilenamePath(dir, 'pixiv_ids.json'), JSON.stringify(pixiv_ids))
-  await ipcInvoke('fs:saveStringToFile', PathHelper.joinFilenamePath(dir, 'twitter_urls.json'), JSON.stringify(twitter_urls))
+  const pixiv_ids = Array.from(
+    new Set(illusts.value.filter(illust => illust.pixiv).map(illust => illust.pixiv)),
+  )
+  const twitter_urls = Array.from(
+    new Set(illusts.value.filter(illust => illust.twitter).map(illust => illust.twitter)),
+  )
+  await ipcInvoke(
+    'fs:saveStringToFile',
+    PathHelper.joinFilenamePath(dir, 'pixiv_ids.txt'),
+    pixiv_ids.join('\n'),
+  )
+  await ipcInvoke(
+    'fs:saveStringToFile',
+    PathHelper.joinFilenamePath(dir, 'twitter_urls.txt'),
+    twitter_urls.join('\n'),
+  )
+  await ipcInvoke(
+    'fs:saveStringToFile',
+    PathHelper.joinFilenamePath(dir, 'pixiv_ids.json'),
+    JSON.stringify(pixiv_ids),
+  )
+  await ipcInvoke(
+    'fs:saveStringToFile',
+    PathHelper.joinFilenamePath(dir, 'twitter_urls.json'),
+    JSON.stringify(twitter_urls),
+  )
   ElMessage.success('保存完成')
 }
 function filterHandler(value: string, row, _column) {
@@ -137,12 +161,21 @@ onUnmounted(() => {
 <template>
   <div style="height: 100%">
     <div class="illust-form">
-      <el-alert type="info" show-icon :closable="false" style="flex: none;margin-bottom: 10px;">
+      <el-alert
+        type="info"
+        show-icon
+        :closable="false"
+        style="flex: none; margin-bottom: 10px"
+      >
         <template #title>
           支持直接搜图, 或者导入之前保存的JSON数据。
         </template>
       </el-alert>
-      <el-form label-width="80px" style="width: 100%" label-position="left">
+      <el-form
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+      >
         <el-form-item label="操作">
           <el-button
             id="dropArea"
@@ -165,7 +198,7 @@ onUnmounted(() => {
             @click="handleDownload"
           />
           <el-button
-            v-if="illusts.find(illust => illust.error)"
+            v-if="illusts.find((illust) => illust.error)"
             :icon="RefreshLeft"
             type="primary"
             :disabled="isLoading"
@@ -217,14 +250,10 @@ onUnmounted(() => {
           :filter-method="filterHandler"
         >
           <template #default="{ row }">
-            <el-tag
-              v-if="row.pixiv"
-            >
+            <el-tag v-if="row.pixiv">
               Pixiv
             </el-tag>
-            <el-tag
-              v-if="row.twitter"
-            >
+            <el-tag v-if="row.twitter">
               Twitter
             </el-tag>
             <el-tag

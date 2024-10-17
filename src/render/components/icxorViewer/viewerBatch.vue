@@ -25,7 +25,7 @@ function logAdapter(batchLog: BatchLog) {
         bar: {
           status: '',
           indeterminate: true,
-          percentage: batchLog.currentIdx / batchLog.total * 100,
+          percentage: (batchLog.currentIdx / batchLog.total) * 100,
           textInline: '',
         },
         textOutsize: `- / ${batchLog.total}`,
@@ -55,8 +55,8 @@ function logAdapter(batchLog: BatchLog) {
         bar: {
           status: '',
           indeterminate: false,
-          percentage: batchLog.currentIdx / batchLog.total * 100,
-          textInline: `${(batchLog.currentIdx / batchLog.total * 100).toFixed(1)}%`,
+          percentage: (batchLog.currentIdx / batchLog.total) * 100,
+          textInline: `${((batchLog.currentIdx / batchLog.total) * 100).toFixed(1)}%`,
         },
         textOutsize: `${batchLog.currentIdx} / ${batchLog.total}`,
       }
@@ -71,14 +71,18 @@ function handleShowTable(log: BatchLog) {
 
 <template>
   <div class="log-container">
-    <div v-for="(log, index) in batchLogs" :key="index" class="log-block">
+    <div
+      v-for="(log, index) in batchLogs"
+      :key="index"
+      class="log-block"
+    >
       <div class="line">
         <span class="title">批处理#{{ index }}</span>
         <span class="type">{{ translatedType[log.type] }}</span>
       </div>
       <div class="line">
         <el-progress
-          style="width: 100%;"
+          style="width: 100%"
           :indeterminate="logAdapter(log).bar.indeterminate"
           :text-inside="true"
           :stroke-width="24"
@@ -95,21 +99,39 @@ function handleShowTable(log: BatchLog) {
         <span>{{ logAdapter(log).textOutsize }}</span>
       </div>
       <div class="line">
-        <el-button v-if="!logAdapter(log).bar.indeterminate" @click="handleShowTable(log)">
+        <el-button
+          v-if="!logAdapter(log).bar.indeterminate"
+          @click="handleShowTable(log)"
+        >
           查看
         </el-button>
       </div>
-      <el-dialog v-model="log.showDialog" title="批处理结果" width="80%">
-        <el-alert type="info" show-icon :closable="false" style="flex: none">
+      <el-dialog
+        v-model="log.showDialog"
+        title="批处理结果"
+        width="80%"
+      >
+        <el-alert
+          type="info"
+          show-icon
+          :closable="false"
+          style="flex: none"
+        >
           <template #title>
             如果成功反馈不是必须的, 表格中将不会出现操作成功的项目。
           </template>
         </el-alert>
-        <BatchResultTable :dto="log.dto" :resp="log.resp" />
+        <BatchResultTable
+          :dto="log.dto"
+          :resp="log.resp"
+        />
       </el-dialog>
     </div>
     <div>
-      <el-empty v-if="batchLogs.length === 0" description="暂无批处理记录" />
+      <el-empty
+        v-if="batchLogs.length === 0"
+        description="暂无批处理记录"
+      />
     </div>
   </div>
 </template>
@@ -134,6 +156,6 @@ function handleShowTable(log: BatchLog) {
     .title {
       font-weight: bold;
     }
-}
+  }
 }
 </style>

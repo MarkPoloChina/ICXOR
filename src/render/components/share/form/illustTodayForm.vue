@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { API } from '@render/ts/api'
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { computed, reactive, watch } from 'vue'
 
@@ -36,20 +36,31 @@ function handleConfirm() {
   dialogVisible.value = false
   emit('confirm', baseInfo)
 }
-watch(() => props.currentOperating, async (val) => {
-  baseInfo.tags.length = 0
-  if (val && val.meta) {
-    const info = await API.getPixivInfo(val.meta.pid)
-    baseInfo.tags = info.tags.map(item => item.name)
-  }
-})
+watch(
+  () => props.currentOperating,
+  async (val) => {
+    baseInfo.tags.length = 0
+    if (val && val.meta) {
+      const info = await API.getPixivInfo(val.meta.pid)
+      baseInfo.tags = info.tags.map(item => item.name)
+    }
+  },
+)
 defineExpose({ initForm })
 </script>
 
 <template>
   <div>
-    <el-dialog v-model="dialogVisible" title="IT表单" width="60%">
-      <el-form :model="baseInfo" label-width="100px" style="width: 100%">
+    <el-dialog
+      v-model="dialogVisible"
+      title="IT表单"
+      width="60%"
+    >
+      <el-form
+        :model="baseInfo"
+        label-width="100px"
+        style="width: 100%"
+      >
         <el-form-item label="日期">
           <el-date-picker
             v-model="baseInfo.date"
@@ -77,7 +88,12 @@ defineExpose({ initForm })
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleConfirm"> 确定 </el-button>
+          <el-button
+            type="primary"
+            @click="handleConfirm"
+          >
+            确定
+          </el-button>
         </span>
       </template>
     </el-dialog>

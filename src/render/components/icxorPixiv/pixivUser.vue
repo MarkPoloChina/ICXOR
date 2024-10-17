@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref, toRaw } from 'vue'
-import { Download, Picture, Search, Star } from '@element-plus/icons-vue'
+import type { PixivIllust, PixivUser } from '@markpolochina/pixiv.ts'
+import { Download, Picture, Search } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
-import { API } from '@render/ts/api'
-import type { PixivIllust, PixivUser } from '@markpolochina/pixiv.ts'
+import { reactive, ref, toRaw } from 'vue'
 
 const emit = defineEmits(['toIllust', 'toUser'])
-const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
+const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
+  = window.electron
 const form = reactive({
   uid: '',
 })
@@ -29,7 +30,9 @@ async function handleDownload(illustObj: PixivIllust) {
       const meta = await API.getPixivUgoiraJson(illustObj.id)
       await downloadPixivUgoiraTo(toRaw(illustObj), dir, meta)
     }
-    else { await downloadPixivTo(toRaw(illustObj), dir) }
+    else {
+      await downloadPixivTo(toRaw(illustObj), dir)
+    }
     ElMessage.success('下载完成')
   }
   catch (err) {
@@ -51,7 +54,9 @@ async function handleDownloadAll() {
         const meta = await API.getPixivUgoiraJson(ele.id)
         await downloadPixivUgoiraTo(toRaw(ele), dir, meta)
       }
-      else { await downloadPixivTo(toRaw(ele), dir) }
+      else {
+        await downloadPixivTo(toRaw(ele), dir)
+      }
     }
     catch (err) {
       ElMessage.error(`Failed for ${ele.id}: ${err}`)
@@ -60,7 +65,7 @@ async function handleDownloadAll() {
   ElMessage.success('下载完成')
 }
 function handleSearchByBtn() {
-  if (!form.uid || !/[1-9]+[0-9]*]*/.test(form.uid)) {
+  if (!form.uid || !/[1-9]\d*\]*/.test(form.uid)) {
     ElMessage.error('UID非法')
     return
   }
@@ -122,13 +127,26 @@ defineExpose({ handleSearchByLink })
 </script>
 
 <template>
-  <div v-loading="isLoading" style="height: 100%">
+  <div
+    v-loading="isLoading"
+    style="height: 100%"
+  >
     <div class="illust-form">
-      <el-form label-width="80px" style="width: 100%" label-position="left">
+      <el-form
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+      >
         <el-form-item label="UID">
-          <el-row style="width: 100%" justify="space-between">
+          <el-row
+            style="width: 100%"
+            justify="space-between"
+          >
             <el-col :span="12">
-              <el-input v-model="form.uid" placeholder="输入UID" />
+              <el-input
+                v-model="form.uid"
+                placeholder="输入UID"
+              />
             </el-col>
             <el-col :span="8">
               <el-row justify="end">
@@ -149,7 +167,10 @@ defineExpose({ handleSearchByLink })
         </el-form-item>
       </el-form>
     </div>
-    <div v-if="userObj" class="illust-result">
+    <div
+      v-if="userObj"
+      class="illust-result"
+    >
       <div class="result-left">
         <el-scrollbar style="height: 100%; width: 100%; border-radius: 5px">
           <el-row
@@ -167,16 +188,10 @@ defineExpose({ handleSearchByLink })
               <div class="expo" />
               <el-image
                 class="viewer-img"
-                :src="
-                  UrlGenerator.getPixivUrlProxy(obj.image_urls.square_medium)
-                "
+                :src="UrlGenerator.getPixivUrlProxy(obj.image_urls.square_medium)"
                 :preview-src-list="
                   obj.page_count === 1
-                    ? [
-                      UrlGenerator.getPixivUrlProxy(
-                        obj.meta_single_page.original_image_url,
-                      ),
-                    ]
+                    ? [UrlGenerator.getPixivUrlProxy(obj.meta_single_page.original_image_url)]
                     : obj.meta_pages.map((ele) =>
                       UrlGenerator.getPixivUrlProxy(ele.image_urls.original),
                     )
@@ -213,13 +228,7 @@ defineExpose({ handleSearchByLink })
               />
             </template> -->
             <el-descriptions-item label="头像">
-              <el-avatar
-                :src="
-                  UrlGenerator.getPixivUrlProxy(
-                    userObj.profile_image_urls.medium,
-                  )
-                "
-              />
+              <el-avatar :src="UrlGenerator.getPixivUrlProxy(userObj.profile_image_urls.medium)" />
             </el-descriptions-item>
             <el-descriptions-item label="ID">
               {{ userObj.id }}

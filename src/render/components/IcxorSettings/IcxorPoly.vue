@@ -43,25 +43,45 @@ async function handleUpdateLocalBase() {
       PICOLT聚合基
     </div>
     <div class="form-block">
-      <el-form style="width: 100%" label-width="60px">
+      <el-form
+        style="width: 100%"
+        label-width="60px"
+      >
         <el-form-item label="远程基">
           <el-input v-model="remoteBase">
             <template #append>
-              <el-button :icon="Check" @click="handleUpdateRemoteBase" />
+              <el-button
+                :icon="Check"
+                @click="handleUpdateRemoteBase"
+              />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="本地基">
           <el-input v-model="localBase">
             <template #append>
-              <el-button :icon="Check" @click="handleUpdateLocalBase" />
+              <el-button
+                :icon="Check"
+                @click="handleUpdateLocalBase"
+              />
             </template>
           </el-input>
         </el-form-item>
       </el-form>
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="parent" label="父标识符" width="100px" />
-        <el-table-column prop="name" label="标识符" width="100px" />
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+      >
+        <el-table-column
+          prop="parent"
+          label="父标识符"
+          width="100px"
+        />
+        <el-table-column
+          prop="name"
+          label="标识符"
+          width="100px"
+        />
         <el-table-column label="原图目录">
           <template #default="scope">
             <span v-if="!scope.row.editing">{{ scope.row.remote_base }}</span>
@@ -74,7 +94,11 @@ async function handleUpdateLocalBase() {
             <span v-else><el-input v-model="scope.row.remote2x_base" /></span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="80">
+        <el-table-column
+          fixed="right"
+          label="操作"
+          width="80"
+        >
           <template #default="scope">
             <el-button
               v-if="!scope.row.editing"
@@ -85,7 +109,13 @@ async function handleUpdateLocalBase() {
             >
               Edit
             </el-button>
-            <el-button v-else link type="primary" size="small" @click="handleUpdate(scope.row)">
+            <el-button
+              v-else
+              link
+              type="primary"
+              size="small"
+              @click="handleUpdate(scope.row)"
+            >
               Fin
             </el-button>
           </template>
@@ -93,7 +123,12 @@ async function handleUpdateLocalBase() {
       </el-table>
     </div>
     <div class="btn-block">
-      <el-button type="danger" :icon="Remove" circle @click="revoke" />
+      <el-button
+        type="danger"
+        :icon="Remove"
+        circle
+        @click="revoke"
+      />
     </div>
   </div>
 </template>

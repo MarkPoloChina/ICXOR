@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { ArrowLeftBold, ArrowRightBold, Grid, List, Refresh, StarFilled } from '@element-plus/icons-vue'
+import {
+  ArrowLeftBold,
+  ArrowRightBold,
+  Grid,
+  List,
+  Refresh,
+  StarFilled,
+} from '@element-plus/icons-vue'
 import { computed, reactive, watch } from 'vue'
 
 const props = defineProps({
@@ -45,10 +52,13 @@ watch(viewerController, (val) => {
   <div class="viewer-func">
     <div class="viewer-controller">
       <div>
-        <el-button style="margin-right: 5px" :icon="Refresh" circle @click="emit('refresh')" />
-        <el-button-group
+        <el-button
           style="margin-right: 5px"
-        >
+          :icon="Refresh"
+          circle
+          @click="emit('refresh')"
+        />
+        <el-button-group style="margin-right: 5px">
           <el-button
             :type="viewerController.type === 'grid' ? 'primary' : 'default'"
             :icon="Grid"
@@ -86,8 +96,11 @@ watch(viewerController, (val) => {
           @click="emit('focusUp')"
         />
       </el-button-group>
-      <div style="display: flex;align-items: center;">
-        <div v-if="selectionCount" class="selection">
+      <div style="display: flex; align-items: center">
+        <div
+          v-if="selectionCount"
+          class="selection"
+        >
           {{ selectionCount }} 条已选&nbsp;/&nbsp;
         </div>
         <el-pagination

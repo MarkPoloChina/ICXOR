@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { API } from '@render/ts/api'
 import { Remove } from '@element-plus/icons-vue'
+import { API } from '@render/ts/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
 
@@ -9,7 +9,9 @@ onMounted(() => {
 })
 const tableData = ref([])
 async function initForm() {
-  tableData.value = (await API.getTags()).filter(ele => ele.type !== 'author').sort((a, b) => a.id - b.id)
+  tableData.value = (await API.getTags())
+    .filter(ele => ele.type !== 'author')
+    .sort((a, b) => a.id - b.id)
 }
 function revoke() {
   tableData.value.length = 0
@@ -26,24 +28,22 @@ function handleUpdateTag(row) {
     })
 }
 function handleDeleteTag(row) {
-  ElMessageBox.confirm(
-    '删除本标签，确认？',
-    'Warning',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  ).then(() => {
-    API.deleteTag(row.id)
-      .then(() => {
-        ElMessage.success('删除成功')
-        revoke()
-      })
-      .catch((err) => {
-        ElMessage.error(`错误: ${err}`)
-      })
-  }).catch(() => {})
+  ElMessageBox.confirm('删除本标签，确认？', 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      API.deleteTag(row.id)
+        .then(() => {
+          ElMessage.success('删除成功')
+          revoke()
+        })
+        .catch((err) => {
+          ElMessage.error(`错误: ${err}`)
+        })
+    })
+    .catch(() => {})
 }
 </script>
 
@@ -53,8 +53,14 @@ function handleDeleteTag(row) {
       标签
     </div>
     <div class="form-block">
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column label="类型" width="150">
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+      >
+        <el-table-column
+          label="类型"
+          width="150"
+        >
           <template #default="scope">
             <el-select
               v-model="scope.row.type"
@@ -70,13 +76,20 @@ function handleDeleteTag(row) {
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="标识符" min-width="150">
+        <el-table-column
+          label="标识符"
+          min-width="150"
+        >
           <template #default="scope">
             <span v-if="!scope.row.editing">{{ scope.row.name }}</span>
             <span v-else><el-input v-model="scope.row.name" /></span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="180">
+        <el-table-column
+          fixed="right"
+          label="操作"
+          width="180"
+        >
           <template #default="scope">
             <el-button
               link

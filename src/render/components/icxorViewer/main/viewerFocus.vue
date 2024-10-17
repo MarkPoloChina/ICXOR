@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { onActivated, onDeactivated, ref, watch } from 'vue'
 
@@ -10,12 +10,7 @@ const props = defineProps({
   currentSelected: Object as () => IllustObj | null,
 })
 
-const emit = defineEmits([
-  'selectChange',
-  'selectsChange',
-  'popupContext',
-  'starChange',
-])
+const emit = defineEmits(['selectChange', 'selectsChange', 'popupContext', 'starChange'])
 const currentIndex = ref(0)
 const table = ref()
 const image404s = ref({})
@@ -70,7 +65,9 @@ function handleIndexChange(action: 'up' | 'down') {
 }
 function scrollToCurrent() {
   try {
-    document.getElementById(`img-focus-${currentIndex.value}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    document
+      .getElementById(`img-focus-${currentIndex.value}`)
+      .scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
   catch {}
 }
@@ -119,7 +116,10 @@ defineExpose({ handleIndexChange })
 </script>
 
 <template>
-  <div v-loading="loading" class="v-focus-container">
+  <div
+    v-loading="loading"
+    class="v-focus-container"
+  >
     <div class="focus-container">
       <el-image
         v-if="tableData[currentIndex]"
@@ -127,13 +127,9 @@ defineExpose({ handleIndexChange })
         :src="
           image404s[tableData[currentIndex].id]
             ? UrlGenerator.getBlobUrl(tableData[currentIndex], 'original')
-            : UrlGenerator.getBlobUrl(
-              tableData[currentIndex], 's_large',
-            )
+            : UrlGenerator.getBlobUrl(tableData[currentIndex], 's_large')
         "
-        :preview-src-list="[
-          UrlGenerator.getBlobUrl(tableData[currentIndex], 'original'),
-        ]"
+        :preview-src-list="[UrlGenerator.getBlobUrl(tableData[currentIndex], 'original')]"
         fit="contain"
       >
         <template #error>
@@ -143,7 +139,10 @@ defineExpose({ handleIndexChange })
         </template>
       </el-image>
     </div>
-    <el-scrollbar ref="table" class="flow-container">
+    <el-scrollbar
+      ref="table"
+      class="flow-container"
+    >
       <div
         v-for="(obj, index) in tableData"
         :id="`img-focus-${index}`"
@@ -151,14 +150,19 @@ defineExpose({ handleIndexChange })
         class="viewer-flow-container"
       >
         <div class="expo" />
-        <div v-if="obj.checked" class="selected-mask">
+        <div
+          v-if="obj.checked"
+          class="selected-mask"
+        >
           <CircleCheck />
         </div>
         <el-image
           class="viewer-img"
-          :src="image404s[obj.id]
-            ? UrlGenerator.getBlobUrl(obj, 'original')
-            : UrlGenerator.getBlobUrl(obj, 'square_medium')"
+          :src="
+            image404s[obj.id]
+              ? UrlGenerator.getBlobUrl(obj, 'original')
+              : UrlGenerator.getBlobUrl(obj, 'square_medium')
+          "
           fit="cover"
           loading="lazy"
           @error="image404s[obj.id] = true"

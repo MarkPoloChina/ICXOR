@@ -40,6 +40,10 @@ contextBridge.exposeInMainWorld('electron', {
   downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number): Promise<void> =>
     ipcRenderer.invoke('ds:downloadPixiv', illustObj, dir, page),
 
-  downloadPixivUgoiraTo: (illustObj: PixivIllust, dir: string, meta: UgoiraMetaData): Promise<void> =>
+  downloadPixivUgoiraTo: (
+    illustObj: PixivIllust,
+    dir: string,
+    meta: UgoiraMetaData,
+  ): Promise<void> =>
     ipcRenderer.invoke('ds:downloadUgoira', illustObj, dir, meta),
 })

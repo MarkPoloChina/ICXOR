@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { API } from '@render/ts/api'
-import { UtilDate } from '@render/ts/util/date'
-import {
-  Refresh,
-} from '@element-plus/icons-vue'
-
-import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
+import { Refresh } from '@element-plus/icons-vue'
+
+import { API } from '@render/ts/api'
+import { UtilDate } from '@render/ts/util/date'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 const emit = defineEmits(['update:filter', 'update:sorter'])
 const filterCondition = reactive<FilterConditionObj>({
@@ -108,7 +106,7 @@ async function getTagsOptions() {
     return val.type === 'author' && /^\[\d+\]/.test(val.name)
   })
   options['illust.remote_endpoint'] = data.filter((val) => {
-    return val.type === 'author' && /^\@/.test(val.name)
+    return val.type === 'author' && val.name.startsWith('@')
   })
 }
 async function getTypeOptions() {
@@ -249,18 +247,18 @@ defineExpose({ handleClear })
               :label="`${item - 1}星`"
               :value="item - 1"
             >
-              <el-rate :model-value="item - 1" disabled />
+              <el-rate
+                :model-value="item - 1"
+                disabled
+              />
             </el-option>
           </el-select>
         </div>
-        <div
-          style="
-              margin-top: 25px;
-              padding-top: 25px;
-              border-top: 1px solid rgba(0, 0, 0, 0.1);
-            "
-        >
-          <el-select v-model="filterCondition.AR" placeholder="选择纵横比">
+        <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid rgba(0, 0, 0, 0.1)">
+          <el-select
+            v-model="filterCondition.AR"
+            placeholder="选择纵横比"
+          >
             <el-option
               v-for="item in options.AR"
               :key="item.value"
@@ -272,7 +270,10 @@ defineExpose({ handleClear })
           </el-select>
         </div>
         <div>
-          <el-input v-model="filterCondition['meta.pid']" placeholder="PID" />
+          <el-input
+            v-model="filterCondition['meta.pid']"
+            placeholder="PID"
+          />
         </div>
         <div>
           <el-select
@@ -304,13 +305,7 @@ defineExpose({ handleClear })
             clearable
           />
         </div>
-        <div
-          style="
-              margin-top: 25px;
-              padding-top: 25px;
-              border-top: 1px solid rgba(0, 0, 0, 0.1);
-            "
-        >
+        <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid rgba(0, 0, 0, 0.1)">
           <el-select
             v-model="filterCondition['illust.remote_endpoint']"
             filterable
@@ -326,14 +321,11 @@ defineExpose({ handleClear })
             />
           </el-select>
         </div>
-        <div
-          style="
-              margin-top: 25px;
-              padding-top: 25px;
-              border-top: 1px solid rgba(0, 0, 0, 0.1);
-            "
-        >
-          <el-select v-model="filterSortKey" placeholder="选择排序规则">
+        <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid rgba(0, 0, 0, 0.1)">
+          <el-select
+            v-model="filterSortKey"
+            placeholder="选择排序规则"
+          >
             <el-option
               v-for="item in options.sortKey"
               :key="item.value"
@@ -345,7 +337,10 @@ defineExpose({ handleClear })
           </el-select>
         </div>
         <div>
-          <el-select v-model="filterSortDesc" placeholder="选择顺序">
+          <el-select
+            v-model="filterSortDesc"
+            placeholder="选择顺序"
+          >
             <el-option
               v-for="item in options.sortDesc"
               :key="item.value"
@@ -359,7 +354,11 @@ defineExpose({ handleClear })
       </div>
     </el-scrollbar>
     <div class="item-bottom">
-      <el-button :icon="Refresh" circle @click="handleClear" />
+      <el-button
+        :icon="Refresh"
+        circle
+        @click="handleClear"
+      />
     </div>
   </div>
 </template>
