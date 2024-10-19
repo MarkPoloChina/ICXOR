@@ -84,10 +84,10 @@ async function handleSync() {
       sum = userIllusts.value.length
       downloadedThisRound = false
     }
-    stat.value = `下载 ${i + 1} / ${sum}`
     const ele = userIllusts.value[i]
     if (!ele)
       break
+    stat.value = `下载 ${i + 1} / ${sum}`
     try {
       let downloaded = false
       if (ele.type === 'ugoira') {
@@ -226,7 +226,7 @@ defineExpose({ handleSearchByLink })
             v-infinite-scroll="handleLoadNext"
             class="grid-group"
             :infinite-scroll-delay="100"
-            :infinite-scroll-immediate="false"
+            :infinite-scroll-immediate="true"
             :infinite-scroll-distance="50"
           >
             <div
