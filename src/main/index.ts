@@ -337,13 +337,13 @@ function afterReady() {
   })
 
   ipcMain.handle('ds:download', async (event, url, filename, dir, isPixiv) => {
-    await DS.downloadAndSave(url, filename, dir, isPixiv)
+    return await DS.downloadAndSave(url, filename, dir, isPixiv)
   })
   ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
-    await DS.downloadFromIllustObj(illustObj, dir, page)
+    return await DS.downloadFromIllustObj(illustObj, dir, page)
   })
   ipcMain.handle('ds:downloadUgoira', async (event, illustObj, dir, meta) => {
-    await DS.downloadFromUgoira(illustObj, dir, meta)
+    return await DS.downloadFromUgoira(illustObj, dir, meta)
   })
 
   ipcMain.on('ps:basename', (event, _path) => {

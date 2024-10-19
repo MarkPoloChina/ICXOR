@@ -131,6 +131,7 @@ defineExpose({ handleIndexChange })
         "
         :preview-src-list="[UrlGenerator.getBlobUrl(tableData[currentIndex], 'original')]"
         fit="contain"
+        @error="image404s[tableData[currentIndex].id] = true"
       >
         <template #error>
           <div class="image-slot">

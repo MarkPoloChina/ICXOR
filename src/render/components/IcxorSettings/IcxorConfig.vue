@@ -9,6 +9,9 @@ const configForm = reactive({
   localIHS: '',
   remoteIHS: '',
   localDiskRoot: '',
+  pixivUserDir: '',
+  pixivBookmarkPrivateDir: '',
+  pixivBookmarkPublicDir: '',
   cos: '',
   mpsApiUrl: '',
   pixivToken: '',
@@ -105,7 +108,7 @@ function revoke() {
             label-width="100px"
             style="width: 100%"
           >
-            <el-form-item label="磁盘访问路径">
+            <el-form-item label="磁盘访问根">
               <el-input
                 v-model="configForm.localDiskRoot"
                 placeholder="请输入路径"
@@ -126,6 +129,35 @@ function revoke() {
             <el-form-item label="COS路径">
               <el-input
                 v-model="configForm.cos"
+                placeholder="请输入路径"
+              />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="title-block">
+          下载控制
+        </div>
+        <div class="form-block">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%;"
+          >
+            <el-form-item label="公开收藏">
+              <el-input
+                v-model="configForm.pixivBookmarkPublicDir"
+                placeholder="请输入路径"
+              />
+            </el-form-item>
+            <el-form-item label="私有收藏">
+              <el-input
+                v-model="configForm.pixivBookmarkPrivateDir"
+                placeholder="请输入路径"
+              />
+            </el-form-item>
+            <el-form-item label="画师">
+              <el-input
+                v-model="configForm.pixivUserDir"
                 placeholder="请输入路径"
               />
             </el-form-item>

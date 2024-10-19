@@ -55,13 +55,17 @@ export class DS {
     filename: string,
     dir: string,
     isPixiv?: boolean,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (!await FS.isExists(path.join(dir, filename))) {
       if (url.startsWith('icxorimg://')) {
         url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
         await FS.localCopy(url, path.join(dir, path.basename(decodeURIComponent(filename))))
       }
       else { await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir) }
+      return true
+    }
+    else {
+      return false
     }
   }
 
@@ -95,12 +99,13 @@ export class DS {
           : illustObj.meta_pages.map(ele => ele.image_urls.original)),
       )
     }
+    let hasRealDownload = false
     for (const url of urls) {
-      if (!await FS.isExists(path.join(dir, path.basename(url)))) {
-        const ab = await this.downloadFromUrl(url, true)
-        await FS.saveArrayBufferTo(ab, path.basename(url), dir)
-      }
+      const downloaded = await this.downloadAndSave(url, path.basename(url), dir, true)
+      if (downloaded)
+        hasRealDownload = true
     }
+    return hasRealDownload
   }
 
   public static async downloadFromUgoira(
@@ -112,20 +117,25 @@ export class DS {
       throw new Error('Visit Deny.')
     if (illustObj.type !== 'ugoira')
       throw new Error('Not Ugoira type.')
-    const delay = meta.ugoira_metadata.frames[0].delay
-    const url = illustObj.meta_single_page.original_image_url.replace(
-      'img-original',
-      'img-zip-ugoira',
-    )
-      .replace(/_ugoira0\.(.*)/, '_ugoira1920x1080.zip')
-    const ab = await this.downloadFromUrl(url, true)
-    const filename = `${illustObj.id}@${delay}ms.zip`
-    await FS.saveArrayBufferTo(ab, filename, dir)
-    await GifCoverter.zipToGif(
-      path.join(dir, filename),
-      path.join(dir, `${illustObj.id}.gif`),
-      delay,
-    )
+    if (!await FS.isExists(path.join(dir, `${illustObj.id}.gif`))) {
+      const delay = meta.ugoira_metadata.frames[0].delay
+      const url = illustObj.meta_single_page.original_image_url.replace(
+        'img-original',
+        'img-zip-ugoira',
+      )
+        .replace(/_ugoira0\.(.*)/, '_ugoira1920x1080.zip')
+      const ab = await this.downloadFromUrl(url, true)
+      const filename = `${illustObj.id}@${delay}ms.zip`
+      await FS.saveArrayBufferTo(ab, filename, dir)
+      await GifCoverter.zipToGif(
+        path.join(dir, filename),
+        path.join(dir, `${illustObj.id}.gif`),
+        delay,
+      )
+    }
+    else {
+      return false
+    }
   }
 }
 DS.setProxy()

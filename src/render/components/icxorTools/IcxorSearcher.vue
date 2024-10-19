@@ -159,13 +159,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div style="height: 100%">
+  <div class="container">
     <div class="illust-form">
       <el-alert
         type="info"
         show-icon
         :closable="false"
-        style="flex: none; margin-bottom: 10px"
+        style="margin-bottom: 10px"
       >
         <template #title>
           支持直接搜图, 或者导入之前保存的JSON数据。
@@ -279,24 +279,31 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.illust-result {
+.container {
+  height: 100%;
   display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  height: calc(100% - 150px);
-}
-.illust-stat {
-  color: $color-greengray-3;
-}
-:deep(.warning-row) {
-  background-color: var(--el-color-warning-light-9);
-}
-:deep(.success-row) {
-  background-color: var(--el-color-success-light-9);
-}
-:deep(.danger-row) {
-  background-color: var(--el-color-danger-light-9);
+  flex-direction: column;
+  .illust-form {
+    flex: none;
+  }
+  .illust-result {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .illust-stat {
+    color: $color-greengray-3;
+    flex: none;
+    padding: 10px 0 10px 0;
+  }
+  :deep(.warning-row) {
+    background-color: var(--el-color-warning-light-9);
+  }
+  :deep(.success-row) {
+    background-color: var(--el-color-success-light-9);
+  }
+  :deep(.danger-row) {
+    background-color: var(--el-color-danger-light-9);
+  }
 }
 </style>

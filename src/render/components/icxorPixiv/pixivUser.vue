@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import type { PixivIllust, PixivUser } from '@markpolochina/pixiv.ts'
-import { Download, Picture, Search } from '@element-plus/icons-vue'
+import { Download, FolderAdd, Picture, Search } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, toRaw } from 'vue'
+import { useStore } from 'vuex'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
-  = window.electron
+       = window.electron
+const store = useStore()
 const form = reactive({
   uid: '',
 })
@@ -17,6 +19,7 @@ const nextIllustsUrl = ref('')
 const isLoading = ref(false)
 const userObj = ref<PixivUser>(null)
 const userIllusts = ref<PixivIllust[]>([])
+const stat = ref('就绪')
 function handleSearchByLink(_uid) {
   form.uid = _uid
   handleSearch(_uid)
@@ -63,6 +66,44 @@ async function handleDownloadAll() {
     }
   }
   ElMessage.success('下载完成')
+}
+async function handleSync() {
+  const dir = store.state.pixivUserDir
+  if (!dir) {
+    ElMessage.error('未设置同步目录')
+    return
+  }
+  const syncPath = `${store.state.localDiskRoot}${dir}${userObj.value.id}`
+  let sum = userIllusts.value.length
+  let downloadedThisRound = false
+  for (let i: number = 0; i <= sum; i++) {
+    if (i === sum) {
+      if (!downloadedThisRound)
+        break
+      await handleLoadNext()
+      sum = userIllusts.value.length
+      downloadedThisRound = false
+    }
+    stat.value = `下载 ${i + 1} / ${sum}`
+    const ele = userIllusts.value[i]
+    if (!ele)
+      break
+    try {
+      let downloaded = false
+      if (ele.type === 'ugoira') {
+        const meta = await API.getPixivUgoiraJson(ele.id)
+        downloaded = await downloadPixivUgoiraTo(toRaw(ele), syncPath, meta)
+      }
+      else { downloaded = await downloadPixivTo(toRaw(ele), syncPath) }
+      if (downloaded)
+        downloadedThisRound = true
+    }
+    catch (err) {
+      ElMessage.error(`Failed for ${ele.id}: ${err}`)
+    }
+  }
+  stat.value += ' - 已完成'
+  ElMessage.success('同步完成')
 }
 function handleSearchByBtn() {
   if (!form.uid || !/[1-9]\d*\]*/.test(form.uid)) {
@@ -129,7 +170,7 @@ defineExpose({ handleSearchByLink })
 <template>
   <div
     v-loading="isLoading"
-    style="height: 100%"
+    class="container"
   >
     <div class="illust-form">
       <el-form
@@ -155,6 +196,12 @@ defineExpose({ handleSearchByLink })
                   :icon="Download"
                   type="primary"
                   @click="handleDownloadAll"
+                />
+                <el-button
+                  v-if="userObj"
+                  :icon="FolderAdd"
+                  type="primary"
+                  @click="handleSync"
                 />
                 <el-button
                   :icon="Search"
@@ -240,59 +287,74 @@ defineExpose({ handleSearchByLink })
         </el-scrollbar>
       </div>
     </div>
+    <div
+      v-if="userObj"
+      class="illust-stat"
+    >
+      {{ stat }}
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.illust-result {
+.container {
+  height: 100%;
   display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  height: calc(100% - 80px);
-  .result-left {
-    width: 80%;
-    height: 100%;
+  flex-direction: column;
+  .illust-result {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    .viewer-img-container {
-      position: relative;
-      .expo {
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    .result-left {
+      width: 80%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .viewer-img-container {
         position: relative;
-        width: 100%;
-        height: 0;
-        padding: 0;
-        padding-bottom: 100%;
-      }
-      .viewer-img {
-        border-radius: 5px;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        bottom: 10px;
-        left: 10px;
-        .image-slot {
-          display: flex;
-          justify-content: center;
-          align-items: center;
+        .expo {
+          position: relative;
           width: 100%;
-          height: 100%;
-          background: var(--el-fill-color-light);
-          color: var(--el-text-color-secondary);
-          font-size: 30px;
+          height: 0;
+          padding: 0;
+          padding-bottom: 100%;
+        }
+        .viewer-img {
+          border-radius: 5px;
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          bottom: 10px;
+          left: 10px;
+          .image-slot {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: var(--el-fill-color-light);
+            color: var(--el-text-color-secondary);
+            font-size: 30px;
+          }
         }
       }
     }
-  }
-  .result-right {
-    width: calc(20% - 10px);
-    margin-left: 10px;
-    height: 100%;
-    .right-container {
+    .result-right {
+      width: calc(20% - 10px);
+      margin-left: 10px;
       height: 100%;
+      .right-container {
+        height: 100%;
+      }
     }
+  }
+  .illust-stat {
+    color: $color-greengray-3;
+    flex: none;
+    padding: 10px 0 10px 0;
   }
 }
 </style>

@@ -123,6 +123,7 @@ defineExpose({
       ]"
       preview-teleported
       fit="cover"
+      @error="image404s[currentSelected.id] = true"
     >
       <template #error>
         <div class="image-slot">

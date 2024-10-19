@@ -1,8 +1,10 @@
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import path from 'node:path'
 import { ConfigDB } from '@main/node-processor/DBService'
 import Pixiv from '@markpolochina/pixiv.ts'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import fs from 'fs-extra'
 import { Repository } from 'typeorm'
 import { Meta } from '../illust/entities/meta.entities'
 
@@ -48,7 +50,7 @@ export class PixivApiService {
     return url
   }
 
-  async getLatestIllusts(isPrivate: boolean, existFilenames?: string[]) {
+  async getLatestIllusts(isPrivate: boolean, stopIn?: string) {
     checkIfAvailable()
     const list = []
     const queryAsync = (pid: number, index: number) => {
@@ -74,11 +76,13 @@ export class PixivApiService {
       else {
         json = await pixivApi.api.request(url)
       }
-      if (existFilenames) {
+      if (stopIn) {
         json.illusts.forEach((illust) => {
+          const ou
+            = illust.meta_single_page.original_image_url || illust.meta_pages[0].image_urls.original
           if (
-            !existFilenames.find(
-              value => value.startsWith(`${illust.id}_`) || value.startsWith(`${illust.id}.`),
+            !fs.pathExistsSync(
+              path.join(stopIn, illust.type === 'ugoira' ? `${illust.id}.gif` : path.basename(ou)),
             )
           ) {
             list.push({ ...illust, caption: null })

@@ -3,6 +3,7 @@ import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { Check, Download, Remove } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
+import { PathHelper } from '@render/ts/util/path'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref } from 'vue'
 
@@ -17,6 +18,7 @@ const importOption = reactive({
       name: 'Pixiv',
     },
     date: undefined,
+    remote_endpoint: false,
   },
 })
 function initTab() {
@@ -58,17 +60,23 @@ function handleUpload() {
       let curBid = 0
       selectedList.value.forEach((ele: PixivIllust) => {
         for (let i = 0; i < ele.page_count; i++) {
+          const ou
+            = ele.meta_single_page.original_image_url || ele.meta_pages[i].image_urls.original
           dto.dtos.push({
             dto: {
               remote_base: importOption.addition.remote_base,
               date: importOption.addition.date,
+              remote_endpoint: importOption.addition.remote_endpoint
+                ? ele.type === 'ugoira'
+                  ? `${ele.id}.gif`
+                  : PathHelper.getBasename(ou)
+                : undefined,
               meta: {
                 pid: ele.id,
                 page: i,
                 type: ele.type,
                 title: ele.title,
-                original_url:
-                  ele.meta_single_page.original_image_url || ele.meta_pages[i].image_urls.original,
+                original_url: ou,
                 limit: ele.x_restrict === 1 ? 'R-18' : ele.x_restrict === 2 ? 'R-18G' : 'normal',
                 author: ele.user.name,
                 author_id: ele.user.id,
@@ -124,6 +132,7 @@ function handleSelectionChange(val) {
         <el-form
           :model="importOption"
           label-width="100px"
+          :inline="true"
           style="width: 100%"
         >
           <el-form-item label="收藏类型">
@@ -135,6 +144,12 @@ function handleSelectionChange(val) {
                 不公开(Private)
               </el-radio>
             </el-radio-group>
+          </el-form-item>
+          <el-form-item>
+            <el-checkbox
+              v-model="importOption.addition.remote_endpoint"
+              label="导入末端"
+            />
           </el-form-item>
           <el-form-item label="入库时间">
             <el-date-picker

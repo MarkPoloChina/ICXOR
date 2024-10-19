@@ -242,11 +242,11 @@ export class API {
     return resp.data as Poly
   }
 
-  static async getBookmark(isPrivate: boolean, existFilenames?: string[]) {
+  static async getBookmark(isPrivate: boolean, stopIn?: string) {
     const resp = await ax.get('/pixiv-api/pixiv-json/latest', {
       params: {
         isPrivate,
-        existFilenames,
+        stopIn,
       },
     })
     return resp.data as PixivIllust[]

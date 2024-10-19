@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
-import { Download, RefreshLeft, Search } from '@element-plus/icons-vue'
+import { Download, FolderAdd, RefreshLeft, Search } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, toRaw } from 'vue'
+import { useStore } from 'vuex'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
   = window.electron
+const store = useStore()
 const form = reactive({
   type: 'public',
-  limit: 'lib',
 })
 const isLoading = ref(false)
 const isDownloading = ref(false)
@@ -50,8 +51,8 @@ function tableRowClassName({ row }: { row: PixivIllust }) {
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
-async function handleDownloadAll() {
-  const dir = await ipcInvoke('dialog:openDirectory')
+async function handleDownloadAll(defaultDir?: string) {
+  const dir = defaultDir || (await ipcInvoke('dialog:openDirectory'))
   if (!dir)
     return
   const invisable: number[] = []
@@ -96,21 +97,23 @@ async function handleDownloadAll() {
     `下载完成: 完成${success.value.length}个, 忽略了${invisable.length}个不可访问项目`,
   )
 }
-async function handleSearch() {
-  let existFilenames: string[] | undefined
-  if (form.limit === 'file') {
-    ElMessage.info('选择用于确定截断信息的文件夹')
-    const dir = await ipcInvoke('dialog:openDirectory')
-    if (!dir)
-      return
-    existFilenames = await ipcInvoke('fs:getFilenames', dir)
+async function handleSync() {
+  const dir: string
+    = form.type === 'private'
+      ? store.state.pixivBookmarkPrivateDir
+      : store.state.pixivBookmarkPublicDir
+  if (!dir) {
+    ElMessage.error('未设置同步目录')
+    return
   }
-  else if (form.limit === 'none') {
-    existFilenames = []
-  }
+  const syncPath = `${store.state.localDiskRoot}${dir}`
+  await handleSearch(syncPath)
+  await handleDownloadAll(syncPath)
+}
+async function handleSearch(stopIn?: string) {
   isLoading.value = true
   try {
-    const resp = await API.getBookmark(form.type === 'private', existFilenames)
+    const resp = await API.getBookmark(form.type === 'private', stopIn)
     illusts.value.length = 0
     success.value.length = 0
     failed.value.length = 0
@@ -187,7 +190,7 @@ function handleRightClick(obj: PixivIllust) {
 </script>
 
 <template>
-  <div style="height: 100%">
+  <div class="container">
     <div class="illust-form">
       <el-form
         label-width="80px"
@@ -214,13 +217,19 @@ function handleRightClick(obj: PixivIllust) {
                   :icon="Download"
                   type="primary"
                   :disabled="isLoading || isDownloading"
-                  @click="handleDownloadAll"
+                  @click="handleDownloadAll()"
                 />
                 <el-button
                   :icon="Search"
                   type="primary"
                   :disabled="isLoading || isDownloading"
-                  @click="handleSearch"
+                  @click="handleSearch()"
+                />
+                <el-button
+                  :icon="FolderAdd"
+                  type="primary"
+                  :disabled="isLoading || isDownloading"
+                  @click="handleSync"
                 />
                 <el-button
                   v-if="failed.length !== 0"
@@ -231,24 +240,6 @@ function handleRightClick(obj: PixivIllust) {
                 />
               </el-row>
             </el-col>
-          </el-row>
-        </el-form-item>
-        <el-form-item label="截断">
-          <el-row
-            style="width: 100%"
-            justify="space-between"
-          >
-            <el-radio-group v-model="form.limit">
-              <el-radio label="lib">
-                基准
-              </el-radio>
-              <el-radio label="file">
-                文件
-              </el-radio>
-              <el-radio label="none">
-                无
-              </el-radio>
-            </el-radio-group>
           </el-row>
         </el-form-item>
       </el-form>
@@ -293,24 +284,30 @@ function handleRightClick(obj: PixivIllust) {
 </template>
 
 <style lang="scss" scoped>
-.illust-result {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  height: calc(100% - 150px);
-}
-.illust-stat {
-  color: $color-greengray-3;
-}
-:deep(.warning-row) {
-  background-color: var(--el-color-warning-light-9);
-}
-:deep(.success-row) {
-  background-color: var(--el-color-success-light-9);
-}
-:deep(.danger-row) {
-  background-color: var(--el-color-danger-light-9);
+.container {
+  height: 100%;
+  @include Flex-C;
+  .illust-form {
+    flex: none;
+  }
+  .illust-result {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .illust-stat {
+    color: $color-greengray-3;
+    flex: none;
+    padding: 10px 0 10px 0;
+  }
+  :deep(.warning-row) {
+    background-color: var(--el-color-warning-light-9);
+  }
+  :deep(.success-row) {
+    background-color: var(--el-color-success-light-9);
+  }
+  :deep(.danger-row) {
+    background-color: var(--el-color-danger-light-9);
+  }
 }
 </style>
