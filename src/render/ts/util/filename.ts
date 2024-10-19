@@ -204,19 +204,14 @@ export class FilenameAdapter {
         message: '',
       }
       const reso = FilenameResolver.getObjFromFilename(filename)
-      if (
-        reso === undefined
-        || (reso === null && !autoInject.defaultRemoteBaseId)
-      ) {
+      if (reso === undefined || (reso === null && !autoInject.defaultRemoteBaseId)) {
         log.status = 'ignore'
         log.message = '不可识别的文件'
       }
       else if (reso === null) {
         log.message = '一般图片文件'
         log.dto = {
-          remote_endpoint: `${
-            autoInject.remoteEndpointPrefixForDefault || ''
-          }${filename}`,
+          remote_endpoint: `${autoInject.remoteEndpointPrefixForDefault || ''}${filename}`,
           remote_base: {
             id: autoInject.defaultRemoteBaseId,
           },

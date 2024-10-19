@@ -113,64 +113,57 @@ function handleSelectionChange(val) {
 </script>
 
 <template>
-  <div class="importer-main">
-    <el-alert
-      type="info"
-      show-icon
-      :closable="false"
-      style="flex: none"
-    >
-      <template #title>
-        导入Pixiv收藏。
-      </template>
-    </el-alert>
-    <div class="import-area">
-      <div class="title-block">
-        导入选项
-      </div>
-      <div class="form-block">
-        <el-form
-          :model="importOption"
-          label-width="100px"
-          :inline="true"
-          style="width: 100%"
-        >
-          <el-form-item label="收藏类型">
-            <el-radio-group v-model="importOption.type">
-              <el-radio label="public">
-                公开(Public)
-              </el-radio>
-              <el-radio label="private">
-                不公开(Private)
-              </el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item>
-            <el-checkbox
-              v-model="importOption.addition.remote_endpoint"
-              label="导入末端"
-            />
-          </el-form-item>
-          <el-form-item label="入库时间">
-            <el-date-picker
-              v-model="importOption.addition.date"
-              value-format="YYYY-MM-DD"
-              type="date"
-              placeholder="选择入库时间"
-            />
-          </el-form-item>
-        </el-form>
-      </div>
+  <div class="sufs-container">
+    <div class="form-block">
+      <el-alert
+        type="info"
+        show-icon
+        :closable="false"
+        style="margin-bottom: 10px"
+      >
+        <template #title>
+          导入Pixiv收藏。
+        </template>
+      </el-alert>
+      <el-form
+        :model="importOption"
+        label-width="80px"
+        :inline="true"
+        style="width: 100%"
+        label-position="left"
+      >
+        <el-form-item label="收藏类型">
+          <el-radio-group v-model="importOption.type">
+            <el-radio label="public">
+              公开(Public)
+            </el-radio>
+            <el-radio label="private">
+              不公开(Private)
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox
+            v-model="importOption.addition.remote_endpoint"
+            label="导入末端"
+          />
+        </el-form-item>
+        <el-form-item label="入库时间">
+          <el-date-picker
+            v-model="importOption.addition.date"
+            value-format="YYYY-MM-DD"
+            type="date"
+            placeholder="选择入库时间"
+          />
+        </el-form-item>
+      </el-form>
     </div>
-    <div class="result-area">
-      <div class="title-block">
-        筛选器
-      </div>
+    <div class="main-block">
       <el-table
         ref="table"
         v-loading="loading"
         :data="resultTable"
-        class="fliter-table"
+        style="height: 100%"
         @selection-change="handleSelectionChange"
       >
         <el-table-column
@@ -207,7 +200,7 @@ function handleSelectionChange(val) {
         />
       </el-table>
     </div>
-    <div class="btn-area">
+    <div class="btn-block">
       <el-button
         type="primary"
         :icon="Download"
@@ -231,43 +224,5 @@ function handleSelectionChange(val) {
 </template>
 
 <style lang="scss" scoped>
-.importer-main {
-  height: 100%;
-  @include Flex-C;
-}
-.import-area {
-  padding: 0 10px 0 10px;
-  flex: none;
-  .form-block {
-    @include Flex-C-AC;
-  }
-}
-.result-area {
-  padding: 0 10px 0 10px;
-  flex: auto;
-  overflow: hidden;
-  :deep(.warning-row) {
-    background-color: var(--el-color-warning-light-9);
-  }
-  :deep(.success-row) {
-    background-color: var(--el-color-success-light-9);
-  }
-  .fliter-table {
-    height: calc(100% - 45px) !important;
-    width: 100%;
-  }
-}
-.btn-area {
-  margin: 10px 0 5px 0;
-  flex: none;
-  @include Flex-R-JC;
-  .el-button + .el-button {
-    margin-left: 30px;
-  }
-}
-.title-block {
-  padding: 10px 0 10px 0;
-  font-size: 18px;
-  color: $color-greengray-1;
-}
+@include Uni-SUFS-Container;
 </style>

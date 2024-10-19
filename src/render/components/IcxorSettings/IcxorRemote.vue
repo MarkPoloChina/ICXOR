@@ -37,14 +37,14 @@ function handleUpdateRemote(row) {
 </script>
 
 <template>
-  <div class="config">
+  <div class="sufs-container">
     <div class="title-block">
       远程基
     </div>
-    <div class="form-block">
+    <div class="main-block">
       <el-table
         :data="tableData"
-        style="width: 100%"
+        style="width: 100%; height: 100%"
       >
         <el-table-column
           label="类型"
@@ -132,24 +132,5 @@ function handleUpdateRemote(row) {
 </template>
 
 <style lang="scss" scoped>
-.config {
-  @include Flex-C;
-  height: 100%;
-  .title-block {
-    padding: 10px 0 10px 0;
-    font-size: 18px;
-    color: $color-greengray-1;
-    flex: none;
-  }
-  .form-block {
-    @include Flex-C-AC;
-    overflow: hidden;
-    flex: auto;
-  }
-  .btn-block {
-    @include Flex-R-JC;
-    flex: none;
-    margin: 20px 0 10px 0;
-  }
-}
+@include Uni-SUFS-Container;
 </style>

@@ -9,7 +9,7 @@ import { useStore } from 'vuex'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
-       = window.electron
+  = window.electron
 const store = useStore()
 const form = reactive({
   uid: '',
@@ -94,7 +94,9 @@ async function handleSync() {
         const meta = await API.getPixivUgoiraJson(ele.id)
         downloaded = await downloadPixivUgoiraTo(toRaw(ele), syncPath, meta)
       }
-      else { downloaded = await downloadPixivTo(toRaw(ele), syncPath) }
+      else {
+        downloaded = await downloadPixivTo(toRaw(ele), syncPath)
+      }
       if (downloaded)
         downloadedThisRound = true
     }
@@ -170,9 +172,9 @@ defineExpose({ handleSearchByLink })
 <template>
   <div
     v-loading="isLoading"
-    class="container"
+    class="sufs-container"
   >
-    <div class="illust-form">
+    <div class="form-block">
       <el-form
         label-width="80px"
         style="width: 100%"
@@ -216,21 +218,22 @@ defineExpose({ handleSearchByLink })
     </div>
     <div
       v-if="userObj"
-      class="illust-result"
+      class="main-block"
     >
       <div class="result-left">
         <el-scrollbar style="height: 100%; width: 100%; border-radius: 5px">
-          <el-row
+          <div
             v-infinite-scroll="handleLoadNext"
+            class="grid-group"
             :infinite-scroll-delay="100"
             :infinite-scroll-immediate="false"
             :infinite-scroll-distance="50"
           >
-            <el-col
+            <div
               v-for="(obj, index) in userIllusts"
               :key="index"
               :span="6"
-              class="viewer-img-container"
+              class="viewer-grid-container"
             >
               <div class="expo" />
               <el-image
@@ -246,14 +249,15 @@ defineExpose({ handleSearchByLink })
                 fit="cover"
                 loading="lazy"
                 @contextmenu.prevent="handleRightClick($event, obj)"
-              />
-              <template #error>
-                <div class="image-slot">
-                  <el-icon><Picture /></el-icon>
-                </div>
-              </template>
-            </el-col>
-          </el-row>
+              >
+                <template #error>
+                  <div class="image-slot">
+                    <el-icon><Picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </div>
+          </div>
         </el-scrollbar>
       </div>
       <div class="result-right">
@@ -289,7 +293,7 @@ defineExpose({ handleSearchByLink })
     </div>
     <div
       v-if="userObj"
-      class="illust-stat"
+      class="stat-block"
     >
       {{ stat }}
     </div>
@@ -297,64 +301,25 @@ defineExpose({ handleSearchByLink })
 </template>
 
 <style lang="scss" scoped>
-.container {
-  height: 100%;
+@include Uni-SUFS-Container;
+.main-block {
   display: flex;
-  flex-direction: column;
-  .illust-result {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
+  flex-direction: row;
+  .result-left {
+    width: 80%;
     height: 100%;
-    overflow: hidden;
-    .result-left {
-      width: 80%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      .viewer-img-container {
-        position: relative;
-        .expo {
-          position: relative;
-          width: 100%;
-          height: 0;
-          padding: 0;
-          padding-bottom: 100%;
-        }
-        .viewer-img {
-          border-radius: 5px;
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          bottom: 10px;
-          left: 10px;
-          .image-slot {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            background: var(--el-fill-color-light);
-            color: var(--el-text-color-secondary);
-            font-size: 30px;
-          }
-        }
-      }
-    }
-    .result-right {
-      width: calc(20% - 10px);
-      margin-left: 10px;
-      height: 100%;
-      .right-container {
-        height: 100%;
-      }
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    @include Viewer-Grid;
   }
-  .illust-stat {
-    color: $color-greengray-3;
-    flex: none;
-    padding: 10px 0 10px 0;
+  .result-right {
+    width: calc(20% - 10px);
+    margin-left: 10px;
+    height: 100%;
+    .right-container {
+      height: 100%;
+    }
   }
 }
 </style>

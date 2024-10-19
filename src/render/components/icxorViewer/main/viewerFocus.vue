@@ -196,16 +196,7 @@ defineExpose({ handleIndexChange })
       width: 100%;
       height: 100%;
       min-height: 50px;
-      .image-slot {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        background: var(--el-fill-color-light);
-        color: var(--el-text-color-secondary);
-        font-size: 30px;
-      }
+      @include Viewer-Image-Slot;
     }
   }
   .flow-container {
@@ -217,13 +208,7 @@ defineExpose({ handleIndexChange })
       display: inline-block;
       position: relative;
       width: calc((100% - 10px));
-      .expo {
-        position: relative;
-        width: 100%;
-        height: 0;
-        padding: 0;
-        padding-bottom: 100%;
-      }
+      @include Viewer-Expo;
       .selected-mask {
         border-radius: 5px;
         position: absolute;
@@ -245,16 +230,7 @@ defineExpose({ handleIndexChange })
         bottom: 5px;
         left: 5px;
         cursor: pointer;
-        .image-slot {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-          background: var(--el-fill-color-light);
-          color: var(--el-text-color-secondary);
-          font-size: 30px;
-        }
+        @include Viewer-Image-Slot;
       }
     }
   }

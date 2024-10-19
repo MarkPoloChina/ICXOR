@@ -44,8 +44,8 @@ function revoke() {
 </script>
 
 <template>
-  <div class="config">
-    <div class="form-container">
+  <div class="sufs-container">
+    <div class="main-block">
       <el-scrollbar style="width: 100%">
         <div class="title-block">
           用户
@@ -141,7 +141,7 @@ function revoke() {
           <el-form
             :model="configForm"
             label-width="100px"
-            style="width: 100%;"
+            style="width: 100%"
           >
             <el-form-item label="公开收藏">
               <el-input
@@ -244,26 +244,5 @@ function revoke() {
 </template>
 
 <style lang="scss" scoped>
-.config {
-  @include Flex-C;
-  height: 100%;
-  .form-container {
-    @include Flex-C-AC;
-    overflow: hidden;
-    flex: auto;
-    .title-block {
-      padding: 10px 0 10px 0;
-      font-size: 18px;
-      color: $color-greengray-1;
-    }
-    .form-block {
-      @include Flex-C-AC;
-    }
-  }
-  .btn-block {
-    @include Flex-R-JC;
-    flex: none;
-    margin: 20px 0 10px 0;
-  }
-}
+@include Uni-SUFS-Container;
 </style>

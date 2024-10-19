@@ -41,8 +41,8 @@ async function handleConvertGif() {
 </script>
 
 <template>
-  <div class="container">
-    <div class="illust-form">
+  <div class="sufs-container">
+    <div class="form-block">
       <el-alert
         type="info"
         show-icon
@@ -68,7 +68,7 @@ async function handleConvertGif() {
         </el-form-item>
       </el-form>
     </div>
-    <div class="illust-result">
+    <div class="main-block">
       <el-table
         style="height: 100%"
         :data="illusts"
@@ -112,38 +112,12 @@ async function handleConvertGif() {
         </el-table-column>
       </el-table>
     </div>
-    <div class="illust-stat">
+    <div class="stat-block">
       {{ stat }}
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  .illust-form {
-    flex: none;
-  }
-  .illust-result {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-  .illust-stat {
-    color: $color-greengray-3;
-    flex: none;
-    padding: 10px 0 10px 0;
-  }
-  :deep(.warning-row) {
-    background-color: var(--el-color-warning-light-9);
-  }
-  :deep(.success-row) {
-    background-color: var(--el-color-success-light-9);
-  }
-  :deep(.danger-row) {
-    background-color: var(--el-color-danger-light-9);
-  }
-}
+@include Uni-SUFS-Container;
 </style>

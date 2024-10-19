@@ -31,12 +31,7 @@ export class IllustController {
       },
     ],
   ) {
-    return this.illustService.getIllusts(
-      conditionJson,
-      limit,
-      offset,
-      orderAsJson,
-    )
+    return this.illustService.getIllusts(conditionJson, limit, offset, orderAsJson)
   }
 
   @IpcHandle('api:GET/illust/base/count')
@@ -69,11 +64,7 @@ export class IllustController {
       { withIllust: boolean, type: string, orderAsJson: object },
     ],
   ) {
-    return this.illustService.getPolys(
-      withIllust,
-      type,
-      orderAsJson,
-    )
+    return this.illustService.getPolys(withIllust, type, orderAsJson)
   }
 
   @IpcHandle('api:POST/illust/poly/bases')
@@ -102,9 +93,7 @@ export class IllustController {
   @IpcHandle('api:GET/illust/poly/enum')
   getPolyEnum(
     @Payload()
-    [{ requiredType, row, desc }]: [
-      { requiredType: string, row: string, desc: boolean },
-    ],
+    [{ requiredType, row, desc }]: [{ requiredType: string, row: string, desc: boolean }],
   ) {
     return this.illustService.getPolyEnum(row, desc, requiredType)
   }
@@ -120,7 +109,7 @@ export class IllustController {
   }
 
   @IpcHandle('api:PUT/illust/tag')
-  updateTag(@Payload() [,tag]: [any, tag: Tag]) {
+  updateTag(@Payload() [, tag]: [any, tag: Tag]) {
     return this.illustService.updateTag(tag)
   }
 
@@ -135,9 +124,7 @@ export class IllustController {
   }
 
   @IpcHandle('api:POST/illust/remote-base')
-  updateRemoteBase(
-    @Payload() [, remoteBase]: [any, remoteBase: RemoteBaseDto],
-  ) {
+  updateRemoteBase(@Payload() [, remoteBase]: [any, remoteBase: RemoteBaseDto]) {
     return this.illustService.updateRemoteBase(remoteBase)
   }
 
@@ -147,9 +134,7 @@ export class IllustController {
   }
 
   @IpcHandle('api:POST/illust/illust-today')
-  updateIllustToday(
-    @Payload() [{ date }, itdto]: [{ date: string }, itdto: IllustTodayDto],
-  ) {
+  updateIllustToday(@Payload() [{ date }, itdto]: [{ date: string }, itdto: IllustTodayDto]) {
     return this.illustService.updateIllustToday(date, itdto)
   }
 }

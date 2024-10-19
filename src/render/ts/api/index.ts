@@ -15,34 +15,16 @@ import { isReactive, toRaw } from 'vue'
 const { apiAdapter } = window.electron
 const ax = {
   get: (url: string, options?: { params: object }) => {
-    return axiosAdapter(
-      url,
-      'GET',
-      options && options.params ? options.params : null,
-    )
+    return axiosAdapter(url, 'GET', options && options.params ? options.params : null)
   },
   post: (url: string, body: any, options?: { params: object }) => {
-    return axiosAdapter(
-      url,
-      'POST',
-      options && options.params ? options.params : null,
-      body,
-    )
+    return axiosAdapter(url, 'POST', options && options.params ? options.params : null, body)
   },
   put: (url: string, body: any, options?: { params: object }) => {
-    return axiosAdapter(
-      url,
-      'PUT',
-      options && options.params ? options.params : null,
-      body,
-    )
+    return axiosAdapter(url, 'PUT', options && options.params ? options.params : null, body)
   },
   delete: (url: string, options?: { params: object }) => {
-    return axiosAdapter(
-      url,
-      'DELETE',
-      options && options.params ? options.params : null,
-    )
+    return axiosAdapter(url, 'DELETE', options && options.params ? options.params : null)
   },
 }
 

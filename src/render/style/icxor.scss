@@ -1,4 +1,8 @@
-@use './global.scss' as *;
+@font-face {
+  font-family: 'Cascadia Mono';
+  src: url('@render/assets/fonts/CascadiaMono.ttf') format('truetype');
+  font-display: auto;
+}
 
 :root {
   --color-stdblue-1: #2e89c0;
@@ -9,19 +13,12 @@
   --color-greengray-2: #2c3c49;
   --color-greengray-3: #607b84;
   --color-greengray-4: #b2c5cb;
-  // --color-bg: white;
-  // --color-bg-alpha: #ffffffcc;
-  // --color-front: black;
 }
 html.dark {
   --color-greengray-1: #b2c5cb;
   --color-greengray-2: #607b84;
   --color-greengray-3: #2c3c49;
   --color-greengray-4: #161e21;
-  // --color-bg: #242526;
-  // --color-bg: #161616;
-  // --color-bg-alpha: #171717cc;
-  // --color-front: white;
 }
 $color-stdblue-1: var(--color-stdblue-1);
 $color-stdblue-2: var(--color-stdblue-2);
@@ -33,17 +30,151 @@ $color-greengray-3: var(--color-greengray-3);
 $color-greengray-4: var(--color-greengray-4);
 
 @mixin Uni-Main-Container {
-  position: relative;
-  width: calc(100% - 20px);
-  height: calc(100% - 15px);
-  padding: 10px 10px 5px 10px;
-  overflow: hidden;
-  @include Flex-C;
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: calc(100% - 20px);
+    height: calc(100% - 15px);
+    padding: 10px 10px 5px 10px;
+    overflow: hidden;
+    .title {
+      padding: 5px 10px 10px 10px;
+      font-size: 24px;
+      font-weight: bold;
+      color: $color-greengray-1;
+    }
+    .tabs {
+      padding: 0 10px 0 10px;
+      flex: auto;
+      overflow: hidden;
+      :deep(.el-tabs__content) {
+        height: calc(100% - 55px);
+      }
+      :deep(.el-tab-pane) {
+        height: 100%;
+      }
+    }
+  }
 }
 
-@mixin Uni-Main-Title {
-  padding: 5px 10px 10px 10px;
-  font-size: 24px;
-  font-weight: bold;
-  color: $color-greengray-1;
+// Standard User Form Structure
+@mixin Uni-SUFS-Container {
+  .sufs-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .form-block {
+      flex: none;
+    }
+    .main-block {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .stat-block {
+      color: $color-greengray-1;
+      flex: none;
+      padding: 10px 0 10px 0;
+    }
+    .btn-block {
+      flex: none;
+      padding: 10px 0 10px 0;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      .el-button + .el-button {
+        margin-left: 30px;
+      }
+    }
+    .title-block {
+      padding: 10px 0 10px 0;
+      font-size: 18px;
+      color: $color-greengray-1;
+    }
+    :deep(.warning-row) {
+      background-color: var(--el-color-warning-light-9);
+    }
+    :deep(.success-row) {
+      background-color: var(--el-color-success-light-9);
+    }
+    :deep(.danger-row) {
+      background-color: var(--el-color-danger-light-9);
+    }
+  }
+}
+
+@mixin Viewer-Image-Slot {
+  .image-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-secondary);
+    font-size: 30px;
+  }
+}
+
+@mixin Viewer-Expo {
+  .expo {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding: 0;
+    padding-bottom: 100%;
+  }
+}
+
+@mixin Viewer-Grid {
+  .grid-group {
+    display: grid;
+    justify-content: space-around;
+    grid-template-columns: repeat(auto-fill, 220px);
+    .viewer-grid-container {
+      position: relative;
+      @include Viewer-Expo;
+      .selected-mask {
+        position: absolute;
+        border-radius: 5px;
+        width: calc(100% - 140px);
+        height: calc(100% - 140px);
+        top: 10px;
+        left: 10px;
+        padding: 60px;
+        background: rgba(255, 255, 255, 0.6);
+        color: $color-stdblue-1;
+        z-index: 1;
+        pointer-events: none;
+        &.current {
+          width: calc(100% - 120px);
+          height: calc(100% - 120px);
+          top: 0;
+          left: 0;
+        }
+      }
+      .viewer-img {
+        border-radius: 5px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        bottom: 10px;
+        left: 10px;
+        width: 200px;
+        height: 200px;
+        cursor: pointer;
+        @include Viewer-Image-Slot;
+        &.current {
+          border: 3px solid $color-stdblue-1;
+          top: 0px;
+          right: 0px;
+          bottom: 0px;
+          left: 0px;
+          width: calc(220px - 6px);
+          height: calc(220px - 6px);
+        }
+      }
+    }
+  }
 }

@@ -17,10 +17,8 @@ contextBridge.exposeInMainWorld('electron', {
       cb(...args)
     }),
   ipcRemoveAll: (channel: string) => ipcRenderer.removeAllListeners(channel),
-  ipcSend: (channel: string, ...args: any[]): void =>
-    ipcRenderer.send(channel, ...args),
-  ipcSendSync: (channel: string, ...args: any[]): any =>
-    ipcRenderer.sendSync(channel, ...args),
+  ipcSend: (channel: string, ...args: any[]): void => ipcRenderer.send(channel, ...args),
+  ipcSendSync: (channel: string, ...args: any[]): any => ipcRenderer.sendSync(channel, ...args),
   ipcOnce: (channel: string, cb: (...args: any[]) => any) => {
     ipcRenderer.once(channel, (event, ...args) => cb(...args))
   },
@@ -44,6 +42,5 @@ contextBridge.exposeInMainWorld('electron', {
     illustObj: PixivIllust,
     dir: string,
     meta: UgoiraMetaData,
-  ): Promise<void> =>
-    ipcRenderer.invoke('ds:downloadUgoira', illustObj, dir, meta),
+  ): Promise<void> => ipcRenderer.invoke('ds:downloadUgoira', illustObj, dir, meta),
 })

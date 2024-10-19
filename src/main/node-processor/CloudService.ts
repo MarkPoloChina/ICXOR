@@ -69,9 +69,7 @@ function updateCloudRecord() {
       (err) => {
         if (err)
           reject(err)
-
-        else
-          resolve()
+        else resolve()
       },
     )
   })
@@ -89,9 +87,7 @@ function updateCloudFile() {
       (err) => {
         if (err)
           reject(err)
-
-        else
-          resolve()
+        else resolve()
       },
     )
   })
@@ -109,9 +105,7 @@ function downloadCloudFile() {
       (err) => {
         if (err)
           reject(err)
-
-        else
-          resolve()
+        else resolve()
       },
     )
   })

@@ -113,54 +113,48 @@ function handleUpload() {
 </script>
 
 <template>
-  <div class="importer-main">
-    <el-alert
-      type="info"
-      show-icon
-      :closable="false"
-      style="flex: none"
-    >
-      <template #title>
-        识别Pixiv规则的文件名, 匹配对应的PID和Page, 或者仅尝试匹配末端，然后生成PICOLT聚合。
-      </template>
-    </el-alert>
-    <div class="import-area">
-      <div class="title-block">
-        导入选项
-      </div>
-      <div class="form-block">
-        <el-form
-          :model="importOption"
-          label-width="100px"
-          style="width: 100%"
-        >
-          <el-form-item label="导入类型">
-            <el-radio-group v-model="importOption.importType">
-              <el-radio label="directory">
-                文件夹
-              </el-radio>
-              <el-radio label="files">
-                文件
-              </el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="showDialog = true">
-              聚合设置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+  <div class="sufs-container">
+    <div class="form-block">
+      <el-alert
+        type="info"
+        show-icon
+        :closable="false"
+        style="margin-bottom: 10px"
+      >
+        <template #title>
+          识别Pixiv规则的文件名, 匹配对应的PID和Page, 或者仅尝试匹配末端，然后生成PICOLT聚合。
+        </template>
+      </el-alert>
+      <el-form
+        :model="importOption"
+        label-width="80px"
+        style="width: 100%"
+        label-position="left"
+        :inline="true"
+      >
+        <el-form-item label="导入类型">
+          <el-radio-group v-model="importOption.importType">
+            <el-radio label="directory">
+              文件夹
+            </el-radio>
+            <el-radio label="files">
+              文件
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="showDialog = true">
+            聚合设置
+          </el-button>
+        </el-form-item>
+      </el-form>
     </div>
-    <div class="result-area">
-      <div class="title-block">
-        筛选器
-      </div>
+    <div class="main-block">
       <FilterTable
         ref="table"
         :list="log.list"
         :loading="loading"
-        class="fliter-table"
+        style="height: 100%; width: 100%"
       />
     </div>
     <div class="btn-block">
@@ -192,37 +186,5 @@ function handleUpload() {
 </template>
 
 <style lang="scss" scoped>
-.importer-main {
-  height: 100%;
-  @include Flex-C;
-}
-.import-area {
-  padding: 0 10px 0 10px;
-  flex: none;
-  .form-block {
-    @include Flex-C-AC;
-  }
-}
-.result-area {
-  padding: 0 10px 0 10px;
-  flex: auto;
-  overflow: hidden;
-  .fliter-table {
-    height: calc(100% - 45px) !important;
-    width: 100%;
-  }
-}
-.btn-block {
-  margin: 10px 0 5px 0;
-  flex: none;
-  @include Flex-R-JC;
-  .el-button + .el-button {
-    margin-left: 30px;
-  }
-}
-.title-block {
-  padding: 10px 0 10px 0;
-  font-size: 18px;
-  color: $color-greengray-1;
-}
+@include Uni-SUFS-Container;
 </style>

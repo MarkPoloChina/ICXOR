@@ -20,10 +20,7 @@ export class DS {
     }
   }
 
-  private static async downloadFromUrl(
-    url: string,
-    isPixiv?: boolean,
-  ): Promise<ArrayBuffer> {
+  private static async downloadFromUrl(url: string, isPixiv?: boolean): Promise<ArrayBuffer> {
     const axiosConfig: AxiosRequestConfig = {
       responseType: 'arraybuffer',
     }
@@ -44,9 +41,7 @@ export class DS {
       return response.data
     }
     else {
-      throw new Error(
-        `Failed to download image: HTTP status ${response.status}`,
-      )
+      throw new Error(`Failed to download image: HTTP status ${response.status}`)
     }
   }
 
@@ -56,12 +51,14 @@ export class DS {
     dir: string,
     isPixiv?: boolean,
   ): Promise<boolean> {
-    if (!await FS.isExists(path.join(dir, filename))) {
+    if (!(await FS.isExists(path.join(dir, filename)))) {
       if (url.startsWith('icxorimg://')) {
         url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
         await FS.localCopy(url, path.join(dir, path.basename(decodeURIComponent(filename))))
       }
-      else { await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir) }
+      else {
+        await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir)
+      }
       return true
     }
     else {
@@ -69,11 +66,7 @@ export class DS {
     }
   }
 
-  public static async downloadFromIllustObj(
-    illustObj: PixivIllust,
-    dir: string,
-    page?: number,
-  ) {
+  public static async downloadFromIllustObj(illustObj: PixivIllust, dir: string, page?: number) {
     const urls: string[] = []
     if (!illustObj.visible)
       throw new Error('Visit Deny.')
@@ -117,12 +110,10 @@ export class DS {
       throw new Error('Visit Deny.')
     if (illustObj.type !== 'ugoira')
       throw new Error('Not Ugoira type.')
-    if (!await FS.isExists(path.join(dir, `${illustObj.id}.gif`))) {
+    if (!(await FS.isExists(path.join(dir, `${illustObj.id}.gif`)))) {
       const delay = meta.ugoira_metadata.frames[0].delay
-      const url = illustObj.meta_single_page.original_image_url.replace(
-        'img-original',
-        'img-zip-ugoira',
-      )
+      const url = illustObj.meta_single_page.original_image_url
+        .replace('img-original', 'img-zip-ugoira')
         .replace(/_ugoira0\.(.*)/, '_ugoira1920x1080.zip')
       const ab = await this.downloadFromUrl(url, true)
       const filename = `${illustObj.id}@${delay}ms.zip`

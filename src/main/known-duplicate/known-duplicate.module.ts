@@ -5,11 +5,7 @@ import { KnownDuplicateController } from './known-duplicate.controller'
 import { KnownDuplicateService } from './known-duplicate.service'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      PixivTwitter,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([PixivTwitter])],
   providers: [KnownDuplicateService, PixivTwitter],
   controllers: [KnownDuplicateController],
 })

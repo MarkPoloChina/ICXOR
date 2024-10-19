@@ -11,7 +11,7 @@ const username = computed(() => {
 </script>
 
 <template>
-  <div class="home-container">
+  <div class="main-container">
     <div class="title">
       欢迎
     </div>
@@ -35,13 +35,13 @@ const username = computed(() => {
 </template>
 
 <style lang="scss" scoped>
-.home-container {
-  @include Uni-Main-Container;
-  .title {
-    @include Uni-Main-Title;
-  }
+@include Uni-Main-Container;
+.main-container {
   .home-main {
-    @include Flex-C-JC-AC;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     height: 100%;
     .home-welcome {
       font-size: 40px;

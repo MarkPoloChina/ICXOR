@@ -366,7 +366,9 @@ defineExpose({ handleClear })
 <style lang="scss" scoped>
 .container {
   height: 100%;
-  @include Flex-C-JSB;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   .item-bottom {
     margin: 10px;
     flex: none;

@@ -100,9 +100,9 @@ defineExpose({ handleSearchByLink })
 <template>
   <div
     v-loading="isLoading"
-    style="height: 100%"
+    class="sufs-container"
   >
-    <div class="illust-form">
+    <div class="form-block">
       <el-form
         label-width="80px"
         style="width: 100%"
@@ -147,7 +147,7 @@ defineExpose({ handleSearchByLink })
     </div>
     <div
       v-if="illustObj"
-      class="illust-result"
+      class="main-block"
     >
       <div class="result-left">
         <el-image
@@ -263,32 +263,25 @@ defineExpose({ handleSearchByLink })
 </template>
 
 <style lang="scss" scoped>
-.illust-result {
+@include Uni-SUFS-Container;
+.result-left {
+  width: 70%;
+  height: 100%;
   display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  height: calc(100% - 120px);
-  .result-left {
-    width: 70%;
+  justify-content: center;
+  align-items: center;
+  .viewer-img {
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    .viewer-img {
-      height: 100%;
-      width: 100%;
-      text-align: center;
-    }
+    width: 100%;
+    text-align: center;
   }
-  .result-right {
-    width: calc(30% - 10px);
-    margin-left: 10px;
+}
+.result-right {
+  width: calc(30% - 10px);
+  margin-left: 10px;
+  height: 100%;
+  .right-container {
     height: 100%;
-    .right-container {
-      height: 100%;
-    }
   }
 }
 </style>

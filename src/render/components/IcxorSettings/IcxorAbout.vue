@@ -203,7 +203,9 @@ function checkUpdate() {
 
 <style lang="scss" scoped>
 .about {
-  @include Flex-C-AC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: 20px;
   margin-bottom: 20px;
   .home-img {
@@ -229,7 +231,10 @@ function checkUpdate() {
         font-size: 16px;
       }
       .single-info {
-        @include Flex-R-JC-AC;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
       }
     }
     .title {

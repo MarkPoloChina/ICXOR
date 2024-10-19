@@ -101,17 +101,17 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .index-container {
-  @include Flex-R;
+  display: flex;
+  flex-direction: row;
   width: 100%;
   height: 100%;
-  // background-image: url("@render/assets/img/avatar.jpg");
-  // background-size: cover;
 
   .index-menu-container {
     height: 100%;
     flex: none;
     .index-menu {
-      @include Flex-C;
+      display: flex;
+      flex-direction: column;
       height: 100%;
       border-right: none;
       --el-menu-bg-color: #{$color-stdblue-1};
@@ -129,7 +129,6 @@ onMounted(async () => {
   .index-main {
     flex: auto;
     overflow: hidden;
-    // background-color: var(--color-bg-alpha);
   }
 }
 </style>

@@ -68,7 +68,6 @@ defineExpose({
         v-for="(obj, index) in tableData"
         :id="`img-grid-${obj.id}`"
         :key="index"
-        :span="8"
         class="viewer-grid-container"
       >
         <div class="expo" />
@@ -138,69 +137,6 @@ defineExpose({
 .grid-container {
   height: 100%;
   position: relative;
-  .grid-group {
-    display: grid;
-    justify-content: space-around;
-    grid-template-columns: repeat(auto-fill, 220px);
-    .viewer-grid-container {
-      position: relative;
-      .expo {
-        position: relative;
-        width: 100%;
-        height: 0;
-        padding: 0;
-        padding-bottom: 100%;
-      }
-      .selected-mask {
-        position: absolute;
-        border-radius: 5px;
-        width: calc(100% - 140px);
-        height: calc(100% - 140px);
-        top: 10px;
-        left: 10px;
-        padding: 60px;
-        background: rgba(255, 255, 255, 0.6);
-        color: $color-stdblue-1;
-        z-index: 1;
-        pointer-events: none;
-        &.current {
-          width: calc(100% - 120px);
-          height: calc(100% - 120px);
-          top: 0;
-          left: 0;
-        }
-      }
-      .viewer-img {
-        border-radius: 5px;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        bottom: 10px;
-        left: 10px;
-        width: 200px;
-        height: 200px;
-        cursor: pointer;
-        .image-slot {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-          background: var(--el-fill-color-light);
-          color: var(--el-text-color-secondary);
-          font-size: 30px;
-        }
-        &.current {
-          border: 3px solid $color-stdblue-1;
-          top: 0px;
-          right: 0px;
-          bottom: 0px;
-          left: 0px;
-          width: calc(220px - 6px);
-          height: calc(220px - 6px);
-        }
-      }
-    }
-  }
+  @include Viewer-Grid;
 }
 </style>

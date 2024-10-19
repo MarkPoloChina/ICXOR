@@ -50,8 +50,7 @@ export default createStore({
           const value = await ipcInvoke('db:get', key)
           if (value === null || value === undefined)
             ipcInvoke('db:set', key, state[key])
-          else
-            commit('setByKey', { key, value })
+          else commit('setByKey', { key, value })
         }
         else {
           const value = await ipcInvoke('db:getMap')

@@ -10,8 +10,9 @@ export class GifCoverter {
   static async zipToGif(input: string, output: string, delay: number) {
     const tempDir = output.replace('.gif', '_temp')
     await extract(input, tempDir)
-    const files = (await FS.parseFilenamesFromDirectoryAsync(tempDir))
-      .map(file => path.join(tempDir, file))
+    const files = (await FS.parseFilenamesFromDirectoryAsync(tempDir)).map(file =>
+      path.join(tempDir, file),
+    )
     const imagesData: Uint8Array[] = []
     const dimensions = imageSize(files[0])
     for (const imagePath of files) {
@@ -28,8 +29,7 @@ export class GifCoverter {
         getPixels(path, (err, pixels) => {
           if (err)
             reject(err)
-          else
-            resolve(new Uint8Array(pixels.data))
+          else resolve(new Uint8Array(pixels.data))
         })
       })
     }

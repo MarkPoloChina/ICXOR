@@ -59,7 +59,7 @@ watch(currentMode, (val) => {
 </script>
 
 <template>
-  <div class="viewer-container">
+  <div class="main-container">
     <div class="title">
       <div class="btn-group">
         <el-button
@@ -156,11 +156,9 @@ watch(currentMode, (val) => {
 </template>
 
 <style lang="scss" scoped>
-.viewer-container {
-  @include Uni-Main-Container;
-  overflow: auto;
+@include Uni-Main-Container;
+.main-container {
   .title {
-    @include Uni-Main-Title;
     display: flex;
     flex: none;
     justify-content: space-between;

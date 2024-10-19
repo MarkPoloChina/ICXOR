@@ -30,4 +30,4 @@ import { KnownDuplicateModule } from './known-duplicate/known-duplicate.module'
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -15,14 +15,14 @@ declare global {
         url: string,
         method: 'GET' | 'POST' | 'PUT' | 'DELETE',
         params: any,
-        body: any
+        body: any,
       ) => Promise<any>
       downloadTo: (url: string, rename: string, dir: string, isPixiv?: boolean) => Promise<boolean>
       downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number) => Promise<boolean>
       downloadPixivUgoiraTo: (
         illustObj: PixivIllust,
         dir: string,
-        meta: UgoiraMetaData
+        meta: UgoiraMetaData,
       ) => Promise<boolean>
     }
   }

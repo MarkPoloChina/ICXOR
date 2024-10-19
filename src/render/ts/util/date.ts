@@ -10,10 +10,7 @@ export class UtilDate {
     }
     else if (/^\d\d\d\d\d\d\d\d$/.test(string)) {
       const date = new Date(
-        `${string.slice(0, 4)}-${string.slice(4, 6)}-${string.slice(
-          6,
-          8,
-        )}T00:00:00+08:00`,
+        `${string.slice(0, 4)}-${string.slice(4, 6)}-${string.slice(6, 8)}T00:00:00+08:00`,
       )
       return date.toISOString()
     }
@@ -21,7 +18,9 @@ export class UtilDate {
       const date = new Date(`${string.replace(/\//g, '-')}T00:00:00+08:00`)
       return date.toISOString()
     }
-    else { return null }
+    else {
+      return null
+    }
   }
 
   /**

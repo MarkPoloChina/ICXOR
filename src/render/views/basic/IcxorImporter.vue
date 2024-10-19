@@ -8,7 +8,7 @@ const currentTab = ref('basic')
 </script>
 
 <template>
-  <div class="importer-container">
+  <div class="main-container">
     <div class="title">
       导入
     </div>
@@ -39,21 +39,5 @@ const currentTab = ref('basic')
 </template>
 
 <style lang="scss" scoped>
-.importer-container {
-  @include Uni-Main-Container;
-  .title {
-    @include Uni-Main-Title;
-  }
-  .tabs {
-    padding: 0 10px 0 10px;
-    flex: auto;
-    overflow: hidden;
-    :deep(.el-tabs__content) {
-      height: calc(100% - 55px);
-    }
-    :deep(.el-tab-pane) {
-      height: 100%;
-    }
-  }
-}
+@include Uni-Main-Container;
 </style>

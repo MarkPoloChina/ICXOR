@@ -18,7 +18,7 @@ onActivated(() => {
 </script>
 
 <template>
-  <div class="setting-container">
+  <div class="main-container">
     <div class="title">
       设置
     </div>
@@ -80,30 +80,5 @@ onActivated(() => {
 </template>
 
 <style lang="scss" scoped>
-.setting-container {
-  width: calc(100% - 20px);
-  height: calc(100% - 10px);
-  padding: 10px 10px 0 10px;
-  overflow: hidden;
-  @include Flex-C;
-  .title {
-    padding: 10px;
-    font-size: 24px;
-    font-weight: bold;
-    color: $color-greengray-1;
-    flex: none;
-  }
-  .tabs {
-    padding: 0 10px 0 10px;
-    flex: auto;
-    overflow: hidden;
-    position: relative;
-    :deep(.el-tab-pane) {
-      height: 100%;
-    }
-    :deep(.el-tabs__content) {
-      height: calc(100% - 55px);
-    }
-  }
-}
+@include Uni-Main-Container;
 </style>

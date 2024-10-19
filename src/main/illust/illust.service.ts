@@ -83,44 +83,43 @@ export class IllustService {
       .leftJoin('Illust.remote_base', 'remote_base')
 
     let firstCause = true
-    Object.keys(conditionObj)
-      .forEach((colName, index) => {
-        let param1: string
-        let param2: object
-        if (Array.isArray(conditionObj[colName]) && conditionObj[colName].length) {
-          param1 = `(${colName} IN (:...row${index}))`
+    Object.keys(conditionObj).forEach((colName, index) => {
+      let param1: string
+      let param2: object
+      if (Array.isArray(conditionObj[colName]) && conditionObj[colName].length) {
+        param1 = `(${colName} IN (:...row${index}))`
+        param2 = {
+          [`row${index}`]: conditionObj[colName],
+        }
+      }
+      else if (colName === 'AR') {
+        if (conditionObj[colName] !== 'all')
+          param1 = `meta.width ${conditionObj.AR === 'horizontal' ? '>' : '<'}= meta.height`
+      }
+      else if (colName === 'meta.pid' || colName === 'meta.author_id') {
+        if (conditionObj[colName]) {
+          param1 = `(${colName} = :row${index})`
           param2 = {
-            [`row${index}`]: conditionObj[colName],
+            [`row${index}`]: `${conditionObj[colName]}`,
           }
         }
-        else if (colName === 'AR') {
-          if (conditionObj[colName] !== 'all')
-            param1 = `meta.width ${conditionObj.AR === 'horizontal' ? '>' : '<'}= meta.height`
+      }
+      else if (typeof conditionObj[colName] === 'string' && conditionObj[colName]) {
+        param1 = `(${colName} LIKE :row${index})`
+        param2 = {
+          [`row${index}`]: `%${conditionObj[colName]}%`,
         }
-        else if (colName === 'meta.pid' || colName === 'meta.author_id') {
-          if (conditionObj[colName]) {
-            param1 = `(${colName} = :row${index})`
-            param2 = {
-              [`row${index}`]: `${conditionObj[colName]}`,
-            }
-          }
+      }
+      if (param1) {
+        if (firstCause) {
+          querybuilder = querybuilder.where(param1, param2)
+          firstCause = false
         }
-        else if (typeof conditionObj[colName] === 'string' && conditionObj[colName]) {
-          param1 = `(${colName} LIKE :row${index})`
-          param2 = {
-            [`row${index}`]: `%${conditionObj[colName]}%`,
-          }
+        else {
+          querybuilder = querybuilder.andWhere(param1, param2)
         }
-        if (param1) {
-          if (firstCause) {
-            querybuilder = querybuilder.where(param1, param2)
-            firstCause = false
-          }
-          else {
-            querybuilder = querybuilder.andWhere(param1, param2)
-          }
-        }
-      })
+      }
+    })
 
     return querybuilder
   }
@@ -146,9 +145,10 @@ export class IllustService {
       .leftJoinAndSelect('Illust.tag', 'tag')
       .leftJoinAndSelect('Illust.remote_base', 'remote_base')
       .where((qb) => {
-        const querybuilder = this.buildIllustQueryChain(conditionObj, qb.subQuery()
-          .select('Illust.id')
-          .from(Illust, 'Illust'))
+        const querybuilder = this.buildIllustQueryChain(
+          conditionObj,
+          qb.subQuery().select('Illust.id').from(Illust, 'Illust'),
+        )
 
         return `Illust.id IN ${querybuilder.getQuery()}`
       })
@@ -179,9 +179,7 @@ export class IllustService {
   async getIllustsCount(conditionObj: FilterConditionObj = {}) {
     const querybuilder: SelectQueryBuilder<Illust> = this.buildIllustQueryChain(
       conditionObj,
-      this.illustRepository
-        .createQueryBuilder()
-        .select('COUNT(DISTINCT Illust.id)', 'count'),
+      this.illustRepository.createQueryBuilder().select('COUNT(DISTINCT Illust.id)', 'count'),
     )
     const results: { count: number } = await querybuilder.getRawOne()
     // dont use getCount()!! That will query and transfer all data that is too large.
@@ -253,9 +251,7 @@ export class IllustService {
       targetIllust.tag.length = 0
       for (const tag of illust.tag) {
         if (tag.id) {
-          targetIllust.tag.push(
-            await this.tagRepository.findOneByOrFail({ id: tag.id }),
-          )
+          targetIllust.tag.push(await this.tagRepository.findOneByOrFail({ id: tag.id }))
         }
         else {
           let targetTag: Tag
@@ -385,9 +381,7 @@ export class IllustService {
       catch (err) {
         resp_list.push({
           bid: illust.bid,
-          status: `${err}`.startsWith('QueryFailedError: Duplicate entry')
-            ? 'conflict'
-            : 'fault',
+          status: `${err}`.startsWith('QueryFailedError: Duplicate entry') ? 'conflict' : 'fault',
           message: `${err}`,
         })
       }
@@ -546,8 +540,10 @@ export class IllustService {
             message: 'EXIST Illust.',
           })
         }
-        else if (targetIllust.poly
-          && targetIllust.poly.some(value => value.parent === targetPoly.parent)) {
+        else if (
+          targetIllust.poly
+          && targetIllust.poly.some(value => value.parent === targetPoly.parent)
+        ) {
           resp_list.push({
             bid: illust.bid,
             status: 'conflict',

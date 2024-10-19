@@ -10,15 +10,7 @@ import { DatabaseInitializerService } from './illust.init.service'
 import { IllustService } from './illust.service'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Illust,
-      Meta,
-      Poly,
-      RemoteBase,
-      Tag,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Illust, Meta, Poly, RemoteBase, Tag])],
   providers: [DatabaseInitializerService, IllustService, Illust, Meta, Poly, RemoteBase, Tag],
   controllers: [IllustController],
 })
