@@ -9,17 +9,17 @@ import { useRoute } from 'vue-router'
 
 const currentTab = ref('illust')
 const route = useRoute()
-const illust: Ref<typeof PixivIllust> = ref()
-const user: Ref<typeof PixivUser> = ref()
+const pixivIllustRef: Ref<InstanceType<typeof PixivIllust>> = ref()
+const pixivUserRef: Ref<InstanceType<typeof PixivUser>> = ref()
 onActivated(() => {
   switch (route.query.redirect) {
     case 'illust':
       currentTab.value = 'illust'
-      illust.value.handleSearchByLink(route.query.pid, route.query.page)
+      pixivIllustRef.value.handleSearchByLink(route.query.pid, route.query.page)
       break
     case 'user':
       currentTab.value = 'user'
-      user.value.handleSearchByLink(route.query.uid)
+      pixivUserRef.value.handleSearchByLink(route.query.uid)
       break
     case 'bookmark':
       currentTab.value = 'bookmark'
@@ -47,11 +47,11 @@ onActivated(() => {
         name="illust"
       >
         <PixivIllust
-          ref="illust"
+          ref="pixivIllustRef"
           @to-user="
             ($event) => {
               currentTab = 'user'
-              user.handleSearchByLink($event.uid)
+              pixivUserRef.handleSearchByLink($event.uid)
             }
           "
         />
@@ -61,11 +61,11 @@ onActivated(() => {
         name="user"
       >
         <PixivUser
-          ref="user"
+          ref="pixivUserRef"
           @to-illust="
             ($event) => {
               currentTab = 'illust'
-              illust.handleSearchByLink($event.pid, $event.page)
+              pixivIllustRef.handleSearchByLink($event.pid, $event.page)
             }
           "
         />
@@ -78,7 +78,7 @@ onActivated(() => {
           @to-illust="
             ($event) => {
               currentTab = 'illust'
-              illust.handleSearchByLink($event.pid, $event.page)
+              pixivIllustRef.handleSearchByLink($event.pid, $event.page)
             }
           "
         />
@@ -91,7 +91,7 @@ onActivated(() => {
           @to-illust="
             ($event) => {
               currentTab = 'illust'
-              illust.handleSearchByLink($event.pid, $event.page)
+              pixivIllustRef.handleSearchByLink($event.pid, $event.page)
             }
           "
         />

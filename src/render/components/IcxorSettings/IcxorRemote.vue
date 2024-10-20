@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Remove } from '@element-plus/icons-vue'
+import { Plus, Refresh } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
@@ -123,7 +123,7 @@ function handleUpdateRemote(row) {
       />
       <el-button
         type="danger"
-        :icon="Remove"
+        :icon="Refresh"
         circle
         @click="revoke"
       />

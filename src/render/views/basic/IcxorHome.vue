@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import url from '@render/assets/img/avatar.jpg'
+import store from '@render/store/index'
 import { computed } from 'vue'
-import { useStore } from 'vuex'
-
-const store = useStore()
 
 const username = computed(() => {
   return store.state.username

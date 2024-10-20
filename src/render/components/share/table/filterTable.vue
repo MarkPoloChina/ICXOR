@@ -52,7 +52,7 @@ function SelectionCell({ value, intermediate = false, onChange, disabled }) {
   )
 }
 
-const popoverRef = ref()
+const popoverRef = ref<InstanceType<typeof ElPopover>>()
 
 function onReset() {
   Object.keys(shouldFilter).forEach((key) => {

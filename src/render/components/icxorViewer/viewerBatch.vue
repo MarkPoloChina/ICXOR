@@ -6,14 +6,14 @@ defineProps({
   batchLogs: Array<BatchLog>,
 })
 const translatedType = {
-  download: '下载',
+  download: '导出',
   fetch: '抓取元',
   update: '置元',
   poly: '聚合',
   delete: '删除',
 }
 const translatedStatus = {
-  padding: '未决',
+  padding: '待定',
   done: '完成',
   reject: '拒绝',
   processing: '进行中',

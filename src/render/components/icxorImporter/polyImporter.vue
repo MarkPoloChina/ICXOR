@@ -10,8 +10,8 @@ import { reactive, ref } from 'vue'
 
 const { ipcInvoke } = window.electron
 const log = reactive({ message: '', list: [] })
-const table = ref()
-const polyForm = ref()
+const filterTableRef = ref<InstanceType<typeof FilterTable>>()
+const polyFormRef = ref<InstanceType<typeof PolyForm>>()
 const showDialog = ref(false)
 const loading = ref(false)
 const importOption = reactive({
@@ -31,7 +31,7 @@ function initTab() {
   importOption.polyOption.name = ''
   log.list.length = 0
   log.message = ''
-  polyForm.value.clearForm()
+  polyFormRef.value.clearForm()
 }
 async function startAction() {
   const paths = []
@@ -99,7 +99,7 @@ function handleUpload() {
           log.list.forEach((ele) => {
             ele.checked = false
           })
-          table.value.onReset()
+          filterTableRef.value.onReset()
         })
         .catch((err) => {
           ElMessage.error(`错误: ${err}`)
@@ -151,7 +151,7 @@ function handleUpload() {
     </div>
     <div class="main-block">
       <FilterTable
-        ref="table"
+        ref="filterTableRef"
         :list="log.list"
         :loading="loading"
         style="height: 100%; width: 100%"
@@ -178,7 +178,7 @@ function handleUpload() {
       />
     </div>
     <PolyForm
-      ref="polyForm"
+      ref="polyFormRef"
       v-model="showDialog"
       @update:poly-option="importOption.polyOption = { ...importOption.polyOption, ...$event }"
     />

@@ -105,8 +105,7 @@ const tabsGetFilterFunc = {
         'poly.name': [item.name],
       },
       sorter: {
-        'remote_base.name': 'ASC',
-        'meta.pid': 'ASC',
+        'Illust.remote_endpoint': 'ASC',
       },
     }
   },

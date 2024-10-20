@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Remove } from '@element-plus/icons-vue'
+import { Refresh } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
@@ -124,7 +124,7 @@ function handleDeleteTag(row) {
     <div class="btn-block">
       <el-button
         type="danger"
-        :icon="Remove"
+        :icon="Refresh"
         circle
         @click="revoke"
       />

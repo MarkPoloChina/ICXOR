@@ -13,8 +13,8 @@ const { ipcInvoke } = window.electron
 const remoteBaseList = ref([])
 const log = reactive({ message: '', list: [] })
 const showDialog = ref(false)
-const metaForm = ref()
-const table = ref()
+const metaFormRef = ref<InstanceType<typeof MetaForm>>()
+const filterTableRef = ref<InstanceType<typeof FilterTable>>()
 const loading = ref(false)
 const importOption = reactive<{
   importType: 'directory' | 'files'
@@ -52,7 +52,7 @@ function initTab() {
   importOption.addition = {}
   log.list.length = 0
   log.message = ''
-  metaForm.value.clearForm()
+  metaFormRef.value.clearForm()
 }
 onMounted(() => {
   getRemoteBaseList()
@@ -123,7 +123,7 @@ function handleUpload() {
         log.list.forEach((ele) => {
           ele.checked = false
         })
-        table.value.onReset()
+        filterTableRef.value.onReset()
       }
       catch {
         ElMessage.error('网络错误')
@@ -244,7 +244,7 @@ function handleUpload() {
     </div>
     <div class="main-block">
       <FilterTable
-        ref="table"
+        ref="filterTableRef"
         style="height: 100%; width: 100%"
         :list="log.list"
         :loading="loading"
@@ -272,7 +272,7 @@ function handleUpload() {
     </div>
   </div>
   <MetaForm
-    ref="metaForm"
+    ref="metaFormRef"
     v-model="showDialog"
     @update:addition="importOption.addition = $event"
   />

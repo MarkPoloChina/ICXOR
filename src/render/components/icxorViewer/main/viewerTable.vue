@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { ElTable } from 'element-plus'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
@@ -9,12 +10,12 @@ const props = defineProps({
 })
 
 const emits = defineEmits(['selectChange', 'popupContext'])
-const table = ref()
+const tableRef = ref<InstanceType<typeof ElTable>>()
 watch(
   () => props.tableData,
   (val) => {
     val.forEach((ele) => {
-      table.value.toggleRowSelection(ele, !!ele.checked)
+      tableRef.value.toggleRowSelection(ele, !!ele.checked)
     })
   },
   {
@@ -24,7 +25,7 @@ watch(
 watch(
   () => props.tableData,
   () => {
-    table.value.setScrollTop(0)
+    tableRef.value.setScrollTop(0)
   },
   {
     deep: false,
@@ -34,7 +35,7 @@ watch(
   () => props.currentSelected,
   (val) => {
     if (val)
-      table.value.setCurrentRow(val)
+      tableRef.value.setCurrentRow(val)
   },
   {
     deep: false,
@@ -60,7 +61,7 @@ function handleSelectAll(selection: IllustObj[]) {
 <template>
   <div class="table-container">
     <el-table
-      ref="table"
+      ref="tableRef"
       v-loading="loading"
       :data="tableData"
       height="100%"

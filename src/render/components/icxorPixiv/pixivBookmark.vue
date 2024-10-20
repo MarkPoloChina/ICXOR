@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import { Download, FolderAdd, RefreshLeft, Search } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, toRaw } from 'vue'
-import { useStore } from 'vuex'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
   = window.electron
-const store = useStore()
 const form = reactive({
   type: 'public',
 })
@@ -98,15 +97,14 @@ async function handleDownloadAll(defaultDir?: string) {
   )
 }
 async function handleSync() {
-  const dir: string
+  const syncPath: string
     = form.type === 'private'
       ? store.state.pixivBookmarkPrivateDir
       : store.state.pixivBookmarkPublicDir
-  if (!dir) {
+  if (!syncPath) {
     ElMessage.error('未设置同步目录')
     return
   }
-  const syncPath = `${store.state.localDiskRoot}${dir}`
   await handleSearch(syncPath)
   await handleDownloadAll(syncPath)
 }

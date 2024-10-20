@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { Check, Remove } from '@element-plus/icons-vue'
+import { Check, Refresh } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
-import { useStore } from 'vuex'
 
-const store = useStore()
-const localBase = ref('')
-const remoteBase = ref('')
+const diskBase = ref('')
+const ihsBase = ref('')
 onMounted(() => {
   initForm()
 })
 const tableData = ref([])
 async function initForm() {
-  localBase.value = store.state.picoltLocalBase
-  remoteBase.value = store.state.picoltRemoteBase
+  diskBase.value = store.state.picoltDiskBase
+  ihsBase.value = store.state.picoltIHSBase
   const data = await API.getPoly('picolt')
   tableData.value = [...data]
 }
@@ -27,12 +26,12 @@ async function handleUpdate(row) {
   ElMessage.success('修改成功')
   row.editing = false
 }
-async function handleUpdateRemoteBase() {
-  store.commit('reviseByKey', { key: 'picoltRemoteBase', value: remoteBase.value })
+async function handleUpdateIhsBase() {
+  store.commit('reviseByKey', { key: 'picoltIHSBase', value: ihsBase.value })
   ElMessage.success('修改成功')
 }
-async function handleUpdateLocalBase() {
-  store.commit('reviseByKey', { key: 'picoltLocalBase', value: localBase.value })
+async function handleUpdateDiskBase() {
+  store.commit('reviseByKey', { key: 'picoltDiskBase', value: diskBase.value })
   ElMessage.success('修改成功')
 }
 </script>
@@ -45,24 +44,24 @@ async function handleUpdateLocalBase() {
     <div class="form-block">
       <el-form
         style="width: 100%"
-        label-width="60px"
+        label-width="100px"
       >
-        <el-form-item label="远程基">
-          <el-input v-model="remoteBase">
+        <el-form-item label="IHS中缀">
+          <el-input v-model="ihsBase">
             <template #append>
               <el-button
                 :icon="Check"
-                @click="handleUpdateRemoteBase"
+                @click="handleUpdateIhsBase"
               />
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="本地基">
-          <el-input v-model="localBase">
+        <el-form-item label="磁盘前缀">
+          <el-input v-model="diskBase">
             <template #append>
               <el-button
                 :icon="Check"
-                @click="handleUpdateLocalBase"
+                @click="handleUpdateDiskBase"
               />
             </template>
           </el-input>
@@ -127,7 +126,7 @@ async function handleUpdateLocalBase() {
     <div class="btn-block">
       <el-button
         type="danger"
-        :icon="Remove"
+        :icon="Refresh"
         circle
         @click="revoke"
       />

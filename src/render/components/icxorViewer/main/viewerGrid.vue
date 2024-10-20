@@ -2,6 +2,7 @@
 import type { IllustObj } from '@render/ts/interface/illustObj'
 import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
+import { ElScrollbar } from 'element-plus'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
@@ -11,13 +12,13 @@ const props = defineProps({
   currentSelected: Object as () => IllustObj | null,
 })
 const emit = defineEmits(['update:selections', 'popupContext', 'selectChange', 'starChange'])
-const table = ref()
+const tableRef = ref<InstanceType<typeof ElScrollbar>>()
 const image404s = ref({})
 
 watch(
   () => props.tableData,
   () => {
-    table.value.setScrollTop(0)
+    tableRef.value.setScrollTop(0)
   },
   {
     deep: false,
@@ -55,8 +56,8 @@ defineExpose({
 </script>
 
 <template>
-  <el-scrollbar
-    ref="table"
+  <ElScrollbar
+    ref="tableRef"
     style="border-radius: 5px"
     class="grid-container"
   >
@@ -103,7 +104,7 @@ defineExpose({
         </el-image>
       </div>
     </div>
-  </el-scrollbar>
+  </ElScrollbar>
   <div
     v-if="currentSelected"
     style="display: none"

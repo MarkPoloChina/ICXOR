@@ -252,8 +252,21 @@ defineExpose({ handleSearchByLink })
             <el-descriptions-item label="分辨率">
               {{ `H${illustObj.height} * W${illustObj.width}` }}
             </el-descriptions-item>
+            <el-descriptions-item label="标签">
+              <el-tag
+                v-for="tag in illustObj.tags"
+                :key="tag"
+                style="max-width: 220px"
+              >
+                {{ tag.name }}
+              </el-tag>
+            </el-descriptions-item>
             <el-descriptions-item label="URL">
-              {{ illustObj.url }}
+              <div style="max-width: 220px">
+                <span style="word-wrap: break-word">
+                  {{ illustObj.url }}
+                </span>
+              </div>
             </el-descriptions-item>
           </el-descriptions>
         </el-scrollbar>
@@ -264,24 +277,39 @@ defineExpose({ handleSearchByLink })
 
 <style lang="scss" scoped>
 @include Uni-SUFS-Container;
-.result-left {
-  width: 70%;
-  height: 100%;
+.main-block {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  .viewer-img {
-    height: 100%;
+  flex-direction: row;
+  .result-left {
     width: 100%;
-    text-align: center;
-  }
-}
-.result-right {
-  width: calc(30% - 10px);
-  margin-left: 10px;
-  height: 100%;
-  .right-container {
     height: 100%;
+    flex: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .viewer-img {
+      height: 100%;
+      width: 100%;
+      text-align: center;
+    }
+  }
+  .result-right {
+    flex: none;
+    margin-left: 10px;
+    height: 100%;
+    max-width: min-content;
+    .right-container {
+      height: 100%;
+      min-width: 250px;
+      :deep(.el-descriptions__body table) {
+        border-radius: 5px;
+      }
+      :deep(.el-tag span) {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
   }
 }
 </style>

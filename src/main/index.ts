@@ -336,8 +336,11 @@ function afterReady() {
     await FS.saveStringToFile(filename, content)
   })
 
-  ipcMain.handle('ds:download', async (event, url, filename, dir, isPixiv) => {
-    return await DS.downloadAndSave(url, filename, dir, isPixiv)
+  ipcMain.handle('ds:download', async (event, url, dir, isPixiv) => {
+    return await DS.downloadAndSave(url, dir, isPixiv)
+  })
+  ipcMain.handle('ds:download2x', async (event, url, dir) => {
+    return await DS.download2xAndSave(url, dir)
   })
   ipcMain.handle('ds:downloadPixiv', async (event, illustObj, dir, page) => {
     return await DS.downloadFromIllustObj(illustObj, dir, page)

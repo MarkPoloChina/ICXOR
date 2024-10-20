@@ -73,7 +73,7 @@ $color-greengray-4: var(--color-greengray-4);
       overflow: hidden;
     }
     .stat-block {
-      color: $color-greengray-1;
+      color: var(--el-text-color-regular);
       flex: none;
       padding: 10px 0 10px 0;
     }

@@ -17,7 +17,8 @@ declare global {
         params: any,
         body: any,
       ) => Promise<any>
-      downloadTo: (url: string, rename: string, dir: string, isPixiv?: boolean) => Promise<boolean>
+      downloadTo: (url: string, dir: string, isPixiv?: boolean) => Promise<boolean>
+      download2xTo: (url: string, dir: string) => Promise<boolean>
       downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number) => Promise<boolean>
       downloadPixivUgoiraTo: (
         illustObj: PixivIllust,

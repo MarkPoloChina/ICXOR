@@ -1,21 +1,22 @@
 <script setup lang="ts">
-import { Remove } from '@element-plus/icons-vue'
+import { Check, Refresh } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { API } from '@render/ts/api'
 import { ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue'
-import { useStore } from 'vuex'
 
-const store = useStore()
+const diskRoot = ref('')
 onMounted(() => {
   initForm()
+  diskRoot.value = store.state.diskRoot
 })
 const tableData = ref([])
 async function initForm() {
   tableData.value = (await API.getRemoteBase())
     .sort((a, b) => a.id - b.id)
     .map((item) => {
-      const origin_url_local = store.state.localDiskMap[item.name]?.original
-      const thum_url_local = store.state.localDiskMap[item.name]?.thumbnail
+      const origin_url_local = store.state.diskMap[item.name]?.original
+      const thum_url_local = store.state.diskMap[item.name]?.thumbnail
       return { ...item, origin_url_local, thum_url_local }
     })
 }
@@ -32,12 +33,33 @@ function handleUpdateLocal(row) {
   ElMessage.success('修改成功')
   row.editing = false
 }
+async function handleUpdateDiskRoot() {
+  store.commit('reviseByKey', { key: 'diskRoot', value: diskRoot.value })
+  ElMessage.success('修改成功')
+}
 </script>
 
 <template>
   <div class="sufs-container">
     <div class="title-block">
       本地磁盘基
+    </div>
+    <div class="form-block">
+      <el-form
+        style="width: 100%"
+        label-width="100px"
+      >
+        <el-form-item label="公共前缀">
+          <el-input v-model="diskRoot">
+            <template #append>
+              <el-button
+                :icon="Check"
+                @click="handleUpdateDiskRoot"
+              />
+            </template>
+          </el-input>
+        </el-form-item>
+      </el-form>
     </div>
     <div class="main-block">
       <el-table
@@ -54,13 +76,13 @@ function handleUpdateLocal(row) {
           label="标识符"
           width="150"
         />
-        <el-table-column label="原图URL">
+        <el-table-column label="原图目录">
           <template #default="scope">
             <span v-if="!scope.row.editing">{{ scope.row.origin_url_local }}</span>
             <span v-else><el-input v-model="scope.row.origin_url_local" /></span>
           </template>
         </el-table-column>
-        <el-table-column label="缩略图URL">
+        <el-table-column label="缩略图目录">
           <template #default="scope">
             <span v-if="!scope.row.editing">{{ scope.row.thum_url_local }}</span>
             <span v-else><el-input v-model="scope.row.thum_url_local" /></span>
@@ -97,7 +119,7 @@ function handleUpdateLocal(row) {
     <div class="btn-block">
       <el-button
         type="danger"
-        :icon="Remove"
+        :icon="Refresh"
         circle
         @click="revoke"
       />

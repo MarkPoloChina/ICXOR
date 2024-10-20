@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { ElScrollbar } from 'element-plus'
 import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
 import { onActivated, onDeactivated, ref, watch } from 'vue'
@@ -12,13 +13,13 @@ const props = defineProps({
 
 const emit = defineEmits(['selectChange', 'selectsChange', 'popupContext', 'starChange'])
 const currentIndex = ref(0)
-const table = ref()
+const tableRef = ref<InstanceType<typeof ElScrollbar>>()
 const image404s = ref({})
 
 watch(
   () => props.tableData,
   () => {
-    table.value.setScrollTop(0)
+    tableRef.value.setScrollTop(0)
   },
   {
     deep: false,
@@ -141,7 +142,7 @@ defineExpose({ handleIndexChange })
       </el-image>
     </div>
     <el-scrollbar
-      ref="table"
+      ref="tableRef"
       class="flow-container"
     >
       <div

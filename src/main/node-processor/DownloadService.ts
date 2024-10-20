@@ -37,7 +37,10 @@ export class DS {
       }
     }
     const response = await axios.get(url, axiosConfig)
-    if (response.status === 200) {
+    if (
+      response.status === 200
+      && response.headers['content-type'].toString().startsWith('image')
+    ) {
       return response.data
     }
     else {
@@ -47,22 +50,60 @@ export class DS {
 
   public static async downloadAndSave(
     url: string,
-    filename: string,
     dir: string,
     isPixiv?: boolean,
   ): Promise<boolean> {
+    if (url.startsWith('icxorimg://'))
+      url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
+    const filename = path.basename(url)
     if (!(await FS.isExists(path.join(dir, filename)))) {
-      if (url.startsWith('icxorimg://')) {
-        url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
-        await FS.localCopy(url, path.join(dir, path.basename(decodeURIComponent(filename))))
-      }
-      else {
+      if (url.startsWith('http'))
         await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir)
-      }
+      else await FS.localCopy(url, path.join(dir, filename))
       return true
     }
     else {
       return false
+    }
+  }
+
+  public static async download2xAndSave(url: string, dir: string): Promise<boolean> {
+    if (url.startsWith('icxorimg://')) {
+      url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
+      if (!(await FS.isExists(url))) {
+        url = url.replace(/(\.[^/.]+)$/, `.png`)
+        if (!(await FS.isExists(url)))
+          throw new Error('Try ori and PNG but Neither.')
+      }
+      if (!(await FS.isExists(path.join(dir, path.basename(url))))) {
+        await FS.localCopy(url, path.join(dir, path.basename(url)))
+        return true
+      }
+      else {
+        return false
+      }
+    }
+    else {
+      let ab: ArrayBuffer = null
+      try {
+        ab = await this.downloadFromUrl(url, false)
+      }
+      catch {
+        url = url.replace(/(\.[^/.]+)$/, `.png`)
+        try {
+          ab = await this.downloadFromUrl(url, false)
+        }
+        catch {
+          throw new Error('Try ori and PNG but Neither.')
+        }
+      }
+      if (!(await FS.isExists(path.join(dir, path.basename(url))))) {
+        await FS.saveArrayBufferTo(ab, path.basename(url), dir)
+        return true
+      }
+      else {
+        return false
+      }
     }
   }
 
@@ -94,7 +135,7 @@ export class DS {
     }
     let hasRealDownload = false
     for (const url of urls) {
-      const downloaded = await this.downloadAndSave(url, path.basename(url), dir, true)
+      const downloaded = await this.downloadAndSave(url, dir, true)
       if (downloaded)
         hasRealDownload = true
     }

@@ -5,18 +5,25 @@ const { ipcInvoke } = window.electron
 export default createStore({
   state: {
     username: 'MarkPoloChauvet',
-    theme: 'system',
+    theme: 'system' as 'system' | 'light' | 'dark',
+
+    mainMode: 'disk' as 'disk' | 'ihs' | 'both',
+    diskRoot: '',
+    diskMap: {} as Record<string, { original: string, thumbnail: string }>,
+
     localIHS: '',
     remoteIHS: '',
-    picoltRemoteBase: '',
-    picoltLocalBase: '',
-    localDiskRoot: '',
+    useLocalIHS: false,
+
+    picoltIHSBase: '',
+    picoltDiskBase: '',
+
     pixivUserDir: '',
     pixivBookmarkPrivateDir: '',
     pixivBookmarkPublicDir: '',
+
     cos: '',
     mpsApiUrl: '',
-    useLocal: false,
     pixivUserId: '',
     pixivToken: '',
     pixivProxy: '',
@@ -25,7 +32,6 @@ export default createStore({
     cosBucket: '',
     cosRegion: '',
     sauceNAOToken: '',
-    localDiskMap: {},
   },
   getters: {},
   mutations: {
@@ -34,7 +40,7 @@ export default createStore({
       ipcInvoke('db:set', key, value)
     },
     reviseMapByName(state, { name, original, thumbnail }) {
-      state.localDiskMap[name] = { original, thumbnail }
+      state.diskMap[name] = { original, thumbnail }
       ipcInvoke('db:setOriginal', name, original)
       ipcInvoke('db:setThumb', name, thumbnail)
     },
@@ -46,7 +52,7 @@ export default createStore({
     async initStoreAsync({ commit, state }) {
       await ipcInvoke('db:init')
       for (const key of Object.keys(state)) {
-        if (key !== 'localDiskMap') {
+        if (key !== 'diskMap') {
           const value = await ipcInvoke('db:get', key)
           if (value === null || value === undefined)
             ipcInvoke('db:set', key, state[key])

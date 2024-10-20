@@ -2,6 +2,7 @@
 import type { FilterConditionObj } from '@main/illust/dto/filter_condition_obj.dto'
 import type { FilterSortObj } from '@main/illust/dto/filter_sort_obj.dto'
 import type { IllustTodayDto } from '@main/illust/dto/illust_today.dto'
+import type { Poly } from '@main/illust/entities/poly.entities'
 import type { PixivIllust } from '@markpolochina/pixiv.ts'
 import type { BatchLog } from '@render/ts/interface/batchLog'
 import type { IllustObj } from '@render/ts/interface/illustObj'
@@ -38,12 +39,14 @@ const emit = defineEmits([
   'update:star',
   'update:batchLogs',
 ])
-const { ipcRemoveAll, ipcOnce, ipcSend, ipcSendSync, ipcInvoke, downloadTo } = window.electron
+const { ipcRemoveAll, ipcOnce, ipcSend, ipcSendSync, ipcInvoke, downloadTo, download2xTo }
+  = window.electron
 const osString = ipcSendSync('app:getOS') === 'darwin' ? 'Finder' : 'Explorer'
-const viewer: Ref<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable> = ref()
-const metaForm: Ref<typeof MetaForm> = ref()
-const polyForm: Ref<typeof PolyForm> = ref()
-const itForm: Ref<typeof IllustTodayForm> = ref()
+const viewerRef: Ref<InstanceType<typeof ViewerFocus | typeof ViewerGrid | typeof ViewerTable>>
+  = ref()
+const metaFormRef: Ref<InstanceType<typeof MetaForm>> = ref()
+const polyFormRef: Ref<InstanceType<typeof PolyForm>> = ref()
+const itFormRef: Ref<InstanceType<typeof IllustTodayForm>> = ref()
 const writableCurPage = computed({
   get: () => {
     return props.curPage
@@ -104,7 +107,7 @@ const show = reactive({
 })
 
 function handleFocusIndexChange(action) {
-  viewer.value.handleIndexChange(action)
+  (viewerRef.value as InstanceType<typeof ViewerFocus>).handleIndexChange(action)
 }
 onMounted(() => {
   getIllustsAndCount()
@@ -153,7 +156,7 @@ function handleSingleIllustChange(obj: IllustObj, withClear?: boolean) {
       ElMessage.success('修改成功')
       if (withClear) {
         getIllustsAndCount()
-        metaForm.value.clearForm()
+        metaFormRef.value.clearForm()
       }
     })
     .catch((err) => {
@@ -219,7 +222,7 @@ function handleUpdate(addition: {
             duration: 0,
           })
           getIllustsAndCount()
-          metaForm.value.clearForm()
+          metaFormRef.value.clearForm()
         })
         .catch((err) => {
           batchLogs.value[idx].status = 'reject'
@@ -286,7 +289,7 @@ function handlePoly(polyOption: { type: string, parent: string, name: string }) 
             duration: 0,
           })
           getIllustsAndCount()
-          polyForm.value.clearForm()
+          polyFormRef.value.clearForm()
         })
         .catch((err) => {
           batchLogs.value[idx].status = 'reject'
@@ -309,22 +312,38 @@ async function handleDownload() {
     return
   const url = UrlGenerator.getBlobUrl(currentOperating.value, 'original')
   const ei = ElMessage.info({
-    message: '正在下载',
+    message: '正在导出',
     duration: 0,
   })
   try {
-    await downloadTo(
-      url,
-      currentOperating.value.remote_base.type === 'pixiv'
-        ? PathHelper.getBasename(url)
-        : currentOperating.value.remote_endpoint,
-      dir,
-      url.includes('i.pximg.net'),
-    )
-    ElMessage.success('下载完成')
+    await downloadTo(url, dir, url.includes('i.pximg.net'))
+    ElMessage.success('导出完成')
   }
   catch {
-    ElMessage.error('下载失败')
+    ElMessage.error('导出失败')
+  }
+  ei.close()
+}
+
+async function handleDownload2x(poly: Poly) {
+  if (!currentOperating.value) {
+    ElMessage.error('项目为空')
+    return
+  }
+  const dir = await ipcInvoke('dialog:openDirectory')
+  if (!dir)
+    return
+  const url = UrlGenerator.getPicolt2xUrl(currentOperating.value, poly)
+  const ei = ElMessage.info({
+    message: '正在导出',
+    duration: 0,
+  })
+  try {
+    await download2xTo(url, dir)
+    ElMessage.success('导出完成')
+  }
+  catch {
+    ElMessage.error('导出失败')
   }
   ei.close()
 }
@@ -352,12 +371,7 @@ async function handleDownloadBatch() {
   for (const [index, obj] of waitingOperateDto.entries()) {
     const url = UrlGenerator.getBlobUrl(obj, 'original')
     try {
-      await downloadTo(
-        url,
-        obj.remote_base.type === 'pixiv' ? PathHelper.getBasename(url) : obj.remote_endpoint,
-        dir,
-        url.includes('i.pximg.net'),
-      )
+      await downloadTo(url, dir, url.includes('i.pximg.net'))
     }
     catch (err) {
       batchLogs.value[idx].resp.push({
@@ -372,7 +386,7 @@ async function handleDownloadBatch() {
   }
   batchLogs.value[idx].status = 'done'
   ElNotification.success({
-    message: `一项下载批处理完成, 其中${batchLogs.value[idx].resp.length}项失败`,
+    message: `一项导出批处理完成, 其中${batchLogs.value[idx].resp.length}项失败`,
     duration: 0,
   })
 }
@@ -491,7 +505,7 @@ function handleIT(info: { date: string, char: string, tags: string[] }) {
       API.coverIllustToday(info.date, dto)
         .then(() => {
           ElMessage.success('请求成功')
-          itForm.value.initForm()
+          itFormRef.value.initForm()
         })
         .catch((err) => {
           ElMessage.error(`错误: ${err}`)
@@ -582,8 +596,8 @@ function handlePopupContext(row: IllustObj) {
         currentSelected.value = row
         break
       case '选择并打开':
-        currentSelected.value = row
-        viewer.value.openViwer()
+        currentSelected.value = row;
+        (viewerRef.value as InstanceType<typeof ViewerGrid>).openViwer()
         break
       case '勾选':
         row.checked = !row.checked
@@ -613,19 +627,22 @@ function handlePopupContext(row: IllustObj) {
       case '注册为每日一图':
         show.it = true
         break
-      case '下载':
+      case '导出':
         handleDownload()
         break
-      case '下载选定项':
+      case '导出选定项':
         handleDownloadBatch()
         break
+      case '导出2x聚合':
+        handleDownload2x(row.poly.find(p => p.parent === subItem))
+        break
       case `在${osString}中打开`:
-        ipcSend('app:openInFolder', UrlGenerator.getLocalPath(row))
+        ipcSend('app:openInFolder', PathHelper.getLocalPath(row))
         break
       case `在${osString}中打开聚合`:
         ipcSend(
           'app:openInFolder',
-          UrlGenerator.getPicoltLocalPath(
+          PathHelper.getPicoltLocalPath(
             row,
             row.poly.find(p => p.parent === subItem),
             false,
@@ -635,7 +652,7 @@ function handlePopupContext(row: IllustObj) {
       case `在${osString}中打开2x聚合`:
         ipcSend(
           'app:openInFolder',
-          UrlGenerator.getPicoltLocalPath(
+          PathHelper.getPicoltLocalPath(
             row,
             row.poly.find(p => p.parent === subItem),
             true,
@@ -677,8 +694,24 @@ function handlePopupContext(row: IllustObj) {
       label: '注册为每日一图',
     },
     {
-      label: '下载',
+      label: '导出',
     },
+    ...(row.poly.filter(v => UrlGenerator.getPicolt2xUrl(row, v)).length
+      ? [
+          {
+            label: `导出2x聚合`,
+            submenu: [
+              ...row.poly
+                .filter(v => UrlGenerator.getPicolt2xUrl(row, v))
+                .map((v) => {
+                  return {
+                    label: v.parent,
+                  }
+                }),
+            ],
+          },
+        ]
+      : []),
     {
       label: '删除基',
     },
@@ -735,7 +768,7 @@ function handlePopupContext(row: IllustObj) {
             label: '选定项抓取元',
           },
           {
-            label: '选定项下载',
+            label: '选定项导出',
           },
           {
             label: '选定项删除基',
@@ -750,6 +783,7 @@ function handlePopupContext(row: IllustObj) {
 defineExpose({
   handleSingleIllustChange,
   handleFocusIndexChange,
+  getIllustsAndCount,
 })
 </script>
 
@@ -760,7 +794,7 @@ defineExpose({
         :is="
           viewerType === 'table' ? ViewerTable : viewerType === 'grid' ? ViewerGrid : ViewerFocus
         "
-        ref="viewer"
+        ref="viewerRef"
         :table-data="illustList"
         :loading="isLoading"
         :current-selected="currentSelected"
@@ -770,17 +804,17 @@ defineExpose({
       />
     </KeepAlive>
     <MetaForm
-      ref="metaForm"
+      ref="metaFormRef"
       v-model="show.update"
       @update:addition="handleUpdate"
     />
     <PolyForm
-      ref="polyForm"
+      ref="polyFormRef"
       v-model="show.poly"
       @update:poly-option="handlePoly"
     />
     <IllustTodayForm
-      ref="itForm"
+      ref="itFormRef"
       v-model="show.it"
       :current-operating="currentOperating"
       @confirm="handleIT"

@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { House, PictureRounded, Setting, SuitcaseLine, Upload } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { useDark } from '@vueuse/core'
-import { ElMessage } from 'element-plus'
 
+import { ElMessage } from 'element-plus'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
 
 const { ipcInvoke, ipcOn } = window.electron
 
 const isDark = useDark()
 const router = useRouter()
-const store = useStore()
 onMounted(async () => {
   await store.dispatch('initStoreAsync')
   const theme: 'system' | 'light' | 'dark' = store.state.theme

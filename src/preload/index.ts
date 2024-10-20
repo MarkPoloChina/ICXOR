@@ -32,15 +32,18 @@ contextBridge.exposeInMainWorld('electron', {
   ): Promise<any> => ipcRenderer.invoke(`api:${method}${url}`, params, body),
 
   // downloader
-  downloadTo: (url: string, rename: string, dir: string, isPixiv = false): Promise<void> =>
-    ipcRenderer.invoke('ds:download', url, rename, dir, isPixiv),
+  downloadTo: (url: string, dir: string, isPixiv = false): Promise<boolean> =>
+    ipcRenderer.invoke('ds:download', url, dir, isPixiv),
 
-  downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number): Promise<void> =>
+  download2xTo: (url: string, dir: string): Promise<boolean> =>
+    ipcRenderer.invoke('ds:download2x', url, dir),
+
+  downloadPixivTo: (illustObj: PixivIllust, dir: string, page?: number): Promise<boolean> =>
     ipcRenderer.invoke('ds:downloadPixiv', illustObj, dir, page),
 
   downloadPixivUgoiraTo: (
     illustObj: PixivIllust,
     dir: string,
     meta: UgoiraMetaData,
-  ): Promise<void> => ipcRenderer.invoke('ds:downloadUgoira', illustObj, dir, meta),
+  ): Promise<boolean> => ipcRenderer.invoke('ds:downloadUgoira', illustObj, dir, meta),
 })

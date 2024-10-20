@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { Check, Remove } from '@element-plus/icons-vue'
+import { Check, Refresh } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { UtilDate } from '@render/ts/util/date'
 import { PathHelper } from '@render/ts/util/path'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
-import { useStore } from 'vuex'
 
 const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
-  useLocal: false,
+  useLocalIHS: false,
   theme: 'system',
+  mainMode: 'disk',
 })
-const store = useStore()
 onMounted(() => {
   initForm()
   getCacheSize()
@@ -287,8 +287,21 @@ async function download() {
             label-width="100px"
             style="width: 100%"
           >
-            <el-form-item label="本地模式">
-              <el-switch v-model="configForm.useLocal" />
+            <el-form-item label="主模式">
+              <el-radio-group v-model="configForm.mainMode">
+                <el-radio label="both">
+                  全功能
+                </el-radio>
+                <el-radio label="disk">
+                  仅磁盘
+                </el-radio>
+                <el-radio label="ihs">
+                  仅IHS
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="使用内网IHS">
+              <el-switch v-model="configForm.useLocalIHS" />
             </el-form-item>
           </el-form>
         </div>
@@ -303,7 +316,7 @@ async function download() {
       />
       <el-button
         type="danger"
-        :icon="Remove"
+        :icon="Refresh"
         circle
         @click="revoke"
       />

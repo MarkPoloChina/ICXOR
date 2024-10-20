@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { Check, Remove } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { ElMessage } from 'element-plus'
 import { onMounted, reactive } from 'vue'
-import { useStore } from 'vuex'
 
 const configForm = reactive({
   username: '',
   localIHS: '',
   remoteIHS: '',
-  localDiskRoot: '',
   pixivUserDir: '',
   pixivBookmarkPrivateDir: '',
   pixivBookmarkPublicDir: '',
@@ -23,7 +22,6 @@ const configForm = reactive({
   cosRegion: '',
   sauceNAOToken: '',
 })
-const store = useStore()
 onMounted(() => {
   initForm()
 })
@@ -108,12 +106,6 @@ function revoke() {
             label-width="100px"
             style="width: 100%"
           >
-            <el-form-item label="磁盘访问根">
-              <el-input
-                v-model="configForm.localDiskRoot"
-                placeholder="请输入路径"
-              />
-            </el-form-item>
             <el-form-item label="公网IHS路径">
               <el-input
                 v-model="configForm.remoteIHS"

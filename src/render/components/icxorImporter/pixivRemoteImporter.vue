@@ -4,13 +4,13 @@ import { Check, Download, Remove } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
 import { PathHelper } from '@render/ts/util/path'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type ElTable } from 'element-plus'
 import { reactive, ref } from 'vue'
 
 const resultTable = ref([])
 const selectedList = ref([])
 const loading = ref(false)
-const table = ref()
+const tableRef = ref<InstanceType<typeof ElTable>>()
 const importOption = reactive({
   type: 'public',
   addition: {
@@ -94,7 +94,7 @@ function handleUpload() {
       API.updateIllusts(dto)
         .then(() => {
           selectedList.value.length = 0
-          table.value.clearSelection()
+          tableRef.value.clearSelection()
           ElMessage.success('完成操作')
         })
         .catch((err) => {
@@ -160,7 +160,7 @@ function handleSelectionChange(val) {
     </div>
     <div class="main-block">
       <el-table
-        ref="table"
+        ref="tableRef"
         v-loading="loading"
         :data="resultTable"
         style="height: 100%"

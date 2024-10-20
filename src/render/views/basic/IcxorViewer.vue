@@ -11,8 +11,10 @@ import ViewerMain from '@render/components/icxorViewer/viewerMain.vue'
 import ViewerPoly from '@render/components/icxorViewer/viewerPoly.vue'
 import { reactive, ref, watch } from 'vue'
 
-const viewerMain = ref()
-const viewerInfo = ref()
+const viewerMainRef = ref<InstanceType<typeof ViewerMain>>()
+const viewerInfoRef = ref<InstanceType<typeof ViewerInfo>>()
+const viewerFilterRef = ref<InstanceType<typeof ViewerFilter>>()
+const viewerPolyRef = ref<InstanceType<typeof ViewerPoly>>()
 const viewerType = ref<'table' | 'grid' | 'focus'>('grid')
 const viewerColShow = reactive({
   left: {
@@ -26,8 +28,7 @@ const viewerColShow = reactive({
 })
 const currentMode = ref('filter')
 const currentPicoltId = ref(-1)
-const viewerFilterRef = ref()
-const viewerPolyRef = ref()
+
 const filter = ref<FilterConditionObj>({})
 const sorter = ref<FilterSortObj>({ 'Illust.id': 'DESC' })
 const batchLogs = ref<BatchLog[]>([])
@@ -113,7 +114,7 @@ watch(currentMode, (val) => {
       <div class="col main-and-func-col">
         <div class="main-row">
           <ViewerMain
-            ref="viewerMain"
+            ref="viewerMainRef"
             v-model:cur-page="curPage"
             v-model:page-size="pageSize"
             v-model:current-selected="currentSelected"
@@ -124,7 +125,7 @@ watch(currentMode, (val) => {
             :picolt-id="currentPicoltId"
             @update:illust-count="illustCount = $event"
             @update:selection-count="selectionCount = $event"
-            @update:star="viewerInfo.handleStarChange($event)"
+            @update:star="viewerInfoRef.handleStarChange($event)"
           />
         </div>
         <div class="func-row">
@@ -133,18 +134,19 @@ watch(currentMode, (val) => {
             v-model:page-size="pageSize"
             :illust-count="illustCount"
             :selection-count="selectionCount"
+            @refresh="viewerMainRef.getIllustsAndCount()"
             @update:viewer-type="viewerType = $event"
-            @focus-up="viewerMain.handleFocusIndexChange('up')"
-            @focus-down="viewerMain.handleFocusIndexChange('down')"
+            @focus-up="viewerMainRef.handleFocusIndexChange('up')"
+            @focus-down="viewerMainRef.handleFocusIndexChange('down')"
           />
         </div>
       </div>
       <div class="col info-col">
         <ViewerInfo
           v-show="viewerColShow.right.info"
-          ref="viewerInfo"
+          ref="viewerInfoRef"
           v-model:info="currentSelected"
-          @upload="viewerMain.handleSingleIllustChange($event)"
+          @upload="viewerMainRef.handleSingleIllustChange($event)"
         />
         <ViewerBatchLog
           v-show="viewerColShow.right.batch"

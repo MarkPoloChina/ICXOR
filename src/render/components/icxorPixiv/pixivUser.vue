@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import type { PixivIllust, PixivUser } from '@markpolochina/pixiv.ts'
 import { Download, FolderAdd, Picture, Search } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { API } from '@render/ts/api'
 import { UrlGenerator } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, toRaw } from 'vue'
-import { useStore } from 'vuex'
 
 const emit = defineEmits(['toIllust', 'toUser'])
 const { ipcInvoke, ipcRemoveAll, ipcOnce, ipcSend, downloadPixivTo, downloadPixivUgoiraTo }
   = window.electron
-const store = useStore()
 const form = reactive({
   uid: '',
 })
@@ -73,7 +72,7 @@ async function handleSync() {
     ElMessage.error('未设置同步目录')
     return
   }
-  const syncPath = `${store.state.localDiskRoot}${dir}${userObj.value.id}`
+  const syncPath = `${dir}${userObj.value.id}`
   let sum = userIllusts.value.length
   let downloadedThisRound = false
   for (let i: number = 0; i <= sum; i++) {
@@ -306,19 +305,25 @@ defineExpose({ handleSearchByLink })
   display: flex;
   flex-direction: row;
   .result-left {
-    width: 80%;
+    width: 100%;
     height: 100%;
+    flex: auto;
     display: flex;
     justify-content: center;
     align-items: center;
     @include Viewer-Grid;
   }
   .result-right {
-    width: calc(20% - 10px);
+    flex: none;
     margin-left: 10px;
     height: 100%;
+    max-width: min-content;
     .right-container {
       height: 100%;
+      min-width: 250px;
+      :deep(.el-descriptions__body table) {
+        border-radius: 5px;
+      }
     }
   }
 }
