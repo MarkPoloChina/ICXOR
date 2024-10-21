@@ -33,6 +33,7 @@ export default defineConfig({
               'dist/main/**/*',
               'dist/preload/**/*',
               'dist/render/**/*',
+              'resources/**/*',
             ],
             appId: 'com.mpsto.icxor',
             productName: 'ICXOR',
