@@ -30,7 +30,7 @@ function startAction() {
   loading.value = true
   API.getBookmark(importOption.type === 'private')
     .then((data) => {
-      resultTable.value = data
+      resultTable.value = data.reverse()
     })
     .catch((err) => {
       ElMessage.error(`抓取出错:${err}`)

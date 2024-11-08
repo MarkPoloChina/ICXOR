@@ -80,14 +80,24 @@ export class SS {
   static async init() {
     if (!fs.existsSync(RESULT_ROOT))
       fs.mkdirSync(RESULT_ROOT)
+    if (client)
+      return
     const token = ConfigDB.getByKey('sauceNAOToken')
-    if (token)
-      client = sagiri(token)
+    if (token) {
+      try {
+        client = sagiri(token)
+      }
+      catch {
+        throw new Error('SauceNAO token check failed')
+      }
+    }
+    else {
+      throw new Error('SauceNAO token not set')
+    }
   }
 
   static async runBatchAndDump(dir: string) {
-    if (!client)
-      throw new Error('SauceNAO client not initialized')
+    await this.init()
     const files = fs
       .readdirSync(dir)
       .filter(file => ['.png', '.jpg', '.jpeg'].includes(path.extname(file).toLowerCase()))
@@ -117,9 +127,7 @@ export class SS {
   }
 
   static async runAndProcess(filePath: string) {
-    if (!client)
-      throw new Error('SauceNAO client not initialized')
-
+    await this.init()
     if (!['.png', '.jpg', '.jpeg'].includes(path.extname(filePath).toLowerCase()))
       return { error: 'Invalid file type' }
 

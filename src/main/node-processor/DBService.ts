@@ -78,3 +78,44 @@ export class LocalDiskDB {
     this.setByKey('localBase', localBase)
   }
 }
+
+export class ProxyParser {
+  static getProxyStr = () => {
+    const proxyRaw: string | null | undefined = ConfigDB.getByKey('pixivProxy')
+    if (
+      proxyRaw
+      && proxyRaw.match(
+        /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
+      )
+    ) {
+      return `http://${proxyRaw}`
+    }
+    return ''
+  }
+
+  static getProxyObj = () => {
+    const proxyStr = this.getProxyStr()
+    if (proxyStr) {
+      return {
+        protocol: 'http',
+        host: proxyStr.split(':')[0],
+        port: Number(proxyStr.split(':')[1]),
+      }
+    }
+    else {
+      return null
+    }
+  }
+
+  static setProxy = () => {
+    const proxyStr = this.getProxyStr()
+    if (proxyStr) {
+      process.env.HTTP_PROXY = proxyStr
+      process.env.HTTPS_PROXY = proxyStr
+      return true
+    }
+    else {
+      return false
+    }
+  }
+}

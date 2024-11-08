@@ -8,37 +8,35 @@ import fs from 'fs-extra'
 import { Repository } from 'typeorm'
 import { Meta } from '../illust/entities/meta.entities'
 
-let pixivApi: Pixiv = null
-async function initPixiv() {
-  const proxyStr: string | null | undefined = ConfigDB.getByKey('pixivProxy')
-  if (
-    proxyStr
-    && proxyStr.match(
-      /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
-    )
-  ) {
-    Pixiv.setProxy(proxyStr.split(':')[0], Number(proxyStr.split(':')[1]))
-  }
-  const token = ConfigDB.getByKey('pixivToken')
-  if (token)
-    pixivApi = await Pixiv.refreshLogin(token)
-}
-function checkIfAvailable() {
-  if (!pixivApi) {
-    throw new HttpException('API not started.', HttpStatus.SERVICE_UNAVAILABLE)
-  }
-}
-initPixiv()
 @Injectable()
 export class PixivApiService {
   @InjectRepository(Meta)
   private readonly metaRepository: Repository<Meta>
 
+  private pixivApi: Pixiv = null
+
+  async initPixiv() {
+    if (this.pixivApi)
+      return
+    const token = ConfigDB.getByKey('pixivToken')
+    if (token) {
+      try {
+        this.pixivApi = await Pixiv.refreshLogin(token)
+      }
+      catch {
+        throw new HttpException('pixiv token check failed', HttpStatus.UNAUTHORIZED)
+      }
+    }
+    else {
+      throw new HttpException('pixiv token not set', HttpStatus.SERVICE_UNAVAILABLE)
+    }
+  }
+
   async getPixivUrl(pid: number, page: number, type: string) {
-    checkIfAvailable()
+    await this.initPixiv()
     if (!['square_medium', 'medium', 'original'].includes(type))
       throw new HttpException('illegal type.', HttpStatus.BAD_REQUEST)
-    const illust = await pixivApi.illust.detail({ illust_id: pid })
+    const illust = await this.pixivApi.illust.detail({ illust_id: pid })
     if (!illust || page >= illust.page_count || !illust.visible)
       throw new HttpException('pid or page no found', HttpStatus.NOT_FOUND)
     const url
@@ -51,7 +49,7 @@ export class PixivApiService {
   }
 
   async getLatestIllusts(isPrivate: boolean, stopIn?: string) {
-    checkIfAvailable()
+    await this.initPixiv()
     const list = []
     const queryAsync = (pid: number, index: number) => {
       return new Promise((resolve, reject) => {
@@ -66,15 +64,15 @@ export class PixivApiService {
       let json: { illusts: Array<PixivIllust>, next_url: string }
       if (!url) {
         json = {
-          illusts: await pixivApi.user.bookmarksIllust({
+          illusts: await this.pixivApi.user.bookmarksIllust({
             user_id: Number(ConfigDB.getByKey('pixivUserId')),
             restrict: isPrivate ? 'private' : 'public',
           }),
-          next_url: pixivApi.user.nextURL,
+          next_url: this.pixivApi.user.nextURL,
         }
       }
       else {
-        json = await pixivApi.api.request(url)
+        json = await this.pixivApi.api.request(url)
       }
       if (stopIn) {
         json.illusts.forEach((illust) => {
@@ -111,48 +109,48 @@ export class PixivApiService {
   }
 
   async getPixivIllustJson(pid: number | string) {
-    checkIfAvailable()
-    const illust = await pixivApi.illust.detail({ illust_id: Number(pid) })
+    await this.initPixiv()
+    const illust = await this.pixivApi.illust.detail({ illust_id: Number(pid) })
     if (!illust || !illust.visible)
       throw new HttpException('pid no found', HttpStatus.NOT_FOUND)
     return illust
   }
 
   async getPixivUserJson(uid: number | string) {
-    checkIfAvailable()
-    const user = await pixivApi.user.detail({ user_id: Number(uid) })
+    await this.initPixiv()
+    const user = await this.pixivApi.user.detail({ user_id: Number(uid) })
     if (!user)
       throw new HttpException('uid no found', HttpStatus.NOT_FOUND)
     return user
   }
 
   async getPixivUserIllusts(uid: number | string) {
-    checkIfAvailable()
-    const illusts = await pixivApi.user.illusts({ user_id: Number(uid) })
-    return { illusts, nextUrl: pixivApi.user.nextURL }
+    await this.initPixiv()
+    const illusts = await this.pixivApi.user.illusts({ user_id: Number(uid) })
+    return { illusts, nextUrl: this.pixivApi.user.nextURL }
   }
 
   async getPixivNextRequest(nextUrl: string) {
-    checkIfAvailable()
-    const resp = await pixivApi.api.next(nextUrl)
+    await this.initPixiv()
+    const resp = await this.pixivApi.api.next(nextUrl)
     return resp
   }
 
   async getPixivUgoiraJson(pid: number | string) {
-    checkIfAvailable()
-    return await pixivApi.ugoira.metadata({ illust_id: Number(pid) })
+    await this.initPixiv()
+    return await this.pixivApi.ugoira.metadata({ illust_id: Number(pid) })
   }
 
   async bookmarkIllust(pid: number | string, isPrivate = false) {
-    checkIfAvailable()
-    return await pixivApi.illust.bookmarkIllust({
+    await this.initPixiv()
+    return await this.pixivApi.illust.bookmarkIllust({
       illust_id: Number(pid),
       restrict: isPrivate ? 'private' : 'public',
     })
   }
 
   async unbookmarkIllust(pid: number | string) {
-    checkIfAvailable()
-    return await pixivApi.illust.unbookmarkIllust({ illust_id: Number(pid) })
+    await this.initPixiv()
+    return await this.pixivApi.illust.unbookmarkIllust({ illust_id: Number(pid) })
   }
 }

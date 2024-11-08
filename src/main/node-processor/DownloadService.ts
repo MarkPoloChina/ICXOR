@@ -2,24 +2,10 @@ import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 import type { AxiosRequestConfig } from 'axios'
 import path from 'node:path'
 import axios from 'axios'
-import { ConfigDB } from './DBService'
 import { FS } from './FSService'
 import { GifCoverter } from './MediaService'
 
 export class DS {
-  private static proxyStr = ''
-  public static setProxy() {
-    const proxyStr: string | null | undefined = ConfigDB.getByKey('pixivProxy')
-    if (
-      proxyStr
-      && proxyStr.match(
-        /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
-      )
-    ) {
-      this.proxyStr = proxyStr
-    }
-  }
-
   private static async downloadFromUrl(url: string, isPixiv?: boolean): Promise<ArrayBuffer> {
     const axiosConfig: AxiosRequestConfig = {
       responseType: 'arraybuffer',
@@ -28,18 +14,11 @@ export class DS {
       axiosConfig.headers = {
         Referer: 'https://www.pixiv.net/',
       }
-      if (this.proxyStr) {
-        axiosConfig.proxy = {
-          protocol: 'http',
-          host: this.proxyStr.split(':')[0],
-          port: Number(this.proxyStr.split(':')[1]),
-        }
-      }
     }
     const response = await axios.get(url, axiosConfig)
     if (
       response.status === 200
-      && response.headers['content-type'].toString().startsWith('image')
+      && (response.headers['content-type'].toString().startsWith('image') || isPixiv)
     ) {
       return response.data
     }
@@ -55,7 +34,7 @@ export class DS {
   ): Promise<boolean> {
     if (url.startsWith('icxorimg://'))
       url = decodeURIComponent(url.replace('icxorimg://s/?u=', ''))
-    const filename = path.basename(url)
+    const filename = decodeURIComponent(path.basename(url))
     if (!(await FS.isExists(path.join(dir, filename)))) {
       if (url.startsWith('http'))
         await FS.saveArrayBufferTo(await this.downloadFromUrl(url, isPixiv), filename, dir)
@@ -97,8 +76,9 @@ export class DS {
           throw new Error('Try ori and PNG but Neither.')
         }
       }
-      if (!(await FS.isExists(path.join(dir, path.basename(url))))) {
-        await FS.saveArrayBufferTo(ab, path.basename(url), dir)
+      const filename = decodeURIComponent(path.basename(url))
+      if (!(await FS.isExists(path.join(dir, filename)))) {
+        await FS.saveArrayBufferTo(ab, filename, dir)
         return true
       }
       else {
@@ -170,4 +150,3 @@ export class DS {
     }
   }
 }
-DS.setProxy()

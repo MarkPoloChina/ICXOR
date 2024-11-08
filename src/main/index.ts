@@ -3,7 +3,7 @@ import { basename, dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { ElectronIpcTransport } from '@doubleshot/nest-electron'
 import { AppModule } from '@main/app.module'
-import { ConfigDB, LocalDiskDB } from '@main/node-processor/DBService'
+import { ConfigDB, LocalDiskDB, ProxyParser } from '@main/node-processor/DBService'
 import { FS } from '@main/node-processor/FSService'
 import { NestFactory } from '@nestjs/core'
 import {
@@ -81,6 +81,14 @@ async function createWindow() {
       callback({ requestHeaders: details.requestHeaders })
     },
   )
+
+  const proxyStr = ProxyParser.getProxyStr()
+  if (proxyStr) {
+    win.webContents.session.setProxy({
+      proxyRules: proxyStr,
+      proxyBypassRules: '<local>',
+    })
+  }
 
   const URL = isDev
     ? process.env.DS_RENDERER_URL
@@ -427,6 +435,20 @@ function afterReady() {
 }
 
 async function electronAppInit() {
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+    return
+  }
+  else {
+    app.on('second-instance', () => {
+      if (BrowserWindow.getAllWindows()[0]) {
+        const win = BrowserWindow.getAllWindows()[0]
+        if (win.isMinimized())
+          win.restore()
+        win.focus()
+      }
+    })
+  }
   const isDev = !app.isPackaged
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin')
@@ -451,6 +473,8 @@ async function electronAppInit() {
       })
     }
   }
+
+  ProxyParser.setProxy()
 
   beforeReady()
   await app.whenReady()
