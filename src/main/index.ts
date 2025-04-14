@@ -82,7 +82,7 @@ async function createWindow() {
     },
   )
 
-  const proxyStr = ProxyParser.getProxyStr()
+  const proxyStr = await ProxyParser.getProxyStr()
   if (proxyStr) {
     win.webContents.session.setProxy({
       proxyRules: proxyStr,
@@ -302,6 +302,11 @@ function afterReady() {
     autoUpdater.checkForUpdates()
   })
 
+  ipcMain.handle('app:getProxy', async () => {
+    const proxyStr = await ProxyParser.getProxyStr()
+    return proxyStr
+  })
+
   ipcMain.handle('db:init', () => {
     ConfigDB.initDB()
     LocalDiskDB.initDB()
@@ -474,10 +479,9 @@ async function electronAppInit() {
     }
   }
 
-  ProxyParser.setProxy()
-
   beforeReady()
   await app.whenReady()
+  await ProxyParser.setProxy()
   afterReady()
 }
 

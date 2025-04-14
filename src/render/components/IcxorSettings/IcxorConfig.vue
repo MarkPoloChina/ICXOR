@@ -15,7 +15,6 @@ const configForm = reactive({
   mpsApiUrl: '',
   pixivToken: '',
   pixivUserId: '',
-  pixivProxy: '',
   cosSecretId: '',
   cosSecretKey: '',
   cosBucket: '',
@@ -191,12 +190,6 @@ function revoke() {
               <el-input
                 v-model="configForm.pixivUserId"
                 placeholder="请输入UserId"
-              />
-            </el-form-item>
-            <el-form-item label="代理">
-              <el-input
-                v-model="configForm.pixivProxy"
-                placeholder="请输入形如host:port的代理"
               />
             </el-form-item>
           </el-form>

@@ -68,8 +68,8 @@ onMounted(async () => {
         <el-menu-item index="/pixiv">
           <el-icon>
             <img
-              src="@render/assets/img/pixiv_icon.svg"
-              style="user-select: none; width: 30px"
+              src="@render/assets/img/pixiv_icon2.svg"
+              style="user-select: none; width: 18px"
             >
           </el-icon>
           <template #title>

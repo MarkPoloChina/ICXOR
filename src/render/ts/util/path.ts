@@ -153,9 +153,7 @@ export class UrlGenerator {
   }
 
   static getPixivUrlProxy(url: string) {
-    if (store.state.pixivProxy)
-      return url
-    else return url.replace('i.pximg.net', 'i.pixiv.re')
+    return url
   }
 
   static getPixivUrlSized(

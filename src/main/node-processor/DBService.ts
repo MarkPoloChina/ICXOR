@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { app } from 'electron'
+import { app, session } from 'electron'
 import fs from 'fs-extra'
 
 const STORE_PATH = path.join(app.getPath('userData'), 'config.json')
@@ -80,26 +80,16 @@ export class LocalDiskDB {
 }
 
 export class ProxyParser {
-  static getProxyStr = () => {
-    const proxyRaw: string | null | undefined = ConfigDB.getByKey('pixivProxy')
-    if (
-      proxyRaw
-      && proxyRaw.match(
-        /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
-      )
-    ) {
-      return `http://${proxyRaw}`
-    }
-    return ''
-  }
-
-  static getProxyObj = () => {
-    const proxyStr = this.getProxyStr()
-    if (proxyStr) {
+  private static getSystemProxy = async () => {
+    const proxyUrl = await session.defaultSession.resolveProxy('https://www.pixiv.com')
+    if (proxyUrl.match(/^PROXY /)) {
+      // proxyUrl 是这种格式: 'PROXY 127.0.0.1:6152'
+      const hostAndPort = proxyUrl.split(' ')[1]
+      const [proxyHost, proxyPort] = hostAndPort.split(':')
       return {
         protocol: 'http',
-        host: proxyStr.split(':')[0],
-        port: Number(proxyStr.split(':')[1]),
+        host: proxyHost,
+        port: Number(proxyPort),
       }
     }
     else {
@@ -107,8 +97,49 @@ export class ProxyParser {
     }
   }
 
-  static setProxy = () => {
-    const proxyStr = this.getProxyStr()
+  static getProxyObj = async () => {
+    const mode: null | undefined | 'none' | 'system' | 'manual' = ConfigDB.getByKey('proxyMode')
+    switch (mode) {
+      case 'system':
+      {
+        return await this.getSystemProxy()
+      }
+      case 'manual':
+      {
+        const proxyRaw: string | null | undefined = ConfigDB.getByKey('proxyManual')
+        if (
+          proxyRaw
+          && proxyRaw.match(
+            /^((25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(25[0-5]|2[0-4]\d|[01]?\d{1,2}):[1-9]\d{0,4}$/,
+          )
+        ) {
+          return {
+            protocol: 'http',
+            host: proxyRaw.split(':')[0],
+            port: Number(proxyRaw.split(':')[1]),
+          }
+        }
+        else {
+          return null
+        }
+      }
+      default:
+        return null
+    }
+  }
+
+  static getProxyStr = async () => {
+    const proxyObj = await this.getProxyObj()
+    if (proxyObj) {
+      return `${proxyObj.protocol}://${proxyObj.host}:${proxyObj.port}`
+    }
+    else {
+      return ''
+    }
+  }
+
+  static setProxy = async () => {
+    const proxyStr = await this.getProxyStr()
     if (proxyStr) {
       process.env.HTTP_PROXY = proxyStr
       process.env.HTTPS_PROXY = proxyStr

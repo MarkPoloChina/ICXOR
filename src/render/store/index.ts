@@ -26,12 +26,14 @@ export default createStore({
     mpsApiUrl: '',
     pixivUserId: '',
     pixivToken: '',
-    pixivProxy: '',
     cosSecretId: '',
     cosSecretKey: '',
     cosBucket: '',
     cosRegion: '',
     sauceNAOToken: '',
+
+    proxyMode: 'none' as 'none' | 'system' | 'manual',
+    proxyManual: '',
   },
   getters: {},
   mutations: {

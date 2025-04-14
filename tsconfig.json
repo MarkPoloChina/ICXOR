@@ -22,7 +22,8 @@
     "resolveJsonModule": true,
     "types": [
       "vite/client",
-      "./src/preload"
+      "./src/preload",
+      "element-plus/global"
     ],
     "strict": false,
     "noImplicitAny": false,

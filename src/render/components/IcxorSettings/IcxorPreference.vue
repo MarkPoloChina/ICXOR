@@ -11,10 +11,13 @@ const configForm = reactive({
   useLocalIHS: false,
   theme: 'system',
   mainMode: 'disk',
+  proxyMode: 'none',
+  proxyManual: '',
 })
 onMounted(() => {
   initForm()
   getCacheSize()
+  getProxyStr()
 })
 function initForm() {
   Object.keys(configForm).forEach((key) => {
@@ -164,6 +167,10 @@ async function download() {
     ElMessage.error(`获取时间戳失败: ${error}`)
   }
 }
+const proxyStr = ref('')
+async function getProxyStr() {
+  proxyStr.value = await ipcInvoke('app:getProxy')
+}
 </script>
 
 <template>
@@ -302,6 +309,39 @@ async function download() {
             </el-form-item>
             <el-form-item label="使用内网IHS">
               <el-switch v-model="configForm.useLocalIHS" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="title-block">
+          网络代理
+        </div>
+        <div style="margin: 10px 0;">
+          当前代理：{{ proxyStr || '无' }}
+        </div>
+        <div class="form-block">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
+            <el-form-item label="模式">
+              <el-radio-group v-model="configForm.proxyMode">
+                <el-radio label="none">
+                  无
+                </el-radio>
+                <el-radio label="system">
+                  系统代理
+                </el-radio>
+                <el-radio label="manual">
+                  手动代理
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="代理字符串">
+              <el-input
+                v-model="configForm.proxyManual"
+                placeholder="127.0.0.1:8080"
+              />
             </el-form-item>
           </el-form>
         </div>

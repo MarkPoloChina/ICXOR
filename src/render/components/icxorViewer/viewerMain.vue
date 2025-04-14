@@ -630,7 +630,7 @@ function handlePopupContext(row: IllustObj) {
       case '导出':
         handleDownload()
         break
-      case '导出选定项':
+      case '选定项导出':
         handleDownloadBatch()
         break
       case '导出2x聚合':
