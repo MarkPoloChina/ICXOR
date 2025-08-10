@@ -8,11 +8,23 @@ import { onMounted, reactive, ref } from 'vue'
 
 const { ipcInvoke, ipcSend, ipcSendSync } = window.electron
 const configForm = reactive({
-  useLocalIHS: false,
+  preferIHS: true,
   theme: 'system',
   mainMode: 'disk',
   proxyMode: 'none',
   proxyManual: '',
+  aibanBookmark: false,
+  aibanImport: false,
+
+  downloadSleep: 0,
+  downloadMaxRetry: 3,
+  downloadFailSleep: 2000,
+  pixivReqSleep: 2000,
+  pixivReqMaxRetry: 3,
+  pixivReqFailSleep: 2000,
+  sagiriReqSleep: 2000,
+  sagiriReqMaxRetry: 3,
+  sagiriReqFailSleep: 10000,
 })
 onMounted(() => {
   initForm()
@@ -286,6 +298,23 @@ async function getProxyStr() {
           </el-form>
         </div>
         <div class="title-block">
+          批处理AI屏蔽
+        </div>
+        <div class="form-block">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
+            <el-form-item label="阻止收藏">
+              <el-switch v-model="configForm.aibanBookmark" />
+            </el-form-item>
+            <el-form-item label="阻止导入">
+              <el-switch v-model="configForm.aibanImport" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="title-block">
           访图控制
         </div>
         <div class="form-block">
@@ -307,8 +336,88 @@ async function getProxyStr() {
                 </el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="使用内网IHS">
-              <el-switch v-model="configForm.useLocalIHS" />
+            <el-form-item label="优先IHS">
+              <el-switch v-model="configForm.preferIHS" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="title-block">
+          拥塞避免
+        </div>
+        <div class="form-block">
+          <el-form
+            :model="configForm"
+            label-width="100px"
+            style="width: 100%"
+          >
+            <el-form-item label="下载延时">
+              <el-input-number
+                v-model="configForm.downloadSleep"
+                :min="0"
+                :max="10000"
+              />
+              <span style="margin-left: 10px;">毫秒</span>
+            </el-form-item>
+            <el-form-item label="下载重试次数">
+              <el-input-number
+                v-model="configForm.downloadMaxRetry"
+                :min="0"
+                :max="10"
+              />
+            </el-form-item>
+            <el-form-item label="下载失败延时">
+              <el-input-number
+                v-model="configForm.downloadFailSleep"
+                :min="0"
+                :max="10000"
+              />
+              <span style="margin-left: 10px;">毫秒</span>
+            </el-form-item>
+            <el-form-item label="Pixiv延时">
+              <el-input-number
+                v-model="configForm.pixivReqSleep"
+                :min="0"
+                :max="10000"
+              />
+              <span style="margin-left: 10px;">毫秒</span>
+            </el-form-item>
+            <el-form-item label="Pixiv重试次数">
+              <el-input-number
+                v-model="configForm.pixivReqMaxRetry"
+                :min="0"
+                :max="10"
+              />
+            </el-form-item>
+            <el-form-item label="Pixiv失败延时">
+              <el-input-number
+                v-model="configForm.pixivReqFailSleep"
+                :min="0"
+                :max="10000"
+              />
+              <span style="margin-left: 10px;">毫秒</span>
+            </el-form-item>
+            <el-form-item label="搜图延时">
+              <el-input-number
+                v-model="configForm.sagiriReqSleep"
+                :min="0"
+                :max="10000"
+              />
+              <span style="margin-left: 10px;">毫秒</span>
+            </el-form-item>
+            <el-form-item label="搜图重试次数">
+              <el-input-number
+                v-model="configForm.sagiriReqMaxRetry"
+                :min="0"
+                :max="10"
+              />
+            </el-form-item>
+            <el-form-item label="搜图失败延时">
+              <el-input-number
+                v-model="configForm.sagiriReqFailSleep"
+                :min="0"
+                :max="10000"
+              />
+              <span style="margin-left: 10px;">毫秒</span>
             </el-form-item>
           </el-form>
         </div>

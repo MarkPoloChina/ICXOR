@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import type { PixivIllust } from 'pixiv.ts'
 import { Check, Download, Remove } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { API } from '@render/ts/api'
 import { BatchDto } from '@render/ts/dto/batch'
 import { PathHelper } from '@render/ts/util/path'
@@ -59,6 +60,9 @@ function handleUpload() {
       dto.control.updatePolicy = 'onlyAdd'
       let curBid = 0
       selectedList.value.forEach((ele: PixivIllust) => {
+        if (store.state.aibanImport && ele.illust_ai_type === 2) {
+          return
+        }
         for (let i = 0; i < ele.page_count; i++) {
           const ou
             = ele.meta_single_page.original_image_url || ele.meta_pages[i].image_urls.original

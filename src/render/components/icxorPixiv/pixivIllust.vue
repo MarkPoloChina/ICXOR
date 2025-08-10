@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import type { PixivIllust } from 'pixiv.ts'
 import { Download, Lock, Picture, Search, Star, Unlock } from '@element-plus/icons-vue'
 import { API } from '@render/ts/api'
 import { UrlGenerator } from '@render/ts/util/path'

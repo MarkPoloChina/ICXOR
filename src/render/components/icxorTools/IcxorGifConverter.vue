@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { Search } from '@element-plus/icons-vue'
+import { Close, Search } from '@element-plus/icons-vue'
+import { useStatusBar } from '@render/ts/composable/statusBar'
 import { PathHelper } from '@render/ts/util/path'
-import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 
 const { ipcInvoke } = window.electron
-const isLoading = ref(false)
 const illusts = ref([])
-const stat = ref('就绪')
+const statusController = useStatusBar()
 async function handleConvertGif() {
   const files: string[] = await ipcInvoke('dialog:openFile', [{ name: 'Zip', extensions: ['zip'] }])
   if (!files || files.length === 0)
     return
-  isLoading.value = true
   illusts.value.length = 0
-  ElMessage.info(`正在转换${files.length}个文件...`)
-  stat.value = `0 / ${files.length}`
+  statusController.initStart(files.length)
   for (const file of files) {
     const filename = PathHelper.getBasename(file)
     const output = file.replace(/@\d+ms\.zip$/, '.gif')
@@ -32,11 +29,12 @@ async function handleConvertGif() {
     else {
       illusts.value.push({ filename, status: 'ignored' })
     }
-    stat.value = `${illusts.value.length} / ${files.length}`
+    statusController.step()
   }
-  ElMessage.success('转换完成')
-  stat.value += ' - 已完成'
-  isLoading.value = false
+  statusController.finish()
+}
+function handleAbort() {
+  statusController.abort()
 }
 </script>
 
@@ -60,10 +58,16 @@ async function handleConvertGif() {
       >
         <el-form-item label="操作">
           <el-button
+            v-if="!statusController.processingLock.value"
             :icon="Search"
             type="primary"
-            :disabled="isLoading"
             @click="handleConvertGif"
+          />
+          <el-button
+            v-if="statusController.processingLock.value"
+            type="danger"
+            :icon="Close"
+            @click="handleAbort()"
           />
         </el-form-item>
       </el-form>
@@ -113,7 +117,7 @@ async function handleConvertGif() {
       </el-table>
     </div>
     <div class="stat-block">
-      {{ stat }}
+      {{ statusController.statusMessage.value }}
     </div>
   </div>
 </template>

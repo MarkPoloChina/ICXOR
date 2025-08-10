@@ -29,6 +29,16 @@ $color-greengray-2: var(--color-greengray-2);
 $color-greengray-3: var(--color-greengray-3);
 $color-greengray-4: var(--color-greengray-4);
 
+:root {
+  user-select: none;
+  .el-descriptions__body {
+    user-select: text;
+  }
+  .el-table__body {
+    user-select: text;
+  }
+}
+
 @mixin Uni-Main-Container {
   .main-container {
     display: flex;

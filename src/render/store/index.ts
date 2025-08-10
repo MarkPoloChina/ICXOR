@@ -11,9 +11,8 @@ export default createStore({
     diskRoot: '',
     diskMap: {} as Record<string, { original: string, thumbnail: string }>,
 
-    localIHS: '',
-    remoteIHS: '',
-    useLocalIHS: false,
+    ihs: '',
+    preferIHS: true,
 
     picoltIHSBase: '',
     picoltDiskBase: '',
@@ -34,6 +33,19 @@ export default createStore({
 
     proxyMode: 'none' as 'none' | 'system' | 'manual',
     proxyManual: '',
+
+    aibanBookmark: false,
+    aibanImport: false,
+
+    downloadSleep: 0,
+    downloadMaxRetry: 3,
+    downloadFailSleep: 2000,
+    pixivReqSleep: 2000,
+    pixivReqMaxRetry: 3,
+    pixivReqFailSleep: 2000,
+    sagiriReqSleep: 2000,
+    sagiriReqMaxRetry: 3,
+    sagiriReqFailSleep: 10000,
   },
   getters: {},
   mutations: {

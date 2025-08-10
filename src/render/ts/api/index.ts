@@ -6,9 +6,9 @@ import type { Illust } from '@main/illust/entities/illust.entities'
 import type { Poly } from '@main/illust/entities/poly.entities'
 import type { RemoteBase } from '@main/illust/entities/remote_base.entities'
 import type { Tag } from '@main/illust/entities/tag.entities'
-import type { PixivIllust, PixivUserDetail, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 import type { BatchDto } from '@render/ts/dto/batch'
 import type { IllustObj } from '@render/ts/interface/illustObj'
+import type { PixivIllust, PixivUserDetail, UgoiraMetaData } from 'pixiv.ts'
 import type { DeleteResult } from 'typeorm'
 import { isReactive, toRaw } from 'vue'
 
@@ -284,10 +284,11 @@ export class API {
     return resp.data as PixivUserDetail
   }
 
-  static async getPixivUserIllusts(uid: number) {
+  static async getPixivUserIllusts(uid: number, stopIn?: string) {
     const resp = await ax.get('/pixiv-api/user-illusts', {
       params: {
         uid,
+        stopIn,
       },
     })
     return resp.data as { illusts: PixivIllust[], nextUrl: string }

@@ -1,9 +1,11 @@
 import { IpcHandle } from '@doubleshot/nest-electron'
-import { Controller } from '@nestjs/common'
+import { Controller, UseInterceptors } from '@nestjs/common'
 import { Payload } from '@nestjs/microservices'
+import { HandleErrorInterceptor } from './pixiv-api.interceptor'
 import { PixivApiService } from './pixiv-api.service'
 
 @Controller()
+@UseInterceptors(HandleErrorInterceptor)
 export class PixivApiController {
   constructor(private readonly pixivApiService: PixivApiService) {}
 
@@ -34,8 +36,8 @@ export class PixivApiController {
   }
 
   @IpcHandle('api:GET/pixiv-api/user-illusts')
-  async getUserIllusts(@Payload() [{ uid }]: [{ uid: number }]) {
-    return this.pixivApiService.getPixivUserIllusts(uid)
+  async getUserIllusts(@Payload() [{ uid, stopIn }]: [{ uid: number, stopIn?: string }]) {
+    return this.pixivApiService.getPixivUserIllusts(uid, stopIn)
   }
 
   @IpcHandle('api:GET/pixiv-api/next')

@@ -1,5 +1,5 @@
-import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
 import type { AxiosRequestConfig } from 'axios'
+import type { PixivIllust, UgoiraMetaData } from 'pixiv.ts'
 import path from 'node:path'
 import axios from 'axios'
 import { FS } from './FSService'

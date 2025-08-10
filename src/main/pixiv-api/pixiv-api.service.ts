@@ -1,10 +1,10 @@
-import type { PixivIllust } from '@markpolochina/pixiv.ts'
+import type { PixivIllust } from 'pixiv.ts'
 import path from 'node:path'
 import { ConfigDB } from '@main/node-processor/DBService'
-import Pixiv from '@markpolochina/pixiv.ts'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import fs from 'fs-extra'
+import Pixiv from 'pixiv.ts'
 import { Repository } from 'typeorm'
 import { Meta } from '../illust/entities/meta.entities'
 
@@ -28,7 +28,7 @@ export class PixivApiService {
       }
     }
     else {
-      throw new HttpException('pixiv token not set', HttpStatus.SERVICE_UNAVAILABLE)
+      throw new HttpException('[NRT] pixiv token not set', HttpStatus.SERVICE_UNAVAILABLE)
     }
   }
 
@@ -38,7 +38,7 @@ export class PixivApiService {
       throw new HttpException('illegal type.', HttpStatus.BAD_REQUEST)
     const illust = await this.pixivApi.illust.detail({ illust_id: pid })
     if (!illust || page >= illust.page_count || !illust.visible)
-      throw new HttpException('pid or page no found', HttpStatus.NOT_FOUND)
+      throw new HttpException('[NRT] pid or page no found', HttpStatus.NOT_FOUND)
     const url
       = illust.page_count === 1
         ? type === 'original'
@@ -72,7 +72,7 @@ export class PixivApiService {
         }
       }
       else {
-        json = await this.pixivApi.api.request(url)
+        json = await this.pixivApi.api.next(url)
       }
       if (stopIn) {
         json.illusts.forEach((illust) => {
@@ -112,7 +112,7 @@ export class PixivApiService {
     await this.initPixiv()
     const illust = await this.pixivApi.illust.detail({ illust_id: Number(pid) })
     if (!illust || !illust.visible)
-      throw new HttpException('pid no found', HttpStatus.NOT_FOUND)
+      throw new HttpException('[NRT] illust deleted', HttpStatus.GONE)
     return illust
   }
 
@@ -120,14 +120,47 @@ export class PixivApiService {
     await this.initPixiv()
     const user = await this.pixivApi.user.detail({ user_id: Number(uid) })
     if (!user)
-      throw new HttpException('uid no found', HttpStatus.NOT_FOUND)
+      throw new HttpException('[NRT] uid no found', HttpStatus.NOT_FOUND)
     return user
   }
 
-  async getPixivUserIllusts(uid: number | string) {
+  async getPixivUserIllusts(uid: number | string, stopIn?: string) {
     await this.initPixiv()
-    const illusts = await this.pixivApi.user.illusts({ user_id: Number(uid) })
-    return { illusts, nextUrl: this.pixivApi.user.nextURL }
+    const list = []
+    const check = async (url?: string) => {
+      let flag = false
+      let json: { illusts: Array<PixivIllust>, next_url: string }
+      if (!url) {
+        json = {
+          illusts: await this.pixivApi.user.illusts({ user_id: Number(uid) }),
+          next_url: this.pixivApi.user.nextURL,
+        }
+      }
+      else {
+        json = await this.pixivApi.api.next(url)
+      }
+      if (stopIn) {
+        json.illusts.forEach((illust) => {
+          const ou
+            = illust.meta_single_page.original_image_url || illust.meta_pages[0].image_urls.original
+          if (
+            !fs.pathExistsSync(
+              path.join(stopIn, illust.type === 'ugoira' ? `${illust.id}.gif` : path.basename(ou)),
+            )
+          ) {
+            list.push({ ...illust, caption: null })
+            flag = true
+          }
+        })
+      }
+      else {
+        list.push(...json.illusts)
+      }
+      if (flag)
+        return await check(json.next_url)
+      else return { illusts: list, nextUrl: json.next_url }
+    }
+    return await check()
   }
 
   async getPixivNextRequest(nextUrl: string) {
@@ -143,7 +176,7 @@ export class PixivApiService {
 
   async bookmarkIllust(pid: number | string, isPrivate = false) {
     await this.initPixiv()
-    return await this.pixivApi.illust.bookmarkIllust({
+    return await this.pixivApi.illust.doBookmarkIllust({
       illust_id: Number(pid),
       restrict: isPrivate ? 'private' : 'public',
     })
@@ -151,6 +184,6 @@ export class PixivApiService {
 
   async unbookmarkIllust(pid: number | string) {
     await this.initPixiv()
-    return await this.pixivApi.illust.unbookmarkIllust({ illust_id: Number(pid) })
+    return await this.pixivApi.illust.undoBookmarkIllust({ illust_id: Number(pid) })
   }
 }

@@ -113,11 +113,11 @@ export class SS {
         try {
           const result = await client(path.join(dir, file))
           fs.writeFileSync(path.join(RESULT_ROOT, `${prefix}.json`), JSON.stringify(result))
-          await sleep_func(3000)
+          await sleep_func(ConfigDB.getByKey('sagiriReqSleep') ?? 2000)
         }
         catch (err) {
           if (err.statusCode !== 413) {
-            await sleep_func(10000)
+            await sleep_func(ConfigDB.getByKey('sagiriReqFailSleep') ?? 10000)
             await process()
           }
         }
@@ -129,15 +129,15 @@ export class SS {
   static async runAndProcess(filePath: string) {
     await this.init()
     if (!['.png', '.jpg', '.jpeg'].includes(path.extname(filePath).toLowerCase()))
-      return { error: 'Invalid file type' }
+      return { error: '[NRT] Invalid file type' }
 
     const prefix = path.basename(filePath, path.extname(filePath))
     if (fs.existsSync(path.join(RESULT_ROOT, `${prefix}.json`)))
-      return { error: 'Result already exists' }
+      return { error: '[NRT] Result already exists' }
 
     const fileSize = fs.statSync(filePath).size
     if (fileSize > 20 * 1024 * 1024)
-      return { error: 'File size too large' }
+      return { error: '[NRT] File size too large' }
 
     let retry = 0
 
@@ -150,8 +150,8 @@ export class SS {
         }
       }
       catch (err) {
-        if (retry++ < 3) {
-          await sleep_func(10000)
+        if (retry++ < (ConfigDB.getByKey('sagiriReqMaxRetry') ?? 3)) {
+          await sleep_func(ConfigDB.getByKey('sagiriReqFailSleep') ?? 10000)
           return await process()
         }
         else {
@@ -163,11 +163,16 @@ export class SS {
   }
 
   static parseJsonResult(filePath: string) {
-    const json = fs.readFileSync(filePath, 'utf-8')
-    const result: SagiriResult[] = JSON.parse(json)
-    return {
-      pixiv: ProcessCore.pixivFilter(result),
-      twitter: ProcessCore.twiiterAllFilter(result),
+    try {
+      const json = fs.readFileSync(filePath, 'utf-8')
+      const result: SagiriResult[] = JSON.parse(json)
+      return {
+        pixiv: ProcessCore.pixivFilter(result),
+        twitter: ProcessCore.twiiterAllFilter(result),
+      }
+    }
+    catch (err) {
+      return { error: `Failed to parse JSON file: ${err}` }
     }
   }
 }

@@ -1,4 +1,4 @@
-import type { PixivIllust, UgoiraMetaData } from '@markpolochina/pixiv.ts'
+import type { PixivIllust, UgoiraMetaData } from 'pixiv.ts'
 
 declare global {
   interface Window {

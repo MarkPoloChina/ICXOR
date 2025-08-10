@@ -6,7 +6,7 @@ import { FilenameResolver } from './filename'
 
 const { ipcSendSync } = window.electron
 const STORE_PATH = ipcSendSync('app:getPath', null)
-const ihsBase = store.state.useLocalIHS ? store.state.localIHS : store.state.remoteIHS
+const ihsBase = store.state.ihs
 const useDisk = store.state.mainMode === 'disk' || store.state.mainMode === 'both'
 const useIHS = store.state.mainMode === 'ihs' || store.state.mainMode === 'both'
 
@@ -79,7 +79,7 @@ export class UrlGenerator {
         return this.makeDiskUrl(PathHelper.getLocalPath(obj))
       if (
         useIHS
-        && store.state.useLocalIHS
+        && store.state.preferIHS
         && ihsBase
         && obj.remote_endpoint
         && obj.remote_base.origin_url
@@ -90,7 +90,7 @@ export class UrlGenerator {
         return this.getPixivUrlProxy(this.getPixivUrlSized(obj.meta.original_url, type))
       if (
         useIHS
-        && !store.state.useLocalIHS
+        && !store.state.preferIHS
         && ihsBase
         && obj.remote_endpoint
         && obj.remote_base.origin_url

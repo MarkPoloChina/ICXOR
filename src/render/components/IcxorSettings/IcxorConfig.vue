@@ -6,8 +6,7 @@ import { onMounted, reactive } from 'vue'
 
 const configForm = reactive({
   username: '',
-  localIHS: '',
-  remoteIHS: '',
+  ihs: '',
   pixivUserDir: '',
   pixivBookmarkPrivateDir: '',
   pixivBookmarkPublicDir: '',
@@ -105,15 +104,9 @@ function revoke() {
             label-width="100px"
             style="width: 100%"
           >
-            <el-form-item label="公网IHS路径">
+            <el-form-item label="IHS路径">
               <el-input
-                v-model="configForm.remoteIHS"
-                placeholder="请输入路径"
-              />
-            </el-form-item>
-            <el-form-item label="内网IHS路径">
-              <el-input
-                v-model="configForm.localIHS"
+                v-model="configForm.ihs"
                 placeholder="请输入路径"
               />
             </el-form-item>

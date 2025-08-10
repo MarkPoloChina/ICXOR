@@ -245,6 +245,15 @@ function afterReady() {
       return filePaths[0]
   })
 
+  ipcMain.handle('dialog:saveFile', async (event, filters, defaultName) => {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      filters,
+      defaultPath: defaultName,
+    })
+    if (!canceled)
+      return filePath
+  })
+
   // activate context ipc
   ipcMain.on('context:popup', (event, templateMenu) => {
     templateMenu.forEach((item) => {

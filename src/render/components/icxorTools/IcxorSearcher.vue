@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import type { SagiriResultDto } from '@render/ts/dto/sagiriResult'
-import { Download, RefreshLeft, Search, Upload } from '@element-plus/icons-vue'
+import { Close, Download, RefreshLeft, Search, Upload } from '@element-plus/icons-vue'
+import store from '@render/store/index'
 import { API } from '@render/ts/api'
+import { useStatusBar } from '@render/ts/composable/statusBar'
+import { UtilDate } from '@render/ts/util/date'
 import { PathHelper } from '@render/ts/util/path'
 import { ElMessage } from 'element-plus'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const { ipcInvoke } = window.electron
-const isLoading = ref(false)
 const illusts = ref([])
-const stat = ref('就绪')
+const statusController = useStatusBar()
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -22,35 +24,26 @@ async function getIllusts() {
   await handleGetIlluts(files)
 }
 async function handleGetIlluts(files: string[]) {
-  isLoading.value = true
   illusts.value.length = 0
-  ElMessage.info(`正在获取${files.length}张图像信息...`)
-  stat.value = `0 / ${files.length}`
-  try {
-    for (const file of files) {
-      const result: SagiriResultDto = await ipcInvoke('ss:run', file)
-      illusts.value.push({ filename: file, ...result })
-      if (result.twitter && result.twitter.match(/status\/(\d+)/))
-        API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
+  statusController.initStart(files.length)
+  for (const file of files) {
+    const result: SagiriResultDto = await ipcInvoke('ss:run', file)
+    illusts.value.push({ filename: file, ...result })
+    if (result.twitter && result.twitter.match(/status\/(\d+)/))
+      API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
 
-      stat.value = `${illusts.value.length} / ${files.length}`
-      await sleep(3000)
-    }
-    ElMessage.success('信息获取完成')
-    stat.value += ' - 已完成'
+    statusController.step()
+    await sleep(store.state.sagiriReqSleep)
   }
-  catch (err) {
-    ElMessage.error(`错误: ${err}`)
-    stat.value += ' - 已停止'
-  }
-  finally {
-    isLoading.value = false
-  }
+
+  statusController.finish()
+}
+function handleAbort() {
+  statusController.abort()
 }
 async function handleRetry() {
-  const failed = illusts.value.filter(illust => illust.error)
-  let idx = 0
-  stat.value = `重试 0 / ${failed.length}`
+  const failed = illusts.value.filter(illust => illust.error && !illust.error.includes('[NRT]'))
+  statusController.initStart(failed.length)
   for (const illust of failed) {
     const result: SagiriResultDto = await ipcInvoke('ss:run', illust.filename)
     illust.error = undefined
@@ -58,11 +51,10 @@ async function handleRetry() {
     if (result.twitter && result.twitter.match(/status\/(\d+)/))
       API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
 
-    stat.value = `重试 ${++idx} / ${failed.length}`
-    await sleep(3000)
+    statusController.step()
+    await sleep(store.state.sagiriReqSleep)
   }
-  ElMessage.success('重试完成')
-  stat.value += ' - 已完成'
+  statusController.finish()
 }
 async function getJsons() {
   const files: string[] = await ipcInvoke('dialog:openFile', [
@@ -70,59 +62,56 @@ async function getJsons() {
   ])
   if (!files || files.length === 0)
     return
-  isLoading.value = true
   illusts.value.length = 0
-  ElMessage.info(`正在解析${files.length}个json信息...`)
-  stat.value = `0 / ${files.length}`
-  try {
-    for (const file of files) {
-      const result: SagiriResultDto = await ipcInvoke('ss:runJson', file)
-      illusts.value.push({ filename: file, ...result })
-      if (result.twitter && result.twitter.match(/status\/(\d+)/))
-        API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
+  statusController.initStart(files.length)
+  for (const file of files) {
+    const result: SagiriResultDto = await ipcInvoke('ss:runJson', file)
+    illusts.value.push({ filename: file, ...result })
+    if (result.twitter && result.twitter.match(/status\/(\d+)/))
+      API.addDuplicate(result.pixiv || '', result.twitter.match(/status\/(\d+)/)[1])
 
-      stat.value = `${illusts.value.length} / ${files.length}`
-    }
-    ElMessage.success('信息获取完成')
-    stat.value += ' - 已完成'
+    statusController.step()
   }
-  catch (err) {
-    ElMessage.error(`错误: ${err}`)
-    stat.value += ' - 已停止'
-  }
-  finally {
-    isLoading.value = false
-  }
+
+  statusController.finish()
 }
-async function handleDownload() {
-  const dir = await ipcInvoke('dialog:openDirectory')
-  if (!dir)
-    return
+async function handleDownload(type: 'json' | 'txt' | 'raw', target?: 'pixiv' | 'twitter') {
   const pixiv_ids = Array.from(
     new Set(illusts.value.filter(illust => illust.pixiv).map(illust => illust.pixiv)),
   )
   const twitter_urls = Array.from(
     new Set(illusts.value.filter(illust => illust.twitter).map(illust => illust.twitter)),
   )
+
+  let content: string
+  let filter: any
+  let defaultName: string
+  switch (type) {
+    case 'json':
+      content = JSON.stringify(target === 'pixiv' ? pixiv_ids : twitter_urls)
+      filter = [{ name: 'JSON', extensions: ['json'] }]
+      defaultName = `icxor-${target || 'all'}-illusts-${UtilDate.getFullTimeNumber(new Date())}.json`
+      break
+    case 'txt':
+      content = target === 'pixiv' ? pixiv_ids.join('\n') : twitter_urls.join('\n')
+      filter = [{ name: 'Text', extensions: ['txt'] }]
+      defaultName = `icxor-${target || 'all'}-illusts-${UtilDate.getFullTimeNumber(new Date())}.txt`
+      break
+    case 'raw':
+      content = JSON.stringify(illusts.value, null, 2)
+      filter = [{ name: 'JSON', extensions: ['json'] }]
+      defaultName = `icxor-raw-${UtilDate.getFullTimeNumber(new Date())}.json`
+      break
+  }
+
+  const savePath = await ipcInvoke('dialog:saveFile', filter, defaultName)
+  if (!savePath)
+    return
+
   await ipcInvoke(
     'fs:saveStringToFile',
-    PathHelper.joinFilenamePath(dir, 'pixiv_ids.txt'),
-    pixiv_ids.join('\n'),
-  )
-  await ipcInvoke(
-    'fs:saveStringToFile',
-    PathHelper.joinFilenamePath(dir, 'twitter_urls.txt'),
-    twitter_urls.join('\n'),
-  )
-  await ipcInvoke(
-    'fs:saveStringToFile',
-    PathHelper.joinFilenamePath(dir, 'pixiv_ids.json'),
-    JSON.stringify(pixiv_ids),
-  )
-  await ipcInvoke(
-    'fs:saveStringToFile',
-    PathHelper.joinFilenamePath(dir, 'twitter_urls.json'),
-    JSON.stringify(twitter_urls),
+    savePath,
+    content,
   )
   ElMessage.success('保存完成')
 }
@@ -178,31 +167,58 @@ onUnmounted(() => {
       >
         <el-form-item label="操作">
           <el-button
+            v-if="!statusController.processingLock.value"
             id="dropArea"
             :icon="Search"
             type="primary"
-            :disabled="isLoading"
             @click="getIllusts"
           />
           <el-button
+            v-if="!statusController.processingLock.value"
             :icon="Upload"
             type="primary"
-            :disabled="isLoading"
             @click="getJsons"
           />
+          <el-popover
+            v-if="!statusController.processingLock.value && illusts.length > 0"
+            placement="right"
+            :width="500"
+            trigger="hover"
+          >
+            <template #reference>
+              <el-button
+                :icon="Download"
+                type="primary"
+              />
+            </template>
+            <el-button size="small" @click="handleDownload('json', 'pixiv')">
+              Pixiv-JSON
+            </el-button>
+            <el-button size="small" @click="handleDownload('txt', 'pixiv')">
+              Pixiv-TXT
+            </el-button>
+            <el-button size="small" @click="handleDownload('json', 'twitter')">
+              Twitter-JSON
+            </el-button>
+            <el-button size="small" @click="handleDownload('txt', 'twitter')">
+              Twitter-TXT
+            </el-button>
+            <el-button size="small" @click="handleDownload('raw')">
+              RAW
+            </el-button>
+          </el-popover>
+
           <el-button
-            v-if="illusts.length !== 0"
-            :icon="Download"
-            type="primary"
-            :disabled="isLoading"
-            @click="handleDownload"
-          />
-          <el-button
-            v-if="illusts.find((illust) => illust.error)"
+            v-if="!statusController.processingLock.value && illusts.find((illust) => illust.error)"
             :icon="RefreshLeft"
             type="primary"
-            :disabled="isLoading"
             @click="handleRetry"
+          />
+          <el-button
+            v-if="statusController.processingLock.value"
+            type="danger"
+            :icon="Close"
+            @click="handleAbort()"
           />
         </el-form-item>
       </el-form>
@@ -273,7 +289,7 @@ onUnmounted(() => {
       </el-table>
     </div>
     <div class="stat-block">
-      {{ stat }}
+      {{ statusController.statusMessage.value }}
     </div>
   </div>
 </template>
