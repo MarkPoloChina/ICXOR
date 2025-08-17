@@ -111,6 +111,7 @@ defineExpose({ handleSearchByLink })
         label-width="80px"
         style="width: 100%"
         label-position="left"
+        @submit.prevent
       >
         <el-form-item label="UID">
           <el-row
@@ -121,6 +122,7 @@ defineExpose({ handleSearchByLink })
               <el-input
                 v-model="form.uid"
                 placeholder="输入UID"
+                @keyup.enter="handleSearchByBtn"
               />
             </el-col>
             <el-col :span="8">

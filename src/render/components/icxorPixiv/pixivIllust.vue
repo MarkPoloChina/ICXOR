@@ -107,11 +107,13 @@ defineExpose({ handleSearchByLink })
         label-width="80px"
         style="width: 100%"
         label-position="left"
+        @submit.prevent
       >
         <el-form-item label="PID">
           <el-input
             v-model="form.pid"
             placeholder="输入PID"
+            @keyup.enter="handleSearchByBtn"
           />
         </el-form-item>
         <el-form-item label="页号">

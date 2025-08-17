@@ -37,7 +37,7 @@ export default defineConfig({
             ],
             appId: 'com.mpsto.icxor',
             productName: 'ICXOR',
-            copyright: 'Copyright © 2023 MPSTO',
+            copyright: 'Copyright © 2025 MPSTO',
             win: {
               icon: 'build/basic/icons/icon.ico',
             },

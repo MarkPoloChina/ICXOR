@@ -18,7 +18,9 @@ export class DS {
     const response = await axios.get(url, axiosConfig)
     if (
       response.status === 200
-      && (response.headers['content-type'].toString().startsWith('image') || isPixiv)
+      && (response.headers['content-type'].toString().startsWith('image')
+        || response.headers['content-type'].toString().startsWith('application/octet-stream')
+        || isPixiv)
     ) {
       return response.data
     }

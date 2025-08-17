@@ -400,6 +400,7 @@ watch(
         label-width="80px"
         style="width: 100%"
         label-position="left"
+        @submit.prevent
       >
         <el-form-item label="任务">
           <el-row
