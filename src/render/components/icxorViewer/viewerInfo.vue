@@ -14,6 +14,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:info', 'upload'])
+
+const { ipcSend } = window.electron
+
 const writableInfo = computed({
   get: () => {
     return props.info
@@ -77,6 +80,9 @@ function handleAddAuthorTag(tag: string) {
       ElMessage.error('添加失败,可能已存在')
     })
 }
+function linkClick(url) {
+  ipcSend('app:openLink', url)
+}
 
 defineExpose({ handleStarChange })
 </script>
@@ -108,8 +114,21 @@ defineExpose({ handleStarChange })
         </el-descriptions-item>
         <el-descriptions-item label="URL">
           <div style="max-width: 180px">
-            <span style="word-wrap: break-word">
-              {{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo) || ' - ' }}
+            <span
+              v-if="writableInfo.link || UrlGenerator.getSourceLink(writableInfo)"
+              style="word-wrap: break-word;max-width: 180px"
+            >
+              <el-link
+                type="primary"
+                href=""
+                style="max-width: 180px"
+                @click="linkClick(writableInfo.link || UrlGenerator.getSourceLink(writableInfo))"
+              >
+                {{ writableInfo.link || UrlGenerator.getSourceLink(writableInfo) }}
+              </el-link>
+            </span>
+            <span v-else style="word-wrap: break-word">
+              {{ ' - ' }}
             </span>
           </div>
           <el-button
@@ -332,6 +351,10 @@ defineExpose({ handleStarChange })
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+      }
+      :deep(.el-link__inner) {
+        max-width: 100%;
+        display: inline-block;
       }
     }
   }

@@ -98,6 +98,9 @@ function handleRightClick(event, obj: PixivIllust) {
   const popupTemplate = [{ label: '下载' }, { label: '在Pixiv中打开' }]
   ipcSend('context:popup', popupTemplate)
 }
+function linkClick(url) {
+  ipcSend('app:openLink', url)
+}
 defineExpose({ handleSearchByLink })
 </script>
 
@@ -209,6 +212,20 @@ defineExpose({ handleSearchByLink })
             <el-descriptions-item label="昵称">
               {{ userObj.name }}
             </el-descriptions-item>
+            <el-descriptions-item label="URL">
+              <div style="max-width: 220px">
+                <span style="word-wrap: break-word">
+                  <el-link
+                    type="primary"
+                    href=""
+                    style="max-width: 220px"
+                    @click="linkClick(`https://www.pixiv.net/users/${userObj.id}`)"
+                  >
+                    {{ `https://www.pixiv.net/users/${userObj.id}` }}
+                  </el-link>
+                </span>
+              </div>
+            </el-descriptions-item>
           </el-descriptions>
         </el-scrollbar>
       </div>
@@ -240,6 +257,10 @@ defineExpose({ handleSearchByLink })
       min-width: 250px;
       :deep(.el-descriptions__body table) {
         border-radius: 5px;
+      }
+      :deep(.el-link__inner) {
+        max-width: 100%;
+        display: inline-block;
       }
     }
   }

@@ -112,6 +112,7 @@ function handleFocusIndexChange(action) {
 onMounted(() => {
   getIllustsAndCount()
 })
+const needSetLastSignal = ref(false)
 async function getIllusts() {
   isLoading.value = true
   const list = await API.getIllusts(
@@ -123,8 +124,13 @@ async function getIllusts() {
   isLoading.value = false
   if (list)
     illustList.value = list
-  if (list[0])
+  if (needSetLastSignal.value && list[list.length - 1]) {
+    needSetLastSignal.value = false
+    currentSelected.value = list[list.length - 1]
+  }
+  else if (list[0]) {
     currentSelected.value = list[0]
+  }
 }
 async function getIllustsAndCount() {
   isLoading.value = true
@@ -134,6 +140,18 @@ async function getIllustsAndCount() {
   illustCount.value = count
   isLoading.value = false
   getIllusts()
+}
+function handleChangePage(action: 'next' | 'prev') {
+  if (action === 'next') {
+    if (writableCurPage.value * writablePageSize.value < illustCount.value)
+      writableCurPage.value++
+  }
+  else if (action === 'prev') {
+    if (writableCurPage.value > 1) {
+      needSetLastSignal.value = true
+      writableCurPage.value--
+    }
+  }
 }
 watch(
   () => props.filter,
@@ -801,6 +819,7 @@ defineExpose({
         @select-change="currentSelected = $event"
         @popup-context="handlePopupContext"
         @star-change="emit('update:star', $event)"
+        @change-page="(action: 'next' | 'prev') => handleChangePage(action)"
       />
     </KeepAlive>
     <MetaForm

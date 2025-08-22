@@ -11,7 +11,9 @@ const props = defineProps({
   loading: Boolean,
   currentSelected: Object as () => IllustObj | null,
 })
-const emit = defineEmits(['update:selections', 'popupContext', 'selectChange', 'starChange'])
+const emit = defineEmits(
+  ['update:selections', 'popupContext', 'selectChange', 'starChange', 'changePage'],
+)
 const tableRef = ref<InstanceType<typeof ElScrollbar>>()
 const image404s = ref({})
 
@@ -87,7 +89,7 @@ defineExpose({
           :src="
             image404s[obj.id]
               ? UrlGenerator.getBlobUrl(obj, 'original')
-              : UrlGenerator.getBlobUrl(obj, 'large')
+              : UrlGenerator.getBlobUrl(obj, 'square_medium')
           "
           fit="cover"
           loading="lazy"

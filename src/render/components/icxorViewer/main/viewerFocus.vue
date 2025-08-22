@@ -3,7 +3,7 @@ import type { IllustObj } from '@render/ts/interface/illustObj'
 import type { ElScrollbar } from 'element-plus'
 import { CircleCheck, Picture } from '@element-plus/icons-vue'
 import { UrlGenerator } from '@render/ts/util/path'
-import { onActivated, onDeactivated, ref, watch } from 'vue'
+import { nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
 
 const props = defineProps({
   tableData: Array as () => IllustObj[],
@@ -11,7 +11,9 @@ const props = defineProps({
   currentSelected: Object as () => IllustObj | null,
 })
 
-const emit = defineEmits(['selectChange', 'selectsChange', 'popupContext', 'starChange'])
+const emit = defineEmits(
+  ['selectChange', 'selectsChange', 'popupContext', 'starChange', 'changePage'],
+)
 const currentIndex = ref(0)
 const tableRef = ref<InstanceType<typeof ElScrollbar>>()
 const image404s = ref({})
@@ -38,8 +40,9 @@ watch(
 )
 watch(
   () => currentIndex.value,
-  () => {
+  async () => {
     emit('selectChange', props.tableData[currentIndex.value])
+    await nextTick()
     scrollToCurrent()
   },
   {
@@ -58,10 +61,14 @@ function handleIndexChange(action: 'up' | 'down') {
   if (action === 'up') {
     if (currentIndex.value < props.tableData.length - 1)
       currentIndex.value++
+    else
+      emit('changePage', 'next')
   }
   else if (action === 'down') {
     if (currentIndex.value > 0)
       currentIndex.value--
+    else
+      emit('changePage', 'prev')
   }
 }
 function scrollToCurrent() {

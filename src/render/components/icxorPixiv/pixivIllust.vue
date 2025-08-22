@@ -7,7 +7,7 @@ import { ElMessage } from 'element-plus'
 import { reactive, ref, toRaw, watch } from 'vue'
 
 const emit = defineEmits(['toIllust', 'toUser'])
-const { ipcInvoke, downloadPixivTo, downloadPixivUgoiraTo } = window.electron
+const { ipcInvoke, downloadPixivTo, downloadPixivUgoiraTo, ipcSend } = window.electron
 const form = reactive({
   pid: '',
   page: 0,
@@ -94,6 +94,9 @@ watch(
     isImgLoading.value = true
   },
 )
+function linkClick(url) {
+  ipcSend('app:openLink', url)
+}
 defineExpose({ handleSearchByLink })
 </script>
 
@@ -266,7 +269,14 @@ defineExpose({ handleSearchByLink })
             <el-descriptions-item label="URL">
               <div style="max-width: 220px">
                 <span style="word-wrap: break-word">
-                  {{ illustObj.url }}
+                  <el-link
+                    type="primary"
+                    href=""
+                    style="max-width: 220px"
+                    @click="linkClick(illustObj.url)"
+                  >
+                    {{ illustObj.url }}
+                  </el-link>
                 </span>
               </div>
             </el-descriptions-item>
@@ -310,6 +320,10 @@ defineExpose({ handleSearchByLink })
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+      }
+      :deep(.el-link__inner) {
+        max-width: 100%;
+        display: inline-block;
       }
     }
   }
